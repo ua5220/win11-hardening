@@ -76,8 +76,7 @@ if ($os.Caption -notmatch "Windows 11") {
     Write-Log "WARNING: This script is designed for Windows 11. Current OS: $($os.Caption)" "WARN"
 }
 
-$build = [System.Environment]::OSVersion.Version.Build
-Write-Log "Windows Build: $build"
+Write-Log "Windows Build: $($os.BuildNumber)"
 
 # Check edition
 $edition = (Get-WindowsEdition -Online).Edition

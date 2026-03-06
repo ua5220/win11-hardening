@@ -8,8 +8,6 @@ Import-Module "$PSScriptRoot\HardeningHelpers.psm1" -Force
 
 Write-Host "`n=== Autoplay and AutoRun ===" -ForegroundColor Magenta
 
-$apPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer"
-
 Set-RegistryValue -AuditOnly:$AuditOnly `
     -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" `
     -Name "NoAutoplayfornonVolume" -Value 1 `

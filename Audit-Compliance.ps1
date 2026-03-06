@@ -35,7 +35,7 @@ $ScriptRoot = $PSScriptRoot
 $scriptsDir = Join-Path $ScriptRoot "scripts"
 
 # Run all scripts in Audit mode
-$scripts = Get-ChildItem -Path $scriptsDir -Filter "*.ps1" | Where-Object { $_.Name -ne "HardeningHelpers.psm1" } | Sort-Object Name
+$scripts = Get-ChildItem -Path $scriptsDir -Filter "*.ps1" | Sort-Object Name
 
 foreach ($script in $scripts) {
     Write-Host "`n========================================" -ForegroundColor DarkGray
