@@ -417,7 +417,8 @@ Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoC
 # ════════════════════════════════════════════════════════════════════════════
 Write-Log "--- [M] Command Prompt ---" 'HEAD'
 
-Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\System" "DisableCMD" 2  # Disable CMD, allow scripts
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DisableCMD" -Force -ErrorAction SilentlyContinue
+Write-Log "CMD enabled (DisableCMD removed)" 'OK'
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -628,21 +629,19 @@ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\$standby" "DCSett
 Write-Log "--- [M] PowerShell Hardening ---" 'HEAD'
 
 $psPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
-Set-Reg $psPath "EnableScripts"       1
-Set-Reg $psPath "ExecutionPolicy"     "AllSigned" 'String'
+# Execution policy: Unrestricted (AllSigned disabled per user request)
+Remove-ItemProperty -Path $psPath -Name "ExecutionPolicy" -Force -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path $psPath -Name "EnableScripts"   -Force -ErrorAction SilentlyContinue
+Write-Log "PowerShell execution policy restriction removed" 'OK'
 
-$psModPath = "$psPath\ModuleLogging"
-Set-Reg $psModPath "EnableModuleLogging"   1
-if (-not (Test-Path "$psModPath\ModuleNames")) {
-    New-Item -Path "$psModPath\ModuleNames" -Force | Out-Null
-}
-Set-ItemProperty -Path "$psModPath\ModuleNames" -Name "*" -Value "*" -Force -ErrorAction SilentlyContinue
-
-Set-Reg "$psPath\ScriptBlockLogging" "EnableScriptBlockLogging"         1
-Set-Reg "$psPath\ScriptBlockLogging" "EnableScriptBlockInvocationLogging" 1
-
-Set-Reg "$psPath\Transcription"  "EnableTranscripting"    1
-Set-Reg "$psPath\Transcription"  "EnableInvocationHeader" 1
+# Module logging: disabled
+Set-Reg "$psPath\ModuleLogging"    "EnableModuleLogging"                 0
+# Script block logging: disabled
+Set-Reg "$psPath\ScriptBlockLogging" "EnableScriptBlockLogging"         0
+Set-Reg "$psPath\ScriptBlockLogging" "EnableScriptBlockInvocationLogging" 0
+# Transcription: disabled
+Set-Reg "$psPath\Transcription"    "EnableTranscripting"                0
+Write-Log "PowerShell logging disabled" 'OK'
 
 
 # ════════════════════════════════════════════════════════════════════════════
