@@ -13,7 +13,23 @@
       [H] High    [M] Medium    [L] Low
 #>
 
-#Requires -RunAsAdministrator
+# ── Self-bypass: якщо запущено напряму (не через bat), перезапустити з Bypass + Admin ──
+if ($MyInvocation.ScriptName -ne '' -and
+    [System.Management.Automation.ExecutionPolicy]::Bypass -ne
+    (Get-ExecutionPolicy -Scope Process)) {
+    Start-Process powershell.exe `
+        -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
+        -Verb RunAs
+    exit
+}
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+        ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process powershell.exe `
+        -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
+        -Verb RunAs
+    exit
+}
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'SilentlyContinue'
 
