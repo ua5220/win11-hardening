@@ -38,7 +38,7 @@ $LogFile = "$env:TEMP\ACSC_Hardening_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 function Write-Log {
     param([string]$Msg, [string]$Level = 'INFO')
     $ts   = Get-Date -Format 'HH:mm:ss'
-    $icon = @{ INFO='[i]'; OK='[+]'; WARN='[!]'; ERROR='[x]'; HEAD=['='] }
+    $icon = @{ INFO='[i]'; OK='[+]'; WARN='[!]'; ERROR='[x]'; HEAD='[=]' }
     $clr  = switch ($Level) {
         'OK'    { 'Green'   }
         'WARN'  { 'Yellow'  }
