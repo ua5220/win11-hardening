@@ -692,6 +692,59 @@ Write-Log "Registry tools enabled (DisableRegistryTools removed)" 'OK'
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# [M] COMMON TOOLS — Ensure access to Task Manager, Windows Security,
+#     Snipping Tool, Paint, Notepad, Run dialog, PowerShell
+# ════════════════════════════════════════════════════════════════════════════
+Write-Log "--- [M] Common Tools Access ---" 'HEAD'
+
+# Task Manager: ensure not blocked
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" `
+    -Name "DisableTaskMgr" -Force -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" `
+    -Name "DisableTaskMgr" -Force -ErrorAction SilentlyContinue
+Write-Log "Task Manager: unblocked (DisableTaskMgr removed)" 'OK'
+
+# Run dialog (Win+R): ensure not blocked
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
+    -Name "NoRun" -Force -ErrorAction SilentlyContinue
+Write-Log "Run dialog: unblocked (NoRun removed)" 'OK'
+
+# Windows Security (Defender Security Center): keep notification area icon visible
+Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" `
+    -Name "HideSystray" -Force -ErrorAction SilentlyContinue
+# Allow users to open Windows Security app (do not hide sections)
+Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection" `
+    -Name "UILockdown" -Force -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Virus and threat protection" `
+    -Name "UILockdown" -Force -ErrorAction SilentlyContinue
+Write-Log "Windows Security: app accessible, notification area enabled" 'OK'
+
+# Snipping Tool: ensure not blocked via TabletPC policy
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\TabletPC" `
+    -Name "DisableSnippingTool" -Force -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\TabletPC" `
+    -Name "DisableSnippingTool" -Force -ErrorAction SilentlyContinue
+Write-Log "Snipping Tool: unblocked (DisableSnippingTool removed)" 'OK'
+
+# Paint (mspaint.exe) and Notepad: standard Win32 apps with no GPO block —
+# explicitly confirm no RestrictRun or DisallowRun list is set
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
+    -Name "RestrictRun" -Force -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
+    -Name "DisallowRun" -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\RestrictRun" `
+    -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" `
+    -Recurse -Force -ErrorAction SilentlyContinue
+Write-Log "Paint / Notepad: RestrictRun / DisallowRun lists cleared" 'OK'
+
+# PowerShell: ensure shortcut and shell access not blocked
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\System" `
+    -Name "DisableCMD" -Force -ErrorAction SilentlyContinue  # belt-and-suspenders: HKCU System path
+Write-Log "PowerShell / CMD: HKCU\System DisableCMD confirmed removed" 'OK'
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # [M] REMOTE ASSISTANCE — Disable
 # ════════════════════════════════════════════════════════════════════════════
 Write-Log "--- [M] Remote Assistance ---" 'HEAD'
