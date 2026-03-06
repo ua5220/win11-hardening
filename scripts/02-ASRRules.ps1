@@ -70,7 +70,7 @@ Write-Host "`n  All 16 ASR rules set to Block mode." -ForegroundColor Green
 
 # Also configure via PowerShell cmdlet if Defender is available
 try {
-    $guids = $ASRRules.Keys | ForEach-Object { $_ }
+    [string[]]$guids = $ASRRules.Keys
     $actions = @(1) * $guids.Count
     Set-MpPreference -AttackSurfaceReductionRules_Ids $guids -AttackSurfaceReductionRules_Actions $actions -ErrorAction SilentlyContinue
     Write-Host "  ASR rules also applied via Set-MpPreference" -ForegroundColor Green

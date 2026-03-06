@@ -90,6 +90,10 @@ function Set-SecurityPolicy {
             $newContent += $line
         }
 
+        if ($sectionFound -and -not $keyFound) {
+            $newContent += "$Key = $Value"
+        }
+
         $newContent | Set-Content $tempFile
         secedit /configure /db $tempDb /cfg $tempFile /quiet
         Write-Host "  [SET] Security Policy: $Description = $Value" -ForegroundColor Cyan
@@ -110,20 +114,24 @@ function Set-AuditPolicy {
     )
 
     if ($AuditOnly) {
-        $current = auditpol /get /subcategory:"$Subcategory" 2>$null
-        Write-Host "  [AUDIT] Audit: $Subcategory -> $AuditFlag" -ForegroundColor Yellow
+        $lines = auditpol /get /subcategory:"$Subcategory" 2>&1
+        $dataLine = $lines | Where-Object { $_ -match "^\s{2}\S" } | Select-Object -First 1
+        if ($dataLine) {
+            $currentSetting = ($dataLine -replace "^\s+\S.*?\s{2,}", "").Trim()
+            if ($currentSetting -eq $AuditFlag) {
+                Write-Host "  [OK] Audit: $Subcategory = $currentSetting" -ForegroundColor Green
+            } else {
+                Write-Host "  [FAIL] Audit: $Subcategory - Current: '$currentSetting', Expected: '$AuditFlag'" -ForegroundColor Red
+            }
+        } else {
+            Write-Host "  [FAIL] Audit: $Subcategory - not found. Expected: '$AuditFlag'" -ForegroundColor Red
+        }
         return
     }
 
-    $flags = switch ($AuditFlag) {
-        "Success"             { "/success:enable /failure:disable" }
-        "Failure"             { "/success:disable /failure:enable" }
-        "Success and Failure" { "/success:enable /failure:enable" }
-        "No Auditing"         { "/success:disable /failure:disable" }
-    }
-
-    $cmd = "auditpol /set /subcategory:`"$Subcategory`" $flags"
-    Invoke-Expression $cmd 2>&1 | Out-Null
+    $successFlag = if ($AuditFlag -in @("Success", "Success and Failure")) { "enable" } else { "disable" }
+    $failureFlag = if ($AuditFlag -in @("Failure", "Success and Failure")) { "enable" } else { "disable" }
+    auditpol /set /subcategory:"$Subcategory" /success:$successFlag /failure:$failureFlag 2>&1 | Out-Null
     Write-Host "  [SET] Audit: $Subcategory = $AuditFlag" -ForegroundColor Cyan
 }
 
