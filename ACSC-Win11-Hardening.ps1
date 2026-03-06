@@ -165,7 +165,7 @@ $uacPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
 
 # ACSC: Admins must enter credentials on Secure Desktop (level 1, not 5)
 Set-Reg $uacPath "EnableLUA"                         1
-Set-Reg $uacPath "ConsentPromptBehaviorAdmin"        1   # Prompt for credentials on secure desktop
+Set-Reg $uacPath "ConsentPromptBehaviorAdmin"        5   # Prompt without password (no secure desktop)
 Set-Reg $uacPath "ConsentPromptBehaviorUser"         0   # Auto-deny elevation for standard users
 Set-Reg $uacPath "PromptOnSecureDesktop"             1   # Use Secure Desktop
 Set-Reg $uacPath "EnableInstallerDetection"          1
@@ -671,7 +671,8 @@ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Internet Communication Manage
 # ════════════════════════════════════════════════════════════════════════════
 Write-Log "--- [M] Registry Editing Tools ---" 'HEAD'
 
-Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" 2
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableRegistryTools" -Force -ErrorAction SilentlyContinue
+Write-Log "Registry tools enabled (DisableRegistryTools removed)" 'OK'
 
 
 # ════════════════════════════════════════════════════════════════════════════
