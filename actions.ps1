@@ -5,7 +5,8 @@
     Dot-sourced by HardeningGUI_v2.ps1 after ui.ps1.
     Exports: Set-BusyState, Refresh-AllRows,
              Invoke-ApplyAllSettings, Invoke-ApplySelectedSettings,
-             Invoke-RevertAllSettings, Connect-HardeningActions
+             Invoke-RevertAllSettings, Connect-RowActions,
+             Connect-HardeningActions
 #>
 
 function Set-BusyState {
@@ -39,7 +40,7 @@ function Invoke-ApplyAllSettings {
     param([Parameter(Mandatory)]$Context)
 
     $res = [System.Windows.Forms.MessageBox]::Show(
-        "Застосувати ВСІ $($Context.Settings.Count) параметрів?`nЦе змінить налаштування системи.",
+        "Застосувати ВСІ $($Context.AllSettings.Count) параметрів?`nЦе змінить налаштування системи.",
         'Підтвердження',
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
@@ -51,7 +52,7 @@ function Invoke-ApplyAllSettings {
     $ok = 0
     $err = 0
 
-    foreach ($s in $Context.Settings) {
+    foreach ($s in $Context.AllSettings) {
         try {
             & $s.Apply
             $ok++
@@ -126,7 +127,7 @@ function Invoke-RevertAllSettings {
 
     Set-BusyState -Context $Context -Busy $true
 
-    foreach ($s in $Context.Settings) {
+    foreach ($s in $Context.AllSettings) {
         try { & $s.Revert } catch {}
     }
 
@@ -135,7 +136,7 @@ function Invoke-RevertAllSettings {
     $Context.StatusBar.Text = '  Всі параметри скасовано.'
 }
 
-function Connect-HardeningActions {
+function Connect-RowActions {
     param([Parameter(Mandatory)]$Context)
 
     foreach ($rc in $Context.RowControls) {
@@ -162,7 +163,39 @@ function Connect-HardeningActions {
             Refresh-RowState -Context $capturedContext -RowRecord $capturedRecord
         }.GetNewClosure())
     }
+}
 
+function Connect-HardeningActions {
+    param([Parameter(Mandatory)]$Context)
+
+    Connect-RowActions -Context $Context
+
+    # ── Filter events ───────────────────────────────────────────────────
+    $Context.Controls.SearchBox.Add_TextChanged({
+        $Context.Filters.SearchText = $Context.Controls.SearchBox.Text
+        Update-FilteredSettings -Context $Context
+        Build-SettingRows -Context $Context
+        Connect-RowActions -Context $Context
+    }.GetNewClosure())
+
+    $Context.Controls.GroupFilter.Add_SelectedIndexChanged({
+        $Context.Filters.SelectedGroup = [string]$Context.Controls.GroupFilter.SelectedItem
+        Update-FilteredSettings -Context $Context
+        Build-SettingRows -Context $Context
+        Connect-RowActions -Context $Context
+    }.GetNewClosure())
+
+    $Context.Controls.ResetFilter.Add_Click({
+        $Context.Controls.SearchBox.Text = ''
+        $Context.Controls.GroupFilter.SelectedIndex = 0
+        $Context.Filters.SearchText    = ''
+        $Context.Filters.SelectedGroup = 'Усі групи'
+        Update-FilteredSettings -Context $Context
+        Build-SettingRows -Context $Context
+        Connect-RowActions -Context $Context
+    }.GetNewClosure())
+
+    # ── Button events ───────────────────────────────────────────────────
     $Context.Buttons.Refresh.Add_Click({
         Refresh-AllRows -Context $Context
     })

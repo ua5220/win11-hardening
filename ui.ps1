@@ -5,7 +5,8 @@
     Dot-sourced by HardeningGUI_v2.ps1 after helpers.ps1.
     Exports: New-AppTheme, New-AppButton, New-HardeningUi,
              Set-RowVisualState, Refresh-RowState,
-             Show-SettingInfo, Build-SettingRows
+             Show-SettingInfo, Build-SettingRows,
+             Update-FilteredSettings
 #>
 
 function New-AppTheme {
@@ -111,6 +112,64 @@ function New-HardeningUi {
     $btnPanel.Controls.AddRange(@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh))
     $form.Controls.Add($btnPanel)
 
+    # ── Filter toolbar ──────────────────────────────────────────────────
+    $filterBar = New-Object System.Windows.Forms.Panel
+    $filterBar.Dock      = 'Top'
+    $filterBar.Height    = 36
+    $filterBar.BackColor = $theme.BottomPanelBackground
+
+    $lblSearch = New-Object System.Windows.Forms.Label
+    $lblSearch.Text      = 'Пошук:'
+    $lblSearch.Location  = New-Object System.Drawing.Point(12, 9)
+    $lblSearch.Size      = New-Object System.Drawing.Size(50, 20)
+    $lblSearch.ForeColor = $theme.Foreground
+    $lblSearch.Font      = New-Object System.Drawing.Font('Segoe UI', 8.5)
+    $filterBar.Controls.Add($lblSearch)
+
+    $txtSearch = New-Object System.Windows.Forms.TextBox
+    $txtSearch.Location  = New-Object System.Drawing.Point(64, 6)
+    $txtSearch.Size      = New-Object System.Drawing.Size(300, 24)
+    $txtSearch.BackColor = $theme.FormBackground
+    $txtSearch.ForeColor = $theme.Foreground
+    $txtSearch.Font      = New-Object System.Drawing.Font('Segoe UI', 9)
+    $filterBar.Controls.Add($txtSearch)
+
+    $lblGroup = New-Object System.Windows.Forms.Label
+    $lblGroup.Text      = 'Група:'
+    $lblGroup.Location  = New-Object System.Drawing.Point(380, 9)
+    $lblGroup.Size      = New-Object System.Drawing.Size(46, 20)
+    $lblGroup.ForeColor = $theme.Foreground
+    $lblGroup.Font      = New-Object System.Drawing.Font('Segoe UI', 8.5)
+    $filterBar.Controls.Add($lblGroup)
+
+    $cmbGroups = New-Object System.Windows.Forms.ComboBox
+    $cmbGroups.Location      = New-Object System.Drawing.Point(428, 5)
+    $cmbGroups.Size          = New-Object System.Drawing.Size(300, 24)
+    $cmbGroups.DropDownStyle = 'DropDownList'
+    $cmbGroups.BackColor     = $theme.FormBackground
+    $cmbGroups.ForeColor     = $theme.Foreground
+    $cmbGroups.Font          = New-Object System.Drawing.Font('Segoe UI', 9)
+
+    $groups = @('Усі групи') + @($Settings | ForEach-Object { $_.Group } | Select-Object -Unique)
+    foreach ($g in $groups) { [void]$cmbGroups.Items.Add($g) }
+    $cmbGroups.SelectedIndex = 0
+    $filterBar.Controls.Add($cmbGroups)
+
+    $btnResetFilter = New-Object System.Windows.Forms.Button
+    $btnResetFilter.Text      = 'Скинути'
+    $btnResetFilter.Location  = New-Object System.Drawing.Point(740, 4)
+    $btnResetFilter.Size      = New-Object System.Drawing.Size(70, 26)
+    $btnResetFilter.FlatStyle = 'Flat'
+    $btnResetFilter.FlatAppearance.BorderSize = 1
+    $btnResetFilter.BackColor = $theme.InfoButtonBackground
+    $btnResetFilter.ForeColor = $theme.InfoButtonForeground
+    $btnResetFilter.Font      = New-Object System.Drawing.Font('Segoe UI', 8.5)
+    $btnResetFilter.Cursor    = 'Hand'
+    $filterBar.Controls.Add($btnResetFilter)
+
+    $form.Controls.Add($filterBar)
+
+    # ── Scroll panel ────────────────────────────────────────────────────
     $scroll = New-Object System.Windows.Forms.Panel
     $scroll.Dock       = 'Fill'
     $scroll.AutoScroll = $true
@@ -118,13 +177,23 @@ function New-HardeningUi {
     $form.Controls.Add($scroll)
 
     return [PSCustomObject]@{
-        Form        = $form
-        Theme       = $theme
-        Settings    = $Settings
-        Scroll      = $scroll
-        StatusBar   = $statusBar
-        RowControls = [System.Collections.ArrayList]::new()
-        Buttons     = [PSCustomObject]@{
+        Form             = $form
+        Theme            = $theme
+        AllSettings      = @($Settings)
+        FilteredSettings = @($Settings)
+        Scroll           = $scroll
+        StatusBar        = $statusBar
+        RowControls      = [System.Collections.ArrayList]::new()
+        Filters          = [PSCustomObject]@{
+            SearchText    = ''
+            SelectedGroup = 'Усі групи'
+        }
+        Controls         = [PSCustomObject]@{
+            SearchBox   = $txtSearch
+            GroupFilter = $cmbGroups
+            ResetFilter = $btnResetFilter
+        }
+        Buttons          = [PSCustomObject]@{
             ApplyAll      = $btnApplyAll
             ApplySelected = $btnApplySelected
             RevertAll     = $btnRevertAll
@@ -181,6 +250,30 @@ function Show-SettingInfo {
     ) | Out-Null
 }
 
+function Update-FilteredSettings {
+    param([Parameter(Mandatory)]$Context)
+
+    $search = "$($Context.Filters.SearchText)".Trim().ToLowerInvariant()
+    $group  = $Context.Filters.SelectedGroup
+
+    $items = @($Context.AllSettings)
+
+    if ($group -and $group -ne 'Усі групи') {
+        $items = @($items | Where-Object { $_.Group -eq $group })
+    }
+
+    if ($search) {
+        $items = @($items | Where-Object {
+            $_.Name.ToLowerInvariant().Contains($search) -or
+            $_.Desc.ToLowerInvariant().Contains($search) -or
+            $_.Group.ToLowerInvariant().Contains($search)
+        })
+    }
+
+    $Context.FilteredSettings = $items
+    $Context.StatusBar.Text = "  Показано: $($items.Count) із $($Context.AllSettings.Count)"
+}
+
 function Build-SettingRows {
     param([Parameter(Mandatory)]$Context)
 
@@ -191,7 +284,7 @@ function Build-SettingRows {
     $lastGroup = ''
     $rowIndex = 0
 
-    foreach ($s in $Context.Settings) {
+    foreach ($s in $Context.FilteredSettings) {
         if ($s.Group -ne $lastGroup) {
             $lbl = New-Object System.Windows.Forms.Label
             $lbl.Text      = "  $($s.Group)"
