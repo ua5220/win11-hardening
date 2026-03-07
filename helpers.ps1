@@ -123,7 +123,9 @@ function Write-AppLog {
     try {
         Add-Content -Path (Get-AppLogPath) -Value $line -Encoding UTF8
     }
-    catch {}
+    catch {
+        Write-Warning "Не вдалося записати лог: $($_.Exception.Message)"
+    }
 }
 
 function Write-AppError {
@@ -133,7 +135,11 @@ function Write-AppError {
     )
 
     $message = if ($ErrorRecord.Exception) { $ErrorRecord.Exception.Message } else { "$ErrorRecord" }
-    Write-AppLog -Level 'ERROR' -Message "$Context :: $message"
+    $location = if ($ErrorRecord.InvocationInfo) {
+        $ErrorRecord.InvocationInfo.ScriptName + ':' + $ErrorRecord.InvocationInfo.ScriptLineNumber
+    } else { '' }
+    $details = if ($location) { "$Context :: $message [$location]" } else { "$Context :: $message" }
+    Write-AppLog -Level 'ERROR' -Message $details
 }
 
 # ── Startup self-check ───────────────────────────────────────────────────

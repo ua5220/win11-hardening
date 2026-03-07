@@ -310,7 +310,7 @@ function Get-HardeningSettings {
             try {
                 Set-MpPreference -AttackSurfaceReductionRules_Ids ([string[]]$guids) `
                     -AttackSurfaceReductionRules_Actions (@(1)*$guids.Count) -ErrorAction SilentlyContinue
-            } catch {}
+            } catch { Write-AppLog -Level 'WARN' -Message "ASR Set-MpPreference :: $($_.Exception.Message)" }
         }
         Revert = {
             $ru = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR\Rules"
@@ -330,12 +330,12 @@ function Get-HardeningSettings {
         Apply = {
             $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
             Set-Reg $p "EnableControlledFolderAccess" 1
-            try { Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue } catch {}
+            try { Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Enable :: $($_.Exception.Message)" }
         }
         Revert = {
             $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
             Set-Reg $p "EnableControlledFolderAccess" 0
-            try { Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue } catch {}
+            try { Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Disable :: $($_.Exception.Message)" }
         }
         Check = {
             $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
@@ -352,7 +352,7 @@ function Get-HardeningSettings {
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoDataExecutionPrevention" 0
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoTurnOffSPIAndSAI"       1
             Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "DisableExceptionChainValidation" 0
-            try { Set-ProcessMitigation -System -Enable DEP,EmulateAtlThunks,SEHOP,ForceRelocateImages,BottomUp,HighEntropy,CFG -ErrorAction SilentlyContinue } catch {}
+            try { Set-ProcessMitigation -System -Enable DEP,EmulateAtlThunks,SEHOP,ForceRelocateImages,BottomUp,HighEntropy,CFG -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "ExploitProtection :: $($_.Exception.Message)" }
         }
         Revert = {
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection" "DisallowExploitProtectionOverride" 0
@@ -365,10 +365,10 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "Defender / Antivirus"
         Name  = "Early Launch Antimalware — ELAM (ACSC 07)"
-        Desc  = "DriverLoadPolicy=3: завантажувати good, unknown та bad-but-critical драйвери"
-        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 3 }
+        Desc  = "DriverLoadPolicy=1: завантажувати лише драйвери з позначкою Good (найсуворіший режим ACSC)"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 1 }
         Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 7 }
-        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" -1) -eq 3 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" -1) -eq 1 }
     },
 
 # ════════════════════════════════════════════════════════════════════════
@@ -410,16 +410,18 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "SmartScreen / Recall / Телеметрія"
         Name  = "Вимкнути Windows Recall (AIX сервіс)"
-        Desc  = "Вимкнути сервіс AiXHostService + DisableAIDataAnalysis=1"
+        Desc  = "Вимкнути сервіс AiXHostService + DisableAIDataAnalysis=1 + AllowRecallEnablement=0 + EnableRecallOnDevice=0"
         Apply = {
             Set-ServiceDisabled "AiXHostService"
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 1
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "AllowRecallEnablement" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis"  1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "AllowRecallEnablement"  0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "EnableRecallOnDevice"   0
         }
         Revert = {
             Set-ServiceManual "AiXHostService"
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 0
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "AllowRecallEnablement" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis"  0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "AllowRecallEnablement"  1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "EnableRecallOnDevice"   1
         }
         Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 0) -eq 1 }
     },
@@ -738,7 +740,6 @@ function Get-HardeningSettings {
                       "Other Logon/Logoff Events","User Account Management",
                       "Security Group Management","Audit Policy Change","System Integrity")
             foreach ($s in $subs) {
-                $sf = if ($s -in @("Process Termination","Logoff","Group Membership","Process Creation")) { "enable" } else { "enable" }
                 auditpol /set /subcategory:"$s" /success:enable /failure:enable 2>$null | Out-Null
             }
         }
@@ -1678,11 +1679,12 @@ Revision=1
             Remove-Item $tmp,$db -Force -ErrorAction SilentlyContinue
         }
         Check = {
-            $out = secedit /export /cfg "$env:TEMP\acsc_chk.inf" /quiet 2>$null
+            secedit /export /cfg "$env:TEMP\acsc_chk.inf" /quiet 2>$null | Out-Null
             $cfg = Get-Content "$env:TEMP\acsc_chk.inf" -ErrorAction SilentlyContinue
             Remove-Item "$env:TEMP\acsc_chk.inf" -Force -ErrorAction SilentlyContinue
+            if (-not $cfg) { return $false }
             $line = $cfg | Where-Object { $_ -match 'SeDenyNetworkLogonRight' }
-            $line -and ($line -match 'S-1-5-32-544')
+            ($null -ne $line) -and ($line -match 'S-1-5-32-544')
         }
     },
 
@@ -1733,26 +1735,7 @@ Revision=1
     },
 
 # ════════════════════════════════════════════════════════════════════════
-# ── РОЗДІЛ 30: SMB V1 CLIENT DRIVER ──────────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════
-
-    [PSCustomObject]@{
-        Group = "SMB v1 Client Driver"
-        Name  = "SMB v1 client driver — Disable driver (ACSC)"
-        Desc  = "MrxSmb10 Start=4: вимкнути SMB v1 client driver (рекомендовано MS Security Guide)"
-        Apply = {
-            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 4
-            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "SMB1" 0
-        }
-        Revert = {
-            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 3
-            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "SMB1" 1
-        }
-        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 3) -eq 4 }
-    },
-
-# ════════════════════════════════════════════════════════════════════════
-# ── РОЗДІЛ 31: SOUND RECORDER ─────────────────────────────────────────────
+# ── РОЗДІЛ 30: SOUND RECORDER ─────────────────────────────────────────────
 # ════════════════════════════════════════════════════════════════════════
 
     [PSCustomObject]@{
@@ -1765,55 +1748,7 @@ Revision=1
     },
 
 # ════════════════════════════════════════════════════════════════════════
-# ── РОЗДІЛ 32: APPLICATION COMPATIBILITY ──────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════
-
-    [PSCustomObject]@{
-        Group = "Application Compatibility"
-        Name  = "Inventory Collector — вимкнути (ACSC)"
-        Desc  = "DisableInventory=1: вимкнути збір інвентаризаційних даних"
-        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 1 }
-        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 0 }
-        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 0) -eq 1 }
-    },
-
-# ════════════════════════════════════════════════════════════════════════
-# ── РОЗДІЛ 33: SAFE MODE / REGISTRY ───────────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════
-
-    [PSCustomObject]@{
-        Group = "Safe Mode / Registry"
-        Name  = "SafeMode — заблокувати для не-адміністраторів (ACSC)"
-        Desc  = "SafeModeBlockNonAdmins=1: не дозволяти звичайним користувачам вхід у Safe Mode"
-        Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 1 }
-        Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 0 }
-        Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 0) -eq 1 }
-    },
-
-    [PSCustomObject]@{
-        Group = "Safe Mode / Registry"
-        Name  = "Заборонити regedit — тихий режим (ACSC)"
-        Desc  = "DisableRegistryTools=2: заборонити regedit, включаючи тихий запуск"
-        Apply  = { Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" 2 }
-        Revert = { Remove-RegValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" }
-        Check  = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" 0) -eq 2 }
-    },
-
-# ════════════════════════════════════════════════════════════════════════
-# ── РОЗДІЛ 34: EARLY LAUNCH ANTIMALWARE — GOOD ONLY ───────────────────────
-# ════════════════════════════════════════════════════════════════════════
-
-    [PSCustomObject]@{
-        Group = "Early Launch Antimalware"
-        Name  = "ELAM — ініціалізувати лише Good драйвери (ACSC)"
-        Desc  = "DriverLoadPolicy=1: завантажувати лише драйвери з позначкою Good"
-        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 1 }
-        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 7 }
-        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" -1) -eq 1 }
-    },
-
-# ════════════════════════════════════════════════════════════════════════
-# ── РОЗДІЛ 35: KERNEL DMA PROTECTION ─────────────────────────────────────
+# ── РОЗДІЛ 32: KERNEL DMA PROTECTION ─────────────────────────────────────
 # ════════════════════════════════════════════════════════════════════════
 
     [PSCustomObject]@{

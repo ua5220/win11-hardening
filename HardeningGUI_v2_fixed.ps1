@@ -1,12 +1,12 @@
-﻿<#
+<#
 .SYNOPSIS
-    Windows 11 Hardening GUI v2 â€” launcher
+    Windows 11 Hardening GUI v2 — launcher
 .NOTES
-    Ð’Ð¸Ð¼Ð¾Ð³Ð¸: PowerShell 5.1+, Ð¿Ñ€Ð°Ð²Ð° Ð°Ð´Ð¼Ñ–Ð½Ñ–ÑÑ‚Ñ€Ð°Ñ‚Ð¾Ñ€Ð°
-    Ð¡Ñ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ð°:
-      HardeningGUI_v2.ps1  -> Ñ†ÐµÐ¹ Ñ„Ð°Ð¹Ð» (bootstrap + orchestration)
-      helpers.ps1          -> Ñ–Ð½Ñ„Ñ€Ð°ÑÑ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ð½Ñ– Ñ„ÑƒÐ½ÐºÑ†Ñ–Ñ—
-      settings.data.ps1    -> Get-HardeningSettings (Ð´Ð°Ð½Ñ– hardening-Ð¿Ñ€Ð°Ð²Ð¸Ð»)
+    Вимоги: PowerShell 5.1+, права адміністратора
+    Структура:
+      HardeningGUI_v2.ps1  -> цей файл (bootstrap + orchestration)
+      helpers.ps1          -> інфраструктурні функції
+      settings.data.ps1    -> Get-HardeningSettings (дані hardening-правил)
       ui.ps1               -> WinForms factory, row rendering
       actions.ps1          -> bulk operations, event wiring
 #>
@@ -29,8 +29,8 @@ if ($check.Errors.Count -gt 0) {
     $message = ($check.Errors -join "`r`n")
     Write-AppLog -Level 'ERROR' -Message "Startup self-check failed :: $message"
     [System.Windows.Forms.MessageBox]::Show(
-        "Self-check Ð½Ðµ Ð¿Ñ€Ð¾Ð¹Ð´ÐµÐ½Ð¾:`r`n`r`n$message",
-        'ÐŸÐ¾Ð¼Ð¸Ð»ÐºÐ° ÑÑ‚Ð°Ñ€Ñ‚Ñƒ',
+        "Self-check не пройдено:`r`n`r`n$message",
+        'Помилка старту',
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Error
     ) | Out-Null
