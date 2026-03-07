@@ -213,7 +213,7 @@ Windows Registry Editor Version 5.00
 
 ; --- Microsoft Store ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsStore]
-"RemoveWindowsStore"=dword:00000001
+"RemoveWindowsStore"=dword:00000000
 
 ; --- Microsoft Accounts ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MicrosoftAccount]

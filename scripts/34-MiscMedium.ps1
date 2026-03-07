@@ -13,7 +13,7 @@ Write-Host "`n=== Miscellaneous Medium Priority ===" -ForegroundColor Magenta
 # --- Command Prompt ---
 Set-RegistryValue -AuditOnly:$AuditOnly `
     -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\System" `
-    -Name "DisableCMD" -Value 1 `
+    -Name "DisableCMD" -Value 0 `
     -Description "Prevent access to command prompt (and script processing)"
 
 # --- Registry editing tools ---
@@ -23,7 +23,7 @@ Set-RegistryValue -AuditOnly:$AuditOnly `
 # Set to 0 temporarily if you need to re-run scripts that use reg.exe.
 Set-RegistryValue -AuditOnly:$AuditOnly `
     -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" `
-    -Name "DisableRegistryTools" -Value 2 `
+    -Name "DisableRegistryTools" -Value 0 `
     -Description "Prevent access to registry editing tools (silent mode too)"
 
 # --- Legacy and run once lists ---
@@ -62,12 +62,12 @@ Set-RegistryValue -AuditOnly:$AuditOnly `
 # SmartScreen
 Set-RegistryValue -AuditOnly:$AuditOnly `
     -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" `
-    -Name "EnableSmartScreen" -Value 1 `
+    -Name "EnableSmartScreen" -Value 0 `
     -Description "Configure Windows Defender SmartScreen: Enabled"
 
 Set-RegistryValue -AuditOnly:$AuditOnly `
     -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" `
-    -Name "ShellSmartScreenLevel" -Value "Block" -Type String `
+    -Name "ShellSmartScreenLevel" -Value "Allow" -Type String `
     -Description "SmartScreen: Warn and prevent bypass"
 
 # --- Safe Mode ---
