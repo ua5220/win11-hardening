@@ -136,6 +136,43 @@ function Write-AppError {
     Write-AppLog -Level 'ERROR' -Message "$Context :: $message"
 }
 
+# ── Startup self-check ───────────────────────────────────────────────────
+
+function Invoke-StartupSelfCheck {
+    param(
+        [Parameter(Mandatory)][string]$RootPath,
+        [Parameter(Mandatory)]$Settings
+    )
+
+    $result = [PSCustomObject]@{
+        Errors   = [System.Collections.ArrayList]::new()
+        Warnings = [System.Collections.ArrayList]::new()
+    }
+
+    foreach ($file in @('helpers.ps1', 'settings.data.ps1', 'ui.ps1', 'actions.ps1')) {
+        if (-not (Test-Path (Join-Path $RootPath $file))) {
+            [void]$result.Errors.Add("Не знайдено файл: $file")
+        }
+    }
+
+    if (-not $Settings -or $Settings.Count -eq 0) {
+        [void]$result.Errors.Add('Get-HardeningSettings() повернув порожній список.')
+        return $result
+    }
+
+    $index = 0
+    foreach ($s in $Settings) {
+        foreach ($prop in 'Group', 'Name', 'Desc', 'Apply', 'Revert', 'Check') {
+            if (-not $s.PSObject.Properties[$prop]) {
+                [void]$result.Errors.Add("Settings[$index] не має поля $prop")
+            }
+        }
+        $index++
+    }
+
+    return $result
+}
+
 function Test-SettingEnabled {
     param([Parameter(Mandatory)]$Setting)
 
