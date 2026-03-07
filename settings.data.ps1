@@ -1065,6 +1065,118 @@ function Get-HardeningSettings {
         }
         Revert = { Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" "SaveZoneInformation" 1 }
         Check  = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" "SaveZoneInformation" 1) -eq 2 }
+    },
+
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ: ВІДНОВЛЕННЯ / ЗРУЧНІСТЬ ─────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Відновлення / Зручність"
+        Name  = "Windows Store — відновити доступ"
+        Desc  = "RemoveWindowsStore=0; знімає GPO-блокування Microsoft Store і modern-застосунків (Notepad, SnippingTool тощо)"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 0
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 1
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Відновлення / Зручність"
+        Name  = "Snipping Tool — відновити"
+        Desc  = "DisableSnippingTool=0 у HKLM і HKCU; повертає доступ до Snipping Tool / Snip & Sketch"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SnippingTool"     "DisableSnippingTool" 0
+            Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer"         "DisableSnippingTool" 0
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "DisabledHotkeys" "" "String"
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SnippingTool" "DisableSnippingTool" 1
+            Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer"      "DisableSnippingTool" 1
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SnippingTool" "DisableSnippingTool" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Відновлення / Зручність"
+        Name  = "Notepad — відновити (system + Store)"
+        Desc  = "Знімає DisableUAT/AppCompat-блок; Store Notepad стає доступним після відновлення WindowsStore"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableUAT"            0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "AITEnable"             1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableProgramCompat"  0
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableUAT" 1
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableUAT" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Відновлення / Зручність"
+        Name  = "PowerShell + CMD — RemoteSigned замість AllSigned"
+        Desc  = "ExecutionPolicy=RemoteSigned: локальні скрипти не вимагають підпису; знімає Authenticode SRP (AuthenticodeEnabled=0)"
+        Apply = {
+            $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
+            Set-Reg $ps "ExecutionPolicy" "RemoteSigned" "String"
+            Set-Reg $ps "EnableScripts"   1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers" "AuthenticodeEnabled" 0
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" `
+                -Name "ExecutionPolicy" -Value "RemoteSigned" -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
+            Set-Reg $ps "ExecutionPolicy" "AllSigned" "String"
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers" "AuthenticodeEnabled" 1
+        }
+        Check = {
+            $ep = Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" "ExecutionPolicy" "AllSigned"
+            $ep -eq "RemoteSigned"
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Відновлення / Зручність"
+        Name  = "Windows Security — відновити іконку у systray"
+        Desc  = "HideSystray=0, HideSCAHealth=0; повертає іконку щита Windows Security у панель сповіщень"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" "HideSystray"  0
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth" 0
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth" 0
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" "HideSystray"  1
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth" 1
+        }
+        Check = {
+            (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" "HideSystray" 1) -eq 0
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Відновлення / Зручність"
+        Name  = "Windows Security Center — відновити сервіс і застосунок"
+        Desc  = "SecurityHealthService та wscsvc у режимі Automatic; PerUserSecurityHealthAgent=1; перезапускає SecurityHealthSystray"
+        Apply = {
+            Set-Service -Name "SecurityHealthService" -StartupType Automatic -ErrorAction SilentlyContinue
+            Start-Service -Name "SecurityHealthService"                       -ErrorAction SilentlyContinue
+            Set-Service -Name "wscsvc"                -StartupType Automatic -ErrorAction SilentlyContinue
+            Start-Service -Name "wscsvc"                                      -ErrorAction SilentlyContinue
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" `
+                "SecurityHealth" "%windir%\system32\SecurityHealthSystray.exe" "ExpandString"
+        }
+        Revert = {
+            Stop-Service -Name "SecurityHealthService" -Force     -ErrorAction SilentlyContinue
+            Set-Service  -Name "SecurityHealthService" -StartupType Disabled -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $s = Get-Service -Name "SecurityHealthService" -ErrorAction SilentlyContinue
+            $s -and $s.StartType -eq 'Automatic'
+        }
     }
 
 
