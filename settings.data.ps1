@@ -1067,6 +1067,764 @@ function Get-HardeningSettings {
         Check  = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" "SaveZoneInformation" 1) -eq 2 }
     },
 
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 12: CREDENTIAL / LOGON HARDENING ───────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Credential / Logon Hardening"
+        Name  = "Logon cache — 1 попередній вхід (ACSC)"
+        Desc  = "CachedLogonsCount=1: кешувати лише 1 останній вхід при недоступності контролера домену"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "1" "String" }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "10" "String" }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "10") -eq "1" }
+    },
+
+    [PSCustomObject]@{
+        Group = "Credential / Logon Hardening"
+        Name  = "Заборонити збереження мережевих паролів (ACSC)"
+        Desc  = "DisableDomainCreds=1: не зберігати паролі та облікові дані для мережевої автентифікації"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "DisableDomainCreds" 1 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "DisableDomainCreds" 0 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "DisableDomainCreds" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Credential / Logon Hardening"
+        Name  = "WDigest Authentication вимкнути (ACSC)"
+        Desc  = "UseLogonCredential=0: вимкнути зберігання паролів у пам'яті WDigest (потребує KB2871997)"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 0 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 1 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Credential / Logon Hardening"
+        Name  = "Вимкнути вхід через зображення (Picture password)"
+        Desc  = "BlockDomainPicturePassword=1: заборонити вхід за допомогою жесту на зображенні"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "BlockDomainPicturePassword" 1 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "BlockDomainPicturePassword" 0 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "BlockDomainPicturePassword" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Credential / Logon Hardening"
+        Name  = "Trusted path для введення облікових даних (ACSC)"
+        Desc  = "EnableSecureCredentialPrompting=1: вимагати trusted path для credential entry"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredUI" "EnableSecureCredentialPrompting" 1 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredUI" "EnableSecureCredentialPrompting" 0 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredUI" "EnableSecureCredentialPrompting" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 13: ПАРОЛІ — РОЗШИРЕНА ПОЛІТИКА ────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Паролі — розширена політика"
+        Name  = "Password Policy — ACSC compliant (max age 0, relax min length)"
+        Desc  = "MaxPwAge=Unlimited, RelaxMinLength, складність вимкнено, зворотне шифрування вимкнено"
+        Apply = {
+            net accounts /maxpwage:unlimited 2>$null | Out-Null
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SAM" "RelaxMinimumPasswordLengthLimits" 1
+            $tmp = "$env:TEMP\acsc_pwpol.inf"; $db = "$env:TEMP\acsc_pwpol.sdb"
+            @"
+[Unicode]
+Unicode=yes
+[System Access]
+PasswordComplexity = 0
+ClearTextPassword = 0
+[Version]
+signature="`$CHICAGO`$"
+Revision=1
+"@ | Set-Content $tmp -Encoding Unicode
+            secedit /configure /db $db /cfg $tmp /areas SECURITYPOLICY /quiet 2>$null
+            Remove-Item $tmp,$db -Force -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            net accounts /maxpwage:90 2>$null | Out-Null
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SAM" "RelaxMinimumPasswordLengthLimits" 0
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SAM" "RelaxMinimumPasswordLengthLimits" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 14: SECURE CHANNEL / ДОМЕН ─────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Secure Channel / Домен"
+        Name  = "Domain member — цифровий підпис та шифрування каналу (ACSC)"
+        Desc  = "RequireSignOrSeal=1, SealSecureChannel=1, SignSecureChannel=1, RequireStrongKey=1, DisablePasswordChange=0"
+        Apply = {
+            $np = "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters"
+            Set-Reg $np "RequireSignOrSeal"    1
+            Set-Reg $np "SealSecureChannel"    1
+            Set-Reg $np "SignSecureChannel"    1
+            Set-Reg $np "RequireStrongKey"     1
+            Set-Reg $np "DisablePasswordChange" 0
+        }
+        Revert = {
+            $np = "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters"
+            Set-Reg $np "RequireSignOrSeal" 0
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "RequireSignOrSeal" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 15: MSS LEGACY ─────────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "MSS Legacy"
+        Name  = "IP Source Routing — максимальний захист (ACSC)"
+        Desc  = "DisableIPSourceRouting=2 (IPv4+IPv6): повністю вимкнути source routing для захисту від spoofing"
+        Apply = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            $tcp6 = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters"
+            Set-Reg $tcp  "DisableIPSourceRouting" 2
+            Set-Reg $tcp6 "DisableIPSourceRouting" 2
+        }
+        Revert = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"  "DisableIPSourceRouting" 1
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisableIPSourceRouting" 1
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "DisableIPSourceRouting" 0) -eq 2 }
+    },
+
+    [PSCustomObject]@{
+        Group = "MSS Legacy"
+        Name  = "ICMP Redirects — заборонити перевизначення OSPF маршрутів (ACSC)"
+        Desc  = "EnableICMPRedirect=0: не дозволяти ICMP redirects перевизначати OSPF маршрути"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableICMPRedirect" 0 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableICMPRedirect" 1 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableICMPRedirect" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 16: ЖИВЛЕННЯ — ДЕТАЛЬНІ НАЛАШТУВАННЯ ───────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Живлення — детальні"
+        Name  = "Standby S1-S3 вимкнути + пароль при пробудженні (ACSC)"
+        Desc  = "Заборонити standby states (S1-S3), вимагати пароль при пробудженні (батарея і мережа)"
+        Apply = {
+            $pw = "HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings"
+            # Allow standby states (S1-S3) = Disabled (0 = disabled)
+            Set-Reg "$pw\abfc2519-3608-4c2a-94ea-171b0ed546ab" "DCSettingIndex" 0
+            Set-Reg "$pw\abfc2519-3608-4c2a-94ea-171b0ed546ab" "ACSettingIndex" 0
+            # Require password on wake
+            Set-Reg "$pw\0e796bdb-100d-47d6-a2d5-f7d2daa51f51" "DCSettingIndex" 1
+            Set-Reg "$pw\0e796bdb-100d-47d6-a2d5-f7d2daa51f51" "ACSettingIndex" 1
+            # Hibernate timeout = 0
+            Set-Reg "$pw\9d7815a6-7ee4-497e-8888-515a05f02364" "DCSettingIndex" 0
+            Set-Reg "$pw\9d7815a6-7ee4-497e-8888-515a05f02364" "ACSettingIndex" 0
+            # Sleep timeout = 0
+            Set-Reg "$pw\29f6c1db-86da-48c5-9fdb-f2b67b1f44da" "DCSettingIndex" 0
+            Set-Reg "$pw\29f6c1db-86da-48c5-9fdb-f2b67b1f44da" "ACSettingIndex" 0
+            # Unattended sleep timeout = 0
+            Set-Reg "$pw\7bc4a2f9-d8fc-4469-b07b-33eb785aaca0" "DCSettingIndex" 0
+            Set-Reg "$pw\7bc4a2f9-d8fc-4469-b07b-33eb785aaca0" "ACSettingIndex" 0
+            # Turn off hybrid sleep
+            Set-Reg "$pw\94ac6d29-73ce-41a6-809f-6363ba21b47e" "DCSettingIndex" 0
+            Set-Reg "$pw\94ac6d29-73ce-41a6-809f-6363ba21b47e" "ACSettingIndex" 0
+            # Hide hibernate and sleep from power menu
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "ShowHibernateOption" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "ShowSleepOption"     0
+            powercfg /hibernate off 2>$null
+        }
+        Revert = {
+            $pw = "HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings"
+            Remove-RegValue "$pw\abfc2519-3608-4c2a-94ea-171b0ed546ab" "DCSettingIndex"
+            Remove-RegValue "$pw\abfc2519-3608-4c2a-94ea-171b0ed546ab" "ACSettingIndex"
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "ShowHibernateOption" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "ShowSleepOption"     1
+            powercfg /hibernate on 2>$null
+        }
+        Check = {
+            $v = Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab" "DCSettingIndex" -1
+            $v -eq 0
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 17: ПРИНТЕРИ — HARDENING ───────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Принтери — Hardening"
+        Name  = "Printer RPC/IPPS/TLS hardening (ACSC)"
+        Desc  = "RPC over TCP, Redirection Guard, IPPS required, TLS policy, driver signing, queue files limit"
+        Apply = {
+            $pr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers"
+            # RPC packet level privacy
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC" "RpcUseNamedPipeProtocol" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC" "RpcAuthentication"       0
+            # Configure RPC connection settings (outgoing)
+            Set-Reg "$pr\RPC" "RpcProtocol" 6
+            Set-Reg "$pr\RPC" "ForceKerberosForRpc" 0
+            # Configure RPC listener settings
+            Set-Reg "$pr\RPC" "RpcListenerProtocol"  6
+            Set-Reg "$pr\RPC" "RpcListenerAuth"      1
+            # RPC over TCP port = 0
+            Set-Reg "$pr\RPC" "RpcTcpPort" 0
+            # IPPS required for IPP printers
+            Set-Reg "$pr" "RequireIPPS" 1
+            # TLS/SSL security policy
+            Set-Reg "$pr" "IPPTLSPolicy" 1
+            # Redirection Guard enabled
+            Set-Reg "$pr" "RedirectionGuardPolicy" 1
+            # Driver signature validation
+            Set-Reg "$pr" "PrintDriverSignatureValidation" 1
+            # Queue-specific files = Color profiles only
+            Set-Reg "$pr" "QueueSpecificFiles" 1
+            # Disable HTTP print driver download
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" "DisableHTTPPrinting" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "DisableHTTPPrinting"      1
+            # MS Security Guide: RPC packet level privacy
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc" "EnableAuthEpResolution" 1
+        }
+        Revert = {
+            $pr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers"
+            Remove-RegValue "$pr" "RequireIPPS"
+            Remove-RegValue "$pr" "IPPTLSPolicy"
+            Remove-RegValue "$pr" "RedirectionGuardPolicy"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" "RequireIPPS" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 18: REMOTE ASSISTANCE / RPC ────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Remote Assistance / RPC"
+        Name  = "Remote Assistance — вимкнути Offer та Solicited (ACSC)"
+        Desc  = "fAllowUnsolicited=0, fAllowToGetHelp=0: заборонити пропоновану та запитувану віддалену допомогу"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fAllowUnsolicited" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fAllowToGetHelp"   0
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fAllowToGetHelp" 1
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fAllowToGetHelp" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Remote Assistance / RPC"
+        Name  = "RPC — обмежити неавтентифікованих клієнтів (ACSC)"
+        Desc  = "RestrictRemoteClients=1: дозволити лише автентифіковані RPC з'єднання"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc" "RestrictRemoteClients" 1 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc" "RestrictRemoteClients" 0 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc" "RestrictRemoteClients" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 19: GROUP POLICY PROCESSING ────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Group Policy Processing"
+        Name  = "Registry/Security policy — примусове оновлення (ACSC)"
+        Desc  = "NoBackgroundPolicy=0, NoGPOListChanges=0: завжди обробляти GP навіть без змін"
+        Apply = {
+            # Registry policy processing
+            $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}"
+            Set-Reg $rp "NoBackgroundPolicy"  0
+            Set-Reg $rp "NoGPOListChanges"    0
+            # Security policy processing
+            $sp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}"
+            Set-Reg $sp "NoBackgroundPolicy"  0
+            Set-Reg $sp "NoGPOListChanges"    0
+        }
+        Revert = {
+            $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}"
+            Set-Reg $rp "NoGPOListChanges" 1
+            $sp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}"
+            Set-Reg $sp "NoGPOListChanges" 1
+        }
+        Check = {
+            (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}" "NoGPOListChanges" 1) -eq 0
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 20: STARTUP / LOGON PROGRAMS ───────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Startup / Logon Programs"
+        Name  = "Вимкнути legacy run list та run once list (ACSC)"
+        Desc  = "DisableLocalMachineRunOnce=1, DisableLocalMachineRun=1: заборонити автозапуск legacy програм"
+        Apply = {
+            $ep = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+            Set-Reg $ep "DisableLocalMachineRun"      1
+            Set-Reg $ep "DisableLocalMachineRunOnce"  1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "DisableLogonBackgroundImage" 0
+        }
+        Revert = {
+            $ep = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+            Set-Reg $ep "DisableLocalMachineRun"      0
+            Set-Reg $ep "DisableLocalMachineRunOnce"  0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "DisableLocalMachineRun" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 21: MICROSOFT ACCOUNTS / ONEDRIVE ──────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Microsoft Accounts / OneDrive"
+        Name  = "Заблокувати Consumer Microsoft accounts (ACSC)"
+        Desc  = "DisableUserAuth=1, AllowMicrosoftAccountsToBeOptional=1, DisableFileSyncNGSC=1"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount"   "DisableUserAuth"                  1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"   "DisableFileSyncNGSC"              1
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 22: ПРИСТРОЇ — CD/WLAN/RSS/SEARCH ─────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "Вимкнути запис CD (ACSC)"
+        Desc  = "NoCDBurning=1: заборонити функції запису CD/DVD у File Explorer"
+        Apply  = { Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoCDBurning" 1 }
+        Revert = { Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoCDBurning" 0 }
+        Check  = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoCDBurning" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "Device Installation — заблокувати FireWire/Thunderbolt класи (ACSC)"
+        Desc  = "Заблокувати установку пристроїв IEEE 1394 класу {d48179be-ec20-11d1-b6b8-00c04fa372a7}"
+        Apply = {
+            $dr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions"
+            Set-Reg $dr "DenyDeviceClasses"  1
+            Set-Reg $dr "DenyDeviceClassesRetroactive" 1
+            $dc = "$dr\DenyDeviceClasses"
+            if (-not (Test-Path $dc)) { New-Item -Path $dc -Force | Out-Null }
+            Set-Reg $dc "1" "{d48179be-ec20-11d1-b6b8-00c04fa372a7}" "String"
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions" "DenyDeviceClasses" 0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions" "DenyDeviceClasses" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "WLAN — вимкнути автоматичне підключення до hotspots (ACSC)"
+        Desc  = "AutoConnectAllowedOEM=0: не підключатися до запропонованих відкритих точок доступу"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" "AutoConnectAllowedOEM" 0 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" "AutoConnectAllowedOEM" 1 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" "AutoConnectAllowedOEM" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "RSS Feeds — заборонити завантаження вкладень (ACSC)"
+        Desc  = "DisableEnclosureDownload=1: заборонити завантаження enclosures з RSS-стрічок"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds" "DisableEnclosureDownload" 1 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds" "DisableEnclosureDownload" 0 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds" "DisableEnclosureDownload" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "Search — вимкнути індексацію шифрованих файлів (ACSC)"
+        Desc  = "AllowIndexingEncryptedStoresOrItems=0: заборонити індексацію зашифрованих файлів"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowIndexingEncryptedStoresOrItems" 0 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowIndexingEncryptedStoresOrItems" 1 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowIndexingEncryptedStoresOrItems" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "Web Search — вимкнути пошук у вебі (ACSC)"
+        Desc  = "DisableWebSearch=1, ConnectedSearchUseWeb=0: не показувати веб-результати в пошуку"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch"      1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "ConnectedSearchUseWeb" 0
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch" 0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Пристрої — CD/WLAN/RSS/Search"
+        Name  = "File Explorer — heap termination, shell protocol (ACSC)"
+        Desc  = "NoHeapTerminationOnCorruption=0, PreXPSP2ShellProtocolBehavior=0: не вимикати DEP та shell protection"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoHeapTerminationOnCorruption"    0
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "PreXPSP2ShellProtocolBehavior" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoHeapTerminationOnCorruption"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoHeapTerminationOnCorruption" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 23: NTLM LOGGING / PKU2U / LDAP ───────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "NTLM / PKU2U / LDAP"
+        Name  = "NTLM Enhanced Logging + Netlogon (ACSC)"
+        Desc  = "AuditNTLMInDomain=7, AuditReceivingNTLMTraffic=2: розширений аудит NTLM"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System\Netlogon\Parameters" "AuditNTLMInDomain" 7
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "AuditReceivingNTLMTraffic" 2
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "AuditReceivingNTLMTraffic"
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "AuditReceivingNTLMTraffic" 0) -eq 2 }
+    },
+
+    [PSCustomObject]@{
+        Group = "NTLM / PKU2U / LDAP"
+        Name  = "PKU2U вимкнути + LDAP client signing (ACSC)"
+        Desc  = "AllowOnlineID=0 (for on-prem AD), LDAPClientIntegrity=1 (negotiate signing)"
+        Apply = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\pku2u" "AllowOnlineID" 0
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"       "LDAPClientIntegrity" 1
+        }
+        Revert = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\pku2u" "AllowOnlineID" 1
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\pku2u" "AllowOnlineID" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "NTLM / PKU2U / LDAP"
+        Name  = "System Objects — посилити дозволи символьних посилань (ACSC)"
+        Desc  = "ProtectionMode=1: посилити default permissions для внутрішніх системних об'єктів"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" "ProtectionMode" 1 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" "ProtectionMode" 0 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" "ProtectionMode" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "NTLM / PKU2U / LDAP"
+        Name  = "Audit SMB client SPN support (ACSC)"
+        Desc  = "AuditSmb1Access=1: аудит спроб доступу через SMB1 SPN"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "AuditSmb1Access" 1 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "AuditSmb1Access" 0 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "AuditSmb1Access" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 24: LOCK SCREEN — ДЕТАЛЬНІ ─────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Lock Screen — детальні"
+        Name  = "Lock Screen — вимкнути камеру, слайд-шоу, сповіщення, голос (ACSC)"
+        Desc  = "NoLockScreenCamera, NoLockScreenSlideshow, DisableLockScreenAppNotifications, LetAppsActivateWithVoiceAboveLock=2"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" "NoLockScreenCamera"    1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" "NoLockScreenSlideshow" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "DisableLockScreenAppNotifications" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsActivateWithVoiceAboveLock" 2
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" "NoLockScreenCamera"    0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" "NoLockScreenSlideshow" 0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" "NoLockScreenCamera" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Lock Screen — детальні"
+        Name  = "Toast notifications — вимкнути на lock screen (ACSC)"
+        Desc  = "NoToastApplicationNotificationOnLockScreen=1: не показувати toast-сповіщення на екрані блокування"
+        Apply  = { Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications" "NoToastApplicationNotificationOnLockScreen" 1 }
+        Revert = { Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications" "NoToastApplicationNotificationOnLockScreen" 0 }
+        Check  = { (Get-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications" "NoToastApplicationNotificationOnLockScreen" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Lock Screen — детальні"
+        Name  = "Cloud Content — вимкнути сторонні пропозиції у Spotlight (ACSC)"
+        Desc  = "DisableThirdPartySuggestions=1: не показувати сторонній контент у Windows spotlight"
+        Apply  = { Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableThirdPartySuggestions" 1 }
+        Revert = { Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableThirdPartySuggestions" 0 }
+        Check  = { (Get-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableThirdPartySuggestions" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 25: UAC NETWORK RESTRICTIONS / SEHOP ──────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "UAC Network / SEHOP"
+        Name  = "UAC restrictions для локальних облікових записів на мережі (ACSC)"
+        Desc  = "LocalAccountTokenFilterPolicy=0: застосовувати UAC обмеження для мережевих входів локальних акаунтів"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "LocalAccountTokenFilterPolicy" 0 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "LocalAccountTokenFilterPolicy" 1 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "LocalAccountTokenFilterPolicy" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "UAC Network / SEHOP"
+        Name  = "SEHOP — Structured Exception Handling Overwrite Protection (ACSC)"
+        Desc  = "DisableExceptionChainValidation=0: увімкнути SEHOP для захисту від exploit'ів"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "DisableExceptionChainValidation" 0 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "DisableExceptionChainValidation" 1 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "DisableExceptionChainValidation" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 26: BIOMETRICS / WINDOWS HELLO ENHANCED ────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Biometrics / Windows Hello"
+        Name  = "Biometrics — enhanced anti-spoofing + hardware device (ACSC)"
+        Desc  = "EnhancedAntiSpoofing=1, RequireSecurityDevice=1, ExcludeTPM12=1"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures" "EnhancedAntiSpoofing" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" "RequireSecurityDevice"   1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" "ExcludeTPM12"            1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" "UseBiometrics"           1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" "UsePassportForWork"      1
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures" "EnhancedAntiSpoofing" 0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures" "EnhancedAntiSpoofing" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 27: USER RIGHTS ASSIGNMENT ─────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "User Rights Assignment"
+        Name  = "User Rights — обмеження привілеїв (ACSC)"
+        Desc  = "Backup/Restore лише Administrators, Deny network/batch/local/service logon для Administrators, Debug=Admins"
+        Apply = {
+            $tmp = "$env:TEMP\acsc_rights.inf"; $db = "$env:TEMP\acsc_rights.sdb"
+            @"
+[Unicode]
+Unicode=yes
+[Privilege Rights]
+SeBackupPrivilege = *S-1-5-32-544
+SeRestorePrivilege = *S-1-5-32-544
+SeDenyNetworkLogonRight = *S-1-5-32-544,*S-1-5-113
+SeDenyBatchLogonRight = *S-1-5-32-544
+SeDenyInteractiveLogonRight = *S-1-5-32-544
+SeDenyServiceLogonRight = *S-1-5-32-544
+SeDenyRemoteInteractiveLogonRight = *S-1-5-32-544,*S-1-5-113
+SeDebugPrivilege = *S-1-5-32-544
+SeTcbPrivilege =
+SeCreateTokenPrivilege =
+SeCreatePermanentPrivilege =
+SeTrustedCredManAccessPrivilege =
+SeLockMemoryPrivilege =
+SeEnableDelegationPrivilege =
+SeRemoteInteractiveLogonRight = *S-1-5-32-555
+SeInteractiveLogonRight = *S-1-5-32-545
+SeCreatePagefilePrivilege = *S-1-5-32-544
+SeCreateGlobalPrivilege = *S-1-5-32-544,*S-1-5-19,*S-1-5-20,*S-1-5-6
+SeLoadDriverPrivilege = *S-1-5-32-544
+SeSystemEnvironmentPrivilege = *S-1-5-32-544
+SeManageVolumePrivilege = *S-1-5-32-544
+SeProfileSingleProcessPrivilege = *S-1-5-32-544
+SeTakeOwnershipPrivilege = *S-1-5-32-544
+SeImpersonatePrivilege = *S-1-5-32-544,*S-1-5-19,*S-1-5-20,*S-1-5-6
+SeRemoteShutdownPrivilege = *S-1-5-32-544
+SeNetworkLogonRight = *S-1-5-32-555
+[Version]
+signature="`$CHICAGO`$"
+Revision=1
+"@ | Set-Content $tmp -Encoding Unicode
+            secedit /configure /db $db /cfg $tmp /areas USER_RIGHTS /quiet 2>$null
+            Remove-Item $tmp,$db -Force -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            $tmp = "$env:TEMP\acsc_rights_revert.inf"; $db = "$env:TEMP\acsc_rights_revert.sdb"
+            @"
+[Unicode]
+Unicode=yes
+[Privilege Rights]
+SeBackupPrivilege = *S-1-5-32-544,*S-1-5-32-551
+SeRestorePrivilege = *S-1-5-32-544,*S-1-5-32-551
+SeDenyNetworkLogonRight =
+SeDenyBatchLogonRight =
+SeDenyInteractiveLogonRight =
+SeDenyServiceLogonRight =
+SeDebugPrivilege = *S-1-5-32-544
+[Version]
+signature="`$CHICAGO`$"
+Revision=1
+"@ | Set-Content $tmp -Encoding Unicode
+            secedit /configure /db $db /cfg $tmp /areas USER_RIGHTS /quiet 2>$null
+            Remove-Item $tmp,$db -Force -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $out = secedit /export /cfg "$env:TEMP\acsc_chk.inf" /quiet 2>$null
+            $cfg = Get-Content "$env:TEMP\acsc_chk.inf" -ErrorAction SilentlyContinue
+            Remove-Item "$env:TEMP\acsc_chk.inf" -Force -ErrorAction SilentlyContinue
+            $line = $cfg | Where-Object { $_ -match 'SeDenyNetworkLogonRight' }
+            $line -and ($line -match 'S-1-5-32-544')
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 28: SYSTEM CRYPTOGRAPHY ────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "System Cryptography"
+        Name  = "System Cryptography — FIPS + Force strong key protection (ACSC)"
+        Desc  = "FIPSAlgorithmPolicy=1, ForceKeyProtection=2: FIPS та пароль при кожному використанні ключа"
+        Apply = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled"          1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Cryptography"                  "ForceKeyProtection" 2
+        }
+        Revert = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled"          0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Cryptography"                  "ForceKeyProtection" 0
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 29: CREDENTIAL DELEGATION / RDP ENHANCED ───────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Credential Delegation / RDP"
+        Name  = "Encryption Oracle Remediation — Force Updated Clients (ACSC)"
+        Desc  = "AllowEncryptionOracle=0, AllowProtectedCreds=1: примусове оновлення CredSSP клієнтів"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" "AllowEncryptionOracle" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" "AllowProtectedCreds" 1
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" "AllowEncryptionOracle" 2
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" "AllowEncryptionOracle" 2) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Credential Delegation / RDP"
+        Name  = "RDP — дозволити підключення + fDenyTSConnections=0 (ACSC)"
+        Desc  = "fDenyTSConnections=0: дозволити підключення через Remote Desktop Services"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 0 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 1 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 30: SMB V1 CLIENT DRIVER ──────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "SMB v1 Client Driver"
+        Name  = "SMB v1 client driver — Disable driver (ACSC)"
+        Desc  = "MrxSmb10 Start=4: вимкнути SMB v1 client driver (рекомендовано MS Security Guide)"
+        Apply = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 4
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "SMB1" 0
+        }
+        Revert = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 3
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "SMB1" 1
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 3) -eq 4 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 31: SOUND RECORDER ─────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Sound Recorder"
+        Name  = "Sound Recorder — заборонити запуск (ACSC)"
+        Desc  = "Soundrec=0: не дозволяти запуск Sound Recorder"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\SoundRecorder" "Soundrec" 0 }
+        Revert = { Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\SoundRecorder" "Soundrec" }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\SoundRecorder" "Soundrec" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 32: APPLICATION COMPATIBILITY ──────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Application Compatibility"
+        Name  = "Inventory Collector — вимкнути (ACSC)"
+        Desc  = "DisableInventory=1: вимкнути збір інвентаризаційних даних"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 1 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 0 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 33: SAFE MODE / REGISTRY ───────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Safe Mode / Registry"
+        Name  = "SafeMode — заблокувати для не-адміністраторів (ACSC)"
+        Desc  = "SafeModeBlockNonAdmins=1: не дозволяти звичайним користувачам вхід у Safe Mode"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 1 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 0 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Safe Mode / Registry"
+        Name  = "Заборонити regedit — тихий режим (ACSC)"
+        Desc  = "DisableRegistryTools=2: заборонити regedit, включаючи тихий запуск"
+        Apply  = { Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" 2 }
+        Revert = { Remove-RegValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" }
+        Check  = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableRegistryTools" 0) -eq 2 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 34: EARLY LAUNCH ANTIMALWARE — GOOD ONLY ───────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Early Launch Antimalware"
+        Name  = "ELAM — ініціалізувати лише Good драйвери (ACSC)"
+        Desc  = "DriverLoadPolicy=1: завантажувати лише драйвери з позначкою Good"
+        Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 1 }
+        Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 7 }
+        Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" -1) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 35: KERNEL DMA PROTECTION ─────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Kernel DMA Protection"
+        Name  = "DMA Protection — Block All зовнішніх пристроїв (ACSC)"
+        Desc  = "DeviceEnumerationPolicy=0: блокувати всі зовнішні пристрої несумісні з Kernel DMA Protection"
+        Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection" "DeviceEnumerationPolicy" 0 }
+        Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection" "DeviceEnumerationPolicy" 1 }
+        Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection" "DeviceEnumerationPolicy" -1) -eq 0 }
+    },
+
 
 # ════════════════════════════════════════════════════════════════════════
 # ── РОЗДІЛ: ВІДНОВЛЕННЯ / ЗРУЧНІСТЬ ─────────────────────────────────────
