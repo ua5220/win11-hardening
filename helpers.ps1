@@ -103,6 +103,39 @@ function Enable-Task {
         Enable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
 }
 
+# ── Logging ──────────────────────────────────────────────────────────────
+
+function Get-AppLogPath {
+    $dir = Join-Path $env:ProgramData 'HardeningGUI'
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+    return (Join-Path $dir 'hardeninggui.log')
+}
+
+function Write-AppLog {
+    param(
+        [Parameter(Mandatory)][string]$Level,
+        [Parameter(Mandatory)][string]$Message
+    )
+
+    $line = "[{0}] [{1}] {2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message
+    try {
+        Add-Content -Path (Get-AppLogPath) -Value $line -Encoding UTF8
+    }
+    catch {}
+}
+
+function Write-AppError {
+    param(
+        [Parameter(Mandatory)][string]$Context,
+        [Parameter(Mandatory)]$ErrorRecord
+    )
+
+    $message = if ($ErrorRecord.Exception) { $ErrorRecord.Exception.Message } else { "$ErrorRecord" }
+    Write-AppLog -Level 'ERROR' -Message "$Context :: $message"
+}
+
 function Test-SettingEnabled {
     param([Parameter(Mandatory)]$Setting)
 

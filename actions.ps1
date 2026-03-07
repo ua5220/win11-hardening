@@ -48,6 +48,7 @@ function Invoke-ApplyAllSettings {
 
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
+    Write-AppLog -Level 'INFO' -Message "Apply All :: start ($($Context.AllSettings.Count) settings)"
     Set-BusyState -Context $Context -Busy $true
     $ok = 0
     $err = 0
@@ -56,15 +57,18 @@ function Invoke-ApplyAllSettings {
         try {
             & $s.Apply
             $ok++
+            Write-AppLog -Level 'INFO' -Message "Apply OK :: $($s.Name)"
         }
         catch {
             $err++
-            $Context.StatusBar.Text = "  [ПОМИЛКА] $($s.Name): $_"
+            Write-AppError -Context "Apply FAILED :: $($s.Name)" -ErrorRecord $_
+            $Context.StatusBar.Text = "  [ПОМИЛКА] $($s.Name): $($_.Exception.Message)"
         }
     }
 
     Set-BusyState -Context $Context -Busy $false
     Refresh-AllRows -Context $Context
+    Write-AppLog -Level 'INFO' -Message "Apply All :: done (ok=$ok, err=$err)"
     $Context.StatusBar.Text = "  Готово: застосовано $ok, помилок $err."
 }
 
@@ -92,6 +96,7 @@ function Invoke-ApplySelectedSettings {
 
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
+    Write-AppLog -Level 'INFO' -Message "Apply Selected :: start ($($selected.Count) settings)"
     Set-BusyState -Context $Context -Busy $true
     $ok = 0
     $err = 0
@@ -100,9 +105,11 @@ function Invoke-ApplySelectedSettings {
         try {
             & $rc.Setting.Apply
             $ok++
+            Write-AppLog -Level 'INFO' -Message "Apply OK :: $($rc.Setting.Name)"
         }
         catch {
             $err++
+            Write-AppError -Context "Apply FAILED :: $($rc.Setting.Name)" -ErrorRecord $_
         }
 
         $rc.Checkbox.Checked = $false
@@ -110,6 +117,7 @@ function Invoke-ApplySelectedSettings {
 
     Set-BusyState -Context $Context -Busy $false
     Refresh-AllRows -Context $Context
+    Write-AppLog -Level 'INFO' -Message "Apply Selected :: done (ok=$ok, err=$err)"
     $Context.StatusBar.Text = "  Вибране застосовано: $ok OK, $err помилок."
 }
 
@@ -125,14 +133,22 @@ function Invoke-RevertAllSettings {
 
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
+    Write-AppLog -Level 'INFO' -Message "Revert All :: start ($($Context.AllSettings.Count) settings)"
     Set-BusyState -Context $Context -Busy $true
 
     foreach ($s in $Context.AllSettings) {
-        try { & $s.Revert } catch {}
+        try {
+            & $s.Revert
+            Write-AppLog -Level 'INFO' -Message "Revert OK :: $($s.Name)"
+        }
+        catch {
+            Write-AppError -Context "Revert FAILED :: $($s.Name)" -ErrorRecord $_
+        }
     }
 
     Set-BusyState -Context $Context -Busy $false
     Refresh-AllRows -Context $Context
+    Write-AppLog -Level 'INFO' -Message 'Revert All :: done'
     $Context.StatusBar.Text = '  Всі параметри скасовано.'
 }
 
@@ -145,6 +161,7 @@ function Connect-RowActions {
 
         $capturedRecord.Toggle.Add_Click({
             $isActive = Test-SettingEnabled -Setting $capturedRecord.Setting
+            $action   = if ($isActive) { 'Revert' } else { 'Apply' }
 
             try {
                 if ($isActive) {
@@ -155,9 +172,12 @@ function Connect-RowActions {
                     & $capturedRecord.Setting.Apply
                     $capturedContext.StatusBar.Text = "  [OK] Застосовано: $($capturedRecord.Setting.Name)"
                 }
+
+                Write-AppLog -Level 'INFO' -Message "Toggle $action OK :: $($capturedRecord.Setting.Name)"
             }
             catch {
-                $capturedContext.StatusBar.Text = "  [ПОМИЛКА] $($capturedRecord.Setting.Name): $_"
+                Write-AppError -Context "Toggle $action FAILED :: $($capturedRecord.Setting.Name)" -ErrorRecord $_
+                $capturedContext.StatusBar.Text = "  [ПОМИЛКА] $($capturedRecord.Setting.Name): $($_.Exception.Message)"
             }
 
             Refresh-RowState -Context $capturedContext -RowRecord $capturedRecord
