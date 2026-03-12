@@ -124,6 +124,7 @@ function Write-AppError {
         [Parameter(Mandatory)][string]$Context,
         [Parameter(Mandatory)]$ErrorRecord
     )
+
     $message = if ($ErrorRecord.Exception) { $ErrorRecord.Exception.Message } else { "$ErrorRecord" }
     $location = if ($ErrorRecord.InvocationInfo) {
         $ErrorRecord.InvocationInfo.ScriptName + ':' + $ErrorRecord.InvocationInfo.ScriptLineNumber
