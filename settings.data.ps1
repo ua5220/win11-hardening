@@ -2155,7 +2155,7 @@ Revision=1
                                    -TaskName "DmClient" -ErrorAction SilentlyContinue
             $t -and $t.State -eq 'Disabled'
         }
-    },
+    }
 
 
     ) # end $Settings
