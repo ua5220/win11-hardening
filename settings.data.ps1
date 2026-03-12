@@ -274,6 +274,30 @@ function Get-HardeningSettings {
 
     [PSCustomObject]@{
         Group = "Defender / Antivirus"
+        Name  = "Hosts-файл — виключити зі сканування Defender"
+        Desc  = "Додає hosts до Exclusions\Paths на policy-рівні (обходить DisableLocalAdminMerge=1 з ACSC-блоку)"
+        Apply = {
+            $hp = "$env:SystemRoot\System32\drivers\etc\hosts"
+            $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths"
+            if (-not (Test-Path $rp)) { New-Item -Path $rp -Force | Out-Null }
+            Set-ItemProperty -Path $rp -Name $hp -Value 0 -Type DWord -ErrorAction SilentlyContinue
+            try { Add-MpPreference -ExclusionPath $hp -ErrorAction SilentlyContinue } catch {}
+        }
+        Revert = {
+            $hp = "$env:SystemRoot\System32\drivers\etc\hosts"
+            $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths"
+            Remove-ItemProperty -Path $rp -Name $hp -ErrorAction SilentlyContinue
+            try { Remove-MpPreference -ExclusionPath $hp -ErrorAction SilentlyContinue } catch {}
+        }
+        Check = {
+            $hp = "$env:SystemRoot\System32\drivers\etc\hosts"
+            $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths"
+            (Test-Path $rp) -and ((Get-ItemProperty -Path $rp -ErrorAction SilentlyContinue).$hp -eq 0)
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Defender / Antivirus"
         Name  = "Вимкнути Cloud Protection (MAPS)"
         Desc  = "SpynetReporting=0, SubmitSamplesConsent=2 — вимкнути хмарну перевірку"
         Apply  = {
