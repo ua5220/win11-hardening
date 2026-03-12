@@ -124,8 +124,13 @@ function Write-AppError {
         [Parameter(Mandatory)][string]$Context,
         [Parameter(Mandatory)]$ErrorRecord
     )
-    $msg = if ($ErrorRecord.Exception) { $ErrorRecord.Exception.Message } else { "$ErrorRecord" }
-    Write-AppLog -Level 'ERROR' -Message "$Context :: $msg"
+
+    $message = if ($ErrorRecord.Exception) { $ErrorRecord.Exception.Message } else { "$ErrorRecord" }
+    $location = if ($ErrorRecord.InvocationInfo) {
+        $ErrorRecord.InvocationInfo.ScriptName + ':' + $ErrorRecord.InvocationInfo.ScriptLineNumber
+    } else { '' }
+    $details = if ($location) { "$Context :: $message [$location]" } else { "$Context :: $message" }
+    Write-AppLog -Level 'ERROR' -Message $details
 }
 
 # ── Startup self-check ────────────────────────────────────────────────────

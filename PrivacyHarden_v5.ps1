@@ -30,9 +30,9 @@ $IsWin11 = ($WinVer.Build -ge 22000)
 $LogFile = "$env:TEMP\PrivacyHarden_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 
 function Write-Log {
-    param([string]$Msg, [ValidateSet('INFO','OK','WARN','ERROR','HEAD')][string]$L = 'INFO')
-    $icon = @{ INFO='[i]'; OK='[✓]'; WARN='[!]'; ERROR='[✗]'; HEAD='═' }[$L]
-    $color = switch ($L) {
+    param([string]$Msg, [ValidateSet('INFO','OK','WARN','ERROR','HEAD')][string]$Level = 'INFO')
+    $icon = @{ INFO='[i]'; OK='[✓]'; WARN='[!]'; ERROR='[✗]'; HEAD='═' }[$Level]
+    $color = switch ($Level) {
         'OK'    { 'Green' }
         'WARN'  { 'Yellow' }
         'ERROR' { 'Red' }
@@ -46,17 +46,17 @@ function Write-Log {
 
 # ── Допоміжні функції ──────────────────────────────────────────────────────────
 function Set-Reg {
-    param([string]$P, [string]$N, $V, [string]$T = 'DWord')
+    param([string]$Path, [string]$Name, $Value, [string]$Type = 'DWord')
     try {
-        if (-not (Test-Path $P)) { New-Item -Path $P -Force | Out-Null }
-        Set-ItemProperty -Path $P -Name $N -Value $V -Type $T -Force
-    } catch { Write-Log "Set-Reg помилка: $P\$N — $_" 'ERROR' }
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
+    } catch { Write-Log "Set-Reg помилка: $Path\$Name — $_" 'ERROR' }
 }
 
 function Remove-Reg {
-    param([string]$P, [string]$N = $null)
-    if ($N) { Remove-ItemProperty -Path $P -Name $N -Force -ErrorAction SilentlyContinue }
-    else    { Remove-Item -Path $P -Recurse -Force -ErrorAction SilentlyContinue }
+    param([string]$Path, [string]$Name = $null)
+    if ($Name) { Remove-ItemProperty -Path $Path -Name $Name -Force -ErrorAction SilentlyContinue }
+    else       { Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
 function Disable-Svc {
@@ -361,7 +361,7 @@ function Invoke-DenyAppPermissions {
         '{8BC668CF-7728-45BD-93F8-CF2B3B41D7AB}' = 'Телефонні дзвінки'
         '{52079E78-A92B-413F-B213-E8FE35712E72}' = 'Завдання'
         '{9231CB4C-BF57-4AF3-8C55-FDA7BFCC04C5}' = 'Email'
-        '{9D9E0118-1807-4F2E-96E4-2CE57142E196' = 'Діагностика застосунків'
+        '{9D9E0118-1807-4F2E-96E4-2CE57142E196}' = 'Діагностика застосунків'
         '{2297E4E2-5DBE-466D-A3B5-2556E3BA2B9A}' = 'Документи'
         '{3D0D3B23-6B8B-4B2B-A8BF-6B8E3F3B3F3B}' = 'Зображення'
         '{4D36E96D-E325-11CE-BFC1-08002BE10318}' = 'Відео'
@@ -483,7 +483,7 @@ function Invoke-PrivacySettings {
 
     # ── GameDVR / Game Bar ─────────────────────────────────────────────────
     Write-Log "Вимкнення Game DVR / Game Bar / Xbox..."
-    Set-Reg 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR'             'AllowgameDVR'                    0
+    Set-Reg 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR'             'AllowGameDVR'                    0
     Set-Reg 'HKCU:\System\GameConfigStore'                                   'GameDVR_Enabled'                 0
     Set-Reg 'HKCU:\System\GameConfigStore'                                   'GameDVR_FSEBehaviorMode'         2
     Set-Reg 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR'       'AppCaptureEnabled'               0
@@ -635,8 +635,8 @@ function Invoke-NetworkHardening {
         $_ -notmatch '^#' -and ($existingContent -notcontains $_)
     }
     if ($newEntries.Count -gt 0) {
-        Add-Content -Path $hostsPath -Value "`n# === Privacy Hardening v5.0 $(Get-Date -Format 'yyyy-MM-dd') ==="
-        $telemetryDomains | Add-Content -Path $hostsPath -Encoding UTF8
+        Add-Content -Path $hostsPath -Value "`n# === Privacy Hardening v5.0 $(Get-Date -Format 'yyyy-MM-dd') ===" -Encoding UTF8
+        $newEntries | Add-Content -Path $hostsPath -Encoding UTF8
         Write-Log "Hosts оновлено: додано $($newEntries.Count) записів." 'OK'
     } else {
         Write-Log "Hosts вже містить усі записи." 'WARN'
@@ -836,7 +836,7 @@ function Invoke-CleanupArtifacts {
     Write-Log "Журнали очищено: $cleared, пропущено: $skipped." 'OK'
 
     # ── 7.10 Windows Defender ─────────────────────────────────────────────
-    $defPath = 'C:\ProgramData\Microsoft\Windows Defender\Scans\History\Service'
+    $defPath = Join-Path $env:ProgramData 'Microsoft\Windows Defender\Scans\History\Service'
     if (Test-Path $defPath) {
         Remove-Item "$defPath\*" -Recurse -Force -ErrorAction SilentlyContinue
         Write-Log "Журнал Defender очищено." 'OK'
@@ -1043,6 +1043,11 @@ do {
         '8' {
             $drv = (Read-Host "  Літера диску (Enter = C:)").Trim()
             if ([string]::IsNullOrWhiteSpace($drv)) { $drv = 'C:' }
+            if ($drv -notmatch '^[A-Za-z]:?$') {
+                Write-Log "Невірна літера диску: $drv" 'ERROR'
+                continue
+            }
+            if ($drv.Length -eq 1) { $drv = "${drv}:" }
             $confirm = Read-Host "  УВАГА: cipher /w незворотний. Продовжити? (Y/N)"
             if ($confirm -eq 'Y') { Invoke-SecureWipe -Drive $drv }
         }
