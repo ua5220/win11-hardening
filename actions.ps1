@@ -130,6 +130,12 @@ function Invoke-RevertAllSettings {
 function Connect-RowActions {
     param([Parameter(Mandatory)]$Context)
 
+    # Capture function references so GetNewClosure() closures can find them;
+    # closures run in a dynamic module that loses session-level function visibility.
+    $fnWriteAppLog     = ${function:Write-AppLog}
+    $fnWriteAppError   = ${function:Write-AppError}
+    $fnRefreshRowState = ${function:Refresh-RowState}
+
     foreach ($rc in $Context.RowControls) {
         $capturedCtx = $Context
         $capturedRec = $rc
@@ -138,24 +144,24 @@ function Connect-RowActions {
             try {
                 & $capturedRec.Setting.Apply
                 $capturedCtx.StatusBar.Text = "  [OK] Застосовано: $($capturedRec.Setting.Name)"
-                Write-AppLog -Level 'INFO' -Message "Apply OK :: $($capturedRec.Setting.Name)"
+                & $fnWriteAppLog -Level 'INFO' -Message "Apply OK :: $($capturedRec.Setting.Name)"
             } catch {
-                Write-AppError -Context "Apply FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
+                & $fnWriteAppError -Context "Apply FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
                 $capturedCtx.StatusBar.Text = "  [ПОМИЛКА] $($capturedRec.Setting.Name): $($_.Exception.Message)"
             }
-            Refresh-RowState -Context $capturedCtx -RowRecord $capturedRec
+            & $fnRefreshRowState -Context $capturedCtx -RowRecord $capturedRec
         }.GetNewClosure())
 
         $capturedRec.BtnRevert.Add_Click({
             try {
                 & $capturedRec.Setting.Revert
                 $capturedCtx.StatusBar.Text = "  [OK] Скасовано: $($capturedRec.Setting.Name)"
-                Write-AppLog -Level 'INFO' -Message "Revert OK :: $($capturedRec.Setting.Name)"
+                & $fnWriteAppLog -Level 'INFO' -Message "Revert OK :: $($capturedRec.Setting.Name)"
             } catch {
-                Write-AppError -Context "Revert FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
+                & $fnWriteAppError -Context "Revert FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
                 $capturedCtx.StatusBar.Text = "  [ПОМИЛКА] $($capturedRec.Setting.Name): $($_.Exception.Message)"
             }
-            Refresh-RowState -Context $capturedCtx -RowRecord $capturedRec
+            & $fnRefreshRowState -Context $capturedCtx -RowRecord $capturedRec
         }.GetNewClosure())
     }
 }
@@ -176,15 +182,18 @@ function Connect-HardeningActions {
 
     Connect-RowActions -Context $Context
 
+    # Capture function reference so GetNewClosure() closures can find it.
+    $fnApplyFilter = ${function:Apply-Filter}
+
     # Filter events
     $Context.Controls.SearchBox.Add_TextChanged({
         $Context.Filters.SearchText = $Context.Controls.SearchBox.Text
-        Apply-Filter -Context $Context
+        & $fnApplyFilter -Context $Context
     }.GetNewClosure())
 
     $Context.Controls.GroupFilter.Add_SelectedIndexChanged({
         $Context.Filters.SelectedGroup = [string]$Context.Controls.GroupFilter.SelectedItem
-        Apply-Filter -Context $Context
+        & $fnApplyFilter -Context $Context
     }.GetNewClosure())
 
     $Context.Controls.ResetFilter.Add_Click({
@@ -192,7 +201,7 @@ function Connect-HardeningActions {
         $Context.Controls.GroupFilter.SelectedIndex = 0
         $Context.Filters.SearchText    = ''
         $Context.Filters.SelectedGroup = 'Усі групи'
-        Apply-Filter -Context $Context
+        & $fnApplyFilter -Context $Context
     }.GetNewClosure())
 
     # Button events
