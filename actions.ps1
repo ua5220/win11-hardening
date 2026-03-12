@@ -14,7 +14,6 @@ function Set-BusyState {
         [Parameter(Mandatory)]$Context,
         [Parameter(Mandatory)][bool]$Busy
     )
-
     $Context.Form.Cursor = if ($Busy) {
         [System.Windows.Forms.Cursors]::WaitCursor
     } else {
@@ -27,14 +26,48 @@ function Refresh-AllRows {
 
     $Context.StatusBar.Text = '  Оновлення станів...'
     Set-BusyState -Context $Context -Busy $true
-
     foreach ($rc in $Context.RowControls) {
         Refresh-RowState -Context $Context -RowRecord $rc
     }
-
     Set-BusyState -Context $Context -Busy $false
     $Context.StatusBar.Text = '  Стани оновлено.'
 }
+
+# ── Shared bulk-action runner ─────────────────────────────────────────────
+
+function Invoke-BulkAction {
+    param(
+        [Parameter(Mandatory)]$Context,
+        [Parameter(Mandatory)][System.Collections.IEnumerable]$Items,
+        [Parameter(Mandatory)][string]$ActionKey,
+        [Parameter(Mandatory)][string]$Label
+    )
+
+    Write-AppLog -Level 'INFO' -Message "$Label :: start"
+    Set-BusyState -Context $Context -Busy $true
+    $ok  = 0
+    $err = 0
+
+    foreach ($item in $Items) {
+        $setting = if ($item.PSObject.Properties['Setting']) { $item.Setting } else { $item }
+        try {
+            & $setting.$ActionKey
+            $ok++
+            Write-AppLog -Level 'INFO' -Message "$Label OK :: $($setting.Name)"
+        } catch {
+            $err++
+            Write-AppError -Context "$Label FAILED :: $($setting.Name)" -ErrorRecord $_
+            $Context.StatusBar.Text = "  [ПОМИЛКА] $($setting.Name): $($_.Exception.Message)"
+        }
+    }
+
+    Set-BusyState -Context $Context -Busy $false
+    Refresh-AllRows -Context $Context
+    Write-AppLog -Level 'INFO' -Message "$Label :: done (ok=$ok, err=$err)"
+    $Context.StatusBar.Text = "  $Label\ завершено: $ok OK, $err помилок."
+}
+
+# ── Bulk commands ─────────────────────────────────────────────────────────
 
 function Invoke-ApplyAllSettings {
     param([Parameter(Mandatory)]$Context)
@@ -45,31 +78,9 @@ function Invoke-ApplyAllSettings {
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
-
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
-    Write-AppLog -Level 'INFO' -Message "Apply All :: start ($($Context.AllSettings.Count) settings)"
-    Set-BusyState -Context $Context -Busy $true
-    $ok = 0
-    $err = 0
-
-    foreach ($s in $Context.AllSettings) {
-        try {
-            & $s.Apply
-            $ok++
-            Write-AppLog -Level 'INFO' -Message "Apply OK :: $($s.Name)"
-        }
-        catch {
-            $err++
-            Write-AppError -Context "Apply FAILED :: $($s.Name)" -ErrorRecord $_
-            $Context.StatusBar.Text = "  [ПОМИЛКА] $($s.Name): $($_.Exception.Message)"
-        }
-    }
-
-    Set-BusyState -Context $Context -Busy $false
-    Refresh-AllRows -Context $Context
-    Write-AppLog -Level 'INFO' -Message "Apply All :: done (ok=$ok, err=$err)"
-    $Context.StatusBar.Text = "  Готово: застосовано $ok, помилок $err."
+    Invoke-BulkAction -Context $Context -Items $Context.AllSettings -ActionKey 'Apply' -Label 'Apply All'
 }
 
 function Invoke-ApplySelectedSettings {
@@ -78,12 +89,12 @@ function Invoke-ApplySelectedSettings {
     $selected = @($Context.RowControls | Where-Object { $_.Checkbox.Checked })
 
     if ($selected.Count -eq 0) {
-        [System.Windows.Forms.MessageBox]::Show(
+        [void][System.Windows.Forms.MessageBox]::Show(
             'Не вибрано жодного параметру.',
             'Увага',
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
-        ) | Out-Null
+        )
         return
     }
 
@@ -93,32 +104,11 @@ function Invoke-ApplySelectedSettings {
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Question
     )
-
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
-    Write-AppLog -Level 'INFO' -Message "Apply Selected :: start ($($selected.Count) settings)"
-    Set-BusyState -Context $Context -Busy $true
-    $ok = 0
-    $err = 0
+    Invoke-BulkAction -Context $Context -Items $selected -ActionKey 'Apply' -Label 'Apply Selected'
 
-    foreach ($rc in $selected) {
-        try {
-            & $rc.Setting.Apply
-            $ok++
-            Write-AppLog -Level 'INFO' -Message "Apply OK :: $($rc.Setting.Name)"
-        }
-        catch {
-            $err++
-            Write-AppError -Context "Apply FAILED :: $($rc.Setting.Name)" -ErrorRecord $_
-        }
-
-        $rc.Checkbox.Checked = $false
-    }
-
-    Set-BusyState -Context $Context -Busy $false
-    Refresh-AllRows -Context $Context
-    Write-AppLog -Level 'INFO' -Message "Apply Selected :: done (ok=$ok, err=$err)"
-    $Context.StatusBar.Text = "  Вибране застосовано: $ok OK, $err помилок."
+    foreach ($rc in $selected) { $rc.Checkbox.Checked = $false }
 }
 
 function Invoke-RevertAllSettings {
@@ -130,79 +120,66 @@ function Invoke-RevertAllSettings {
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
-
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
-    Write-AppLog -Level 'INFO' -Message "Revert All :: start ($($Context.AllSettings.Count) settings)"
-    Set-BusyState -Context $Context -Busy $true
-
-    foreach ($s in $Context.AllSettings) {
-        try {
-            & $s.Revert
-            Write-AppLog -Level 'INFO' -Message "Revert OK :: $($s.Name)"
-        }
-        catch {
-            Write-AppError -Context "Revert FAILED :: $($s.Name)" -ErrorRecord $_
-        }
-    }
-
-    Set-BusyState -Context $Context -Busy $false
-    Refresh-AllRows -Context $Context
-    Write-AppLog -Level 'INFO' -Message 'Revert All :: done'
-    $Context.StatusBar.Text = '  Всі параметри скасовано.'
+    Invoke-BulkAction -Context $Context -Items $Context.AllSettings -ActionKey 'Revert' -Label 'Revert All'
 }
+
+# ── Row toggle wiring ─────────────────────────────────────────────────────
 
 function Connect-RowActions {
     param([Parameter(Mandatory)]$Context)
 
     foreach ($rc in $Context.RowControls) {
-        $capturedContext = $Context
-        $capturedRecord  = $rc
+        $capturedCtx = $Context
+        $capturedRec = $rc
 
-        $capturedRecord.Toggle.Add_Click({
-            $isActive = Test-SettingEnabled -Setting $capturedRecord.Setting
-            $action   = if ($isActive) { 'Revert' } else { 'Apply' }
-
+        $capturedRec.Toggle.Add_Click({
+            $isActive = Test-SettingEnabled -Setting $capturedRec.Setting
             try {
                 if ($isActive) {
-                    & $capturedRecord.Setting.Revert
-                    $capturedContext.StatusBar.Text = "  [OK] Скасовано: $($capturedRecord.Setting.Name)"
+                    & $capturedRec.Setting.Revert
+                    $capturedCtx.StatusBar.Text = "  [OK] Скасовано: $($capturedRec.Setting.Name)"
+                    Write-AppLog -Level 'INFO' -Message "Toggle Revert OK :: $($capturedRec.Setting.Name)"
+                } else {
+                    & $capturedRec.Setting.Apply
+                    $capturedCtx.StatusBar.Text = "  [OK] Застосовано: $($capturedRec.Setting.Name)"
+                    Write-AppLog -Level 'INFO' -Message "Toggle Apply OK :: $($capturedRec.Setting.Name)"
                 }
-                else {
-                    & $capturedRecord.Setting.Apply
-                    $capturedContext.StatusBar.Text = "  [OK] Застосовано: $($capturedRecord.Setting.Name)"
-                }
-
-                Write-AppLog -Level 'INFO' -Message "Toggle $action OK :: $($capturedRecord.Setting.Name)"
+            } catch {
+                Write-AppError -Context "Toggle FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
+                $capturedCtx.StatusBar.Text = "  [ПОМИЛКА] $($capturedRec.Setting.Name): $($_.Exception.Message)"
             }
-            catch {
-                Write-AppError -Context "Toggle $action FAILED :: $($capturedRecord.Setting.Name)" -ErrorRecord $_
-                $capturedContext.StatusBar.Text = "  [ПОМИЛКА] $($capturedRecord.Setting.Name): $($_.Exception.Message)"
-            }
-
-            Refresh-RowState -Context $capturedContext -RowRecord $capturedRecord
+            Refresh-RowState -Context $capturedCtx -RowRecord $capturedRec
         }.GetNewClosure())
     }
 }
+
+# ── Filter helper ─────────────────────────────────────────────────────────
+
+function Apply-Filter {
+    param([Parameter(Mandatory)]$Context)
+    Update-FilteredSettings -Context $Context
+    Build-SettingRows       -Context $Context
+    Connect-RowActions      -Context $Context
+}
+
+# ── Master wiring ─────────────────────────────────────────────────────────
 
 function Connect-HardeningActions {
     param([Parameter(Mandatory)]$Context)
 
     Connect-RowActions -Context $Context
 
-    # ── Filter events ───────────────────────────────────────────────────
+    # Filter events
     $Context.Controls.SearchBox.Add_TextChanged({
         $Context.Filters.SearchText = $Context.Controls.SearchBox.Text
-        Update-FilteredSettings -Context $Context
-        Build-SettingRows -Context $Context
-        Connect-RowActions -Context $Context
+        Apply-Filter -Context $Context
     }.GetNewClosure())
 
     $Context.Controls.GroupFilter.Add_SelectedIndexChanged({
         $Context.Filters.SelectedGroup = [string]$Context.Controls.GroupFilter.SelectedItem
-        Update-FilteredSettings -Context $Context
-        Build-SettingRows -Context $Context
-        Connect-RowActions -Context $Context
+        Apply-Filter -Context $Context
     }.GetNewClosure())
 
     $Context.Controls.ResetFilter.Add_Click({
@@ -210,25 +187,12 @@ function Connect-HardeningActions {
         $Context.Controls.GroupFilter.SelectedIndex = 0
         $Context.Filters.SearchText    = ''
         $Context.Filters.SelectedGroup = 'Усі групи'
-        Update-FilteredSettings -Context $Context
-        Build-SettingRows -Context $Context
-        Connect-RowActions -Context $Context
+        Apply-Filter -Context $Context
     }.GetNewClosure())
 
-    # ── Button events ───────────────────────────────────────────────────
-    $Context.Buttons.Refresh.Add_Click({
-        Refresh-AllRows -Context $Context
-    })
-
-    $Context.Buttons.ApplyAll.Add_Click({
-        Invoke-ApplyAllSettings -Context $Context
-    })
-
-    $Context.Buttons.ApplySelected.Add_Click({
-        Invoke-ApplySelectedSettings -Context $Context
-    })
-
-    $Context.Buttons.RevertAll.Add_Click({
-        Invoke-RevertAllSettings -Context $Context
-    })
+    # Button events
+    $Context.Buttons.Refresh.Add_Click({      Refresh-AllRows             -Context $Context })
+    $Context.Buttons.ApplyAll.Add_Click({     Invoke-ApplyAllSettings     -Context $Context })
+    $Context.Buttons.ApplySelected.Add_Click({ Invoke-ApplySelectedSettings -Context $Context })
+    $Context.Buttons.RevertAll.Add_Click({    Invoke-RevertAllSettings     -Context $Context })
 }
