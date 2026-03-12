@@ -3,27 +3,19 @@
     Infrastructure helpers for HardeningGUI_v2
 .NOTES
     Dot-sourced by HardeningGUI_v2.ps1 before any other module.
-    Provides: elevation check, WinForms init, registry/service/task helpers,
-              and Test-SettingEnabled.
+    Provides: WinForms init, registry/service/task helpers,
+              logging, startup self-check, Test-SettingEnabled.
 #>
 
-function Ensure-Elevated {
-    $currentIdentity  = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $currentPrincipal = [Security.Principal.WindowsPrincipal]::new($currentIdentity)
-
-    if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Start-Process powershell.exe `
-            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
-            -Verb RunAs
-        exit
-    }
-}
+# ── WinForms ─────────────────────────────────────────────────────────────
 
 function Initialize-WinForms {
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
     [System.Windows.Forms.Application]::EnableVisualStyles()
 }
+
+# ── Registry ──────────────────────────────────────────────────────────────
 
 function Set-Reg {
     param(
@@ -36,8 +28,7 @@ function Set-Reg {
     if (-not (Test-Path $Path)) {
         New-Item -Path $Path -Force | Out-Null
     }
-
-    Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force -ErrorAction Stop
 }
 
 function Get-Reg {
@@ -49,8 +40,7 @@ function Get-Reg {
 
     try {
         return (Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop).$Name
-    }
-    catch {
+    } catch {
         return $Default
     }
 }
@@ -60,15 +50,15 @@ function Remove-RegValue {
         [Parameter(Mandatory)][string]$Path,
         [Parameter(Mandatory)][string]$Name
     )
-
     Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
 }
+
+# ── Services & Tasks ──────────────────────────────────────────────────────
 
 function Set-ServiceDisabled {
     param([Parameter(Mandatory)][string]$Name)
 
-    $s = Get-Service -Name $Name -ErrorAction SilentlyContinue
-    if ($s) {
+    if (Get-Service -Name $Name -ErrorAction SilentlyContinue) {
         Stop-Service -Name $Name -Force -ErrorAction SilentlyContinue
         Set-Service  -Name $Name -StartupType Disabled -ErrorAction SilentlyContinue
     }
@@ -77,8 +67,7 @@ function Set-ServiceDisabled {
 function Set-ServiceManual {
     param([Parameter(Mandatory)][string]$Name)
 
-    $s = Get-Service -Name $Name -ErrorAction SilentlyContinue
-    if ($s) {
+    if (Get-Service -Name $Name -ErrorAction SilentlyContinue) {
         Set-Service -Name $Name -StartupType Manual -ErrorAction SilentlyContinue
     }
 }
@@ -88,7 +77,6 @@ function Disable-Task {
         [Parameter(Mandatory)][string]$Path,
         [Parameter(Mandatory)][string]$Name
     )
-
     Get-ScheduledTask -TaskPath $Path -TaskName $Name -ErrorAction SilentlyContinue |
         Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
 }
@@ -98,19 +86,23 @@ function Enable-Task {
         [Parameter(Mandatory)][string]$Path,
         [Parameter(Mandatory)][string]$Name
     )
-
     Get-ScheduledTask -TaskPath $Path -TaskName $Name -ErrorAction SilentlyContinue |
         Enable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
 }
 
-# ── Logging ──────────────────────────────────────────────────────────────
+# ── Logging ───────────────────────────────────────────────────────────────
+
+$script:_logPath = $null
 
 function Get-AppLogPath {
-    $dir = Join-Path $env:ProgramData 'HardeningGUI'
-    if (-not (Test-Path $dir)) {
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    if (-not $script:_logPath) {
+        $dir = Join-Path $env:ProgramData 'HardeningGUI'
+        if (-not (Test-Path $dir)) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        }
+        $script:_logPath = Join-Path $dir 'hardeninggui.log'
     }
-    return (Join-Path $dir 'hardeninggui.log')
+    return $script:_logPath
 }
 
 function Write-AppLog {
@@ -119,13 +111,12 @@ function Write-AppLog {
         [Parameter(Mandatory)][string]$Message
     )
 
-    $line = "[{0}] [{1}] {2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message
+    $line = '[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message
     try {
-        Add-Content -Path (Get-AppLogPath) -Value $line -Encoding UTF8
-    }
-    catch {
-        Write-Warning "Не вдалося записати лог: $($_.Exception.Message)"
-    }
+        $writer = [System.IO.StreamWriter]::new((Get-AppLogPath), $true, [System.Text.Encoding]::UTF8)
+        try   { $writer.WriteLine($line) }
+        finally { $writer.Dispose() }
+    } catch {}
 }
 
 function Write-AppError {
@@ -142,7 +133,7 @@ function Write-AppError {
     Write-AppLog -Level 'ERROR' -Message $details
 }
 
-# ── Startup self-check ───────────────────────────────────────────────────
+# ── Startup self-check ────────────────────────────────────────────────────
 
 function Invoke-StartupSelfCheck {
     param(
@@ -155,22 +146,17 @@ function Invoke-StartupSelfCheck {
         Warnings = [System.Collections.ArrayList]::new()
     }
 
-    foreach ($file in @('helpers.ps1', 'settings.data.ps1', 'ui.ps1', 'actions.ps1')) {
-        if (-not (Test-Path (Join-Path $RootPath $file))) {
-            [void]$result.Errors.Add("Не знайдено файл: $file")
-        }
-    }
-
     if (-not $Settings -or $Settings.Count -eq 0) {
         [void]$result.Errors.Add('Get-HardeningSettings() повернув порожній список.')
         return $result
     }
 
+    $requiredProps = 'Group', 'Name', 'Desc', 'Apply', 'Revert', 'Check'
     $index = 0
     foreach ($s in $Settings) {
-        foreach ($prop in 'Group', 'Name', 'Desc', 'Apply', 'Revert', 'Check') {
+        foreach ($prop in $requiredProps) {
             if (-not $s.PSObject.Properties[$prop]) {
-                [void]$result.Errors.Add("Settings[$index] не має поля $prop")
+                [void]$result.Errors.Add("Settings[$index] відсутнє поле '$prop'")
             }
         }
         $index++
@@ -181,11 +167,6 @@ function Invoke-StartupSelfCheck {
 
 function Test-SettingEnabled {
     param([Parameter(Mandatory)]$Setting)
-
-    try {
-        return [bool](& $Setting.Check)
-    }
-    catch {
-        return $false
-    }
+    try   { return [bool](& $Setting.Check) }
+    catch { return $false }
 }

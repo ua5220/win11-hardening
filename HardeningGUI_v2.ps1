@@ -11,36 +11,41 @@
       actions.ps1          -> bulk operations, event wiring
 #>
 
+#Requires -Version 5.1
+#Requires -RunAsAdministrator
+
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-. (Join-Path $PSScriptRoot 'helpers.ps1')
-. (Join-Path $PSScriptRoot 'settings.data.ps1')
-. (Join-Path $PSScriptRoot 'ui.ps1')
-. (Join-Path $PSScriptRoot 'actions.ps1')
+foreach ($file in @('helpers.ps1', 'settings.data.ps1', 'ui.ps1', 'actions.ps1')) {
+    $fullPath = Join-Path $PSScriptRoot $file
+    if (-not (Test-Path $fullPath -PathType Leaf)) {
+        throw "Відсутній обов'язковий файл: $fullPath"
+    }
+    . $fullPath
+}
 
-Ensure-Elevated
 Initialize-WinForms
 
 $settings = Get-HardeningSettings
 
 $check = Invoke-StartupSelfCheck -RootPath $PSScriptRoot -Settings $settings
 if ($check.Errors.Count -gt 0) {
-    $message = ($check.Errors -join "`r`n")
+    $message = $check.Errors -join "`r`n"
     Write-AppLog -Level 'ERROR' -Message "Startup self-check failed :: $message"
-    [System.Windows.Forms.MessageBox]::Show(
+    [void][System.Windows.Forms.MessageBox]::Show(
         "Self-check не пройдено:`r`n`r`n$message",
         'Помилка старту',
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Error
-    ) | Out-Null
+    )
     return
 }
 
 Write-AppLog -Level 'INFO' -Message "Startup OK :: $($settings.Count) settings loaded"
 
 $context = New-HardeningUi -Settings $settings
-Build-SettingRows   -Context $context
+Build-SettingRows        -Context $context
 Connect-HardeningActions -Context $context
 
 [System.Windows.Forms.Application]::Run($context.Form)
