@@ -4,8 +4,7 @@
 .NOTES
     Dot-sourced by HardeningGUI_v2.ps1 after helpers.ps1.
     Exports: New-AppTheme, New-AppButton, New-HardeningUi,
-             Set-RowVisualState, Refresh-RowState,
-             Show-SettingInfo, Build-SettingRows,
+             Refresh-RowState, Show-SettingInfo, Build-SettingRows,
              Update-FilteredSettings
 #>
 
@@ -34,6 +33,9 @@ function New-AppTheme {
         InfoButtonBackground  = $C::FromArgb(30,   30,  55)
         InfoButtonForeground  = $C::FromArgb(150, 180, 255)
         DescriptionForeground = $C::FromArgb(130, 130, 150)
+        ButtonApply           = $C::FromArgb(26, 107, 58)
+        ButtonApplied         = $C::FromArgb(20,  70, 30)
+        ButtonRevert          = $C::FromArgb(122, 32, 32)
     }
 }
 
@@ -204,39 +206,56 @@ function New-HardeningUi {
     }
 }
 
-function Set-RowVisualState {
-    param(
-        [Parameter(Mandatory)]$Context,
-        [Parameter(Mandatory)]$RowRecord,
-        [Parameter(Mandatory)][bool]$IsActive
-    )
-
-    $t = $Context.Theme
-
-    if ($IsActive) {
-        $RowRecord.StatusDot.BackColor = $t.StatusOnDot
-        $RowRecord.StatusLbl.Text      = 'УВІМКНЕНО'
-        $RowRecord.StatusLbl.ForeColor = $t.StatusOnText
-        $RowRecord.Toggle.Text         = 'Вимкнути'
-        $RowRecord.Toggle.BackColor    = $t.ToggleOffBackground
-        $RowRecord.Toggle.ForeColor    = $t.ToggleOffForeground
-    } else {
-        $RowRecord.StatusDot.BackColor = $t.StatusOffDot
-        $RowRecord.StatusLbl.Text      = 'вимкнено'
-        $RowRecord.StatusLbl.ForeColor = $t.StatusOffText
-        $RowRecord.Toggle.Text         = 'Увімкнути'
-        $RowRecord.Toggle.BackColor    = $t.ToggleOnBackground
-        $RowRecord.Toggle.ForeColor    = $t.ToggleOnForeground
-    }
-}
-
 function Refresh-RowState {
     param(
         [Parameter(Mandatory)]$Context,
         [Parameter(Mandatory)]$RowRecord
     )
-    Set-RowVisualState -Context $Context -RowRecord $RowRecord `
-        -IsActive (Test-SettingEnabled -Setting $RowRecord.Setting)
+
+    $isActive = $false
+    try { $isActive = Test-SettingEnabled -Setting $RowRecord.Setting } catch {}
+
+    $C = $Context.Theme
+
+    # Update status dot if present in RowRecord
+    if ($RowRecord.PSObject.Properties['StatusDot'] -and $RowRecord.StatusDot) {
+        $RowRecord.StatusDot.BackColor = if ($isActive) { $C.StatusOnDot } else { $C.StatusOffDot }
+    }
+
+    # ── Discover buttons by Tag, falling back to Text ────────────────────
+    $applyBtn  = $null
+    $revertBtn = $null
+
+    foreach ($propName in $RowRecord.PSObject.Properties.Name) {
+        $val = $RowRecord.$propName
+        if ($val -isnot [System.Windows.Forms.Button]) { continue }
+
+        $marker = $val.Tag
+        if (-not $marker) { $marker = $val.Text }
+
+        if     ($marker -match '(?i)apply|застосувати')  { $applyBtn  = $val }
+        elseif ($marker -match '(?i)revert|відновити')   { $revertBtn = $val }
+    }
+
+    # Fallback: first discovered Button = Apply, second = Revert
+    if (-not $applyBtn -and -not $revertBtn) {
+        $allBtns = @(
+            $RowRecord.PSObject.Properties.Name |
+            ForEach-Object { $RowRecord.$_ } |
+            Where-Object   { $_ -is [System.Windows.Forms.Button] }
+        )
+        if ($allBtns.Count -ge 1) { $applyBtn  = $allBtns[0] }
+        if ($allBtns.Count -ge 2) { $revertBtn = $allBtns[1] }
+    }
+
+    # ── Update button state ───────────────────────────────────────────────
+    if ($applyBtn) {
+        $applyBtn.BackColor = if ($isActive) { $C.ButtonApplied } else { $C.ButtonApply }
+        $applyBtn.Text      = if ($isActive) { '✓ Applied'       } else { 'Apply'        }
+    }
+    if ($revertBtn) {
+        $revertBtn.Enabled = $isActive
+    }
 }
 
 function Show-SettingInfo {
@@ -305,8 +324,6 @@ function Build-SettingRows {
 
         # ── Row ─────────────────────────────────────────────────────────
         $rowBg = if (($rowIndex % 2) -eq 0) { $t.RowBackgroundA } else { $t.RowBackgroundB }
-        $active = Test-SettingEnabled -Setting $s
-
         $row = [System.Windows.Forms.Panel]::new()
         $row.Location  = [System.Drawing.Point]::new(10, $y)
         $row.Size      = [System.Drawing.Size]::new(860, 46)
@@ -338,23 +355,32 @@ function Build-SettingRows {
         $lblDesc.ForeColor = $t.DescriptionForeground
         $lblDesc.BackColor = $rowBg
 
-        $statusLbl = [System.Windows.Forms.Label]::new()
-        $statusLbl.Location  = [System.Drawing.Point]::new(572, 14)
-        $statusLbl.Size      = [System.Drawing.Size]::new(90, 18)
-        $statusLbl.Font      = $fontSB8
-        $statusLbl.TextAlign = 'MiddleCenter'
-        $statusLbl.BackColor = $rowBg
+        # ── Apply button (Tag='apply' — used by Refresh-RowState discovery) ──
+        $btnApply = [System.Windows.Forms.Button]::new()
+        $btnApply.Tag      = 'apply'
+        $btnApply.Location = [System.Drawing.Point]::new(572, 9)
+        $btnApply.Size     = [System.Drawing.Size]::new(88, 28)
+        $btnApply.FlatStyle = 'Flat'
+        $btnApply.FlatAppearance.BorderSize = 1
+        $btnApply.ForeColor = [System.Drawing.Color]::White
+        $btnApply.Font      = $fontSB8
+        $btnApply.Cursor    = 'Hand'
 
-        $toggleBtn = [System.Windows.Forms.Button]::new()
-        $toggleBtn.Location  = [System.Drawing.Point]::new(668, 9)
-        $toggleBtn.Size      = [System.Drawing.Size]::new(90, 28)
-        $toggleBtn.FlatStyle = 'Flat'
-        $toggleBtn.FlatAppearance.BorderSize = 1
-        $toggleBtn.Font   = $fontSB8
-        $toggleBtn.Cursor = 'Hand'
+        # ── Revert button (Tag='revert' — used by Refresh-RowState discovery) ─
+        $btnRevert = [System.Windows.Forms.Button]::new()
+        $btnRevert.Tag      = 'revert'
+        $btnRevert.Text     = 'Revert'
+        $btnRevert.Location = [System.Drawing.Point]::new(664, 9)
+        $btnRevert.Size     = [System.Drawing.Size]::new(88, 28)
+        $btnRevert.FlatStyle = 'Flat'
+        $btnRevert.FlatAppearance.BorderSize = 1
+        $btnRevert.BackColor = $t.ButtonRevert
+        $btnRevert.ForeColor = [System.Drawing.Color]::White
+        $btnRevert.Font      = $fontSB8
+        $btnRevert.Cursor    = 'Hand'
 
         $infoBtn = [System.Windows.Forms.Button]::new()
-        $infoBtn.Location  = [System.Drawing.Point]::new(764, 9)
+        $infoBtn.Location  = [System.Drawing.Point]::new(756, 9)
         $infoBtn.Size      = [System.Drawing.Size]::new(86, 28)
         $infoBtn.FlatStyle = 'Flat'
         $infoBtn.FlatAppearance.BorderSize = 1
@@ -364,19 +390,19 @@ function Build-SettingRows {
         $infoBtn.Font      = $font85
         $infoBtn.Cursor    = 'Hand'
 
-        $row.Controls.AddRange([System.Windows.Forms.Control[]]@($chk, $statusDot, $lblName, $lblDesc, $statusLbl, $toggleBtn, $infoBtn))
+        $row.Controls.AddRange([System.Windows.Forms.Control[]]@($chk, $statusDot, $lblName, $lblDesc, $btnApply, $btnRevert, $infoBtn))
         $scroll.Controls.Add($row)
 
         $record = [PSCustomObject]@{
             Checkbox  = $chk
-            Toggle    = $toggleBtn
+            BtnApply  = $btnApply
+            BtnRevert = $btnRevert
             Info      = $infoBtn
             Setting   = $s
             StatusDot = $statusDot
-            StatusLbl = $statusLbl
         }
 
-        Set-RowVisualState -Context $Context -RowRecord $record -IsActive $active
+        Refresh-RowState -Context $Context -RowRecord $record
 
         $capturedSetting = $s
         $infoBtn.Add_Click({ Show-SettingInfo -Setting $capturedSetting }.GetNewClosure())

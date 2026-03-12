@@ -134,20 +134,25 @@ function Connect-RowActions {
         $capturedCtx = $Context
         $capturedRec = $rc
 
-        $capturedRec.Toggle.Add_Click({
-            $isActive = Test-SettingEnabled -Setting $capturedRec.Setting
+        $capturedRec.BtnApply.Add_Click({
             try {
-                if ($isActive) {
-                    & $capturedRec.Setting.Revert
-                    $capturedCtx.StatusBar.Text = "  [OK] Скасовано: $($capturedRec.Setting.Name)"
-                    Write-AppLog -Level 'INFO' -Message "Toggle Revert OK :: $($capturedRec.Setting.Name)"
-                } else {
-                    & $capturedRec.Setting.Apply
-                    $capturedCtx.StatusBar.Text = "  [OK] Застосовано: $($capturedRec.Setting.Name)"
-                    Write-AppLog -Level 'INFO' -Message "Toggle Apply OK :: $($capturedRec.Setting.Name)"
-                }
+                & $capturedRec.Setting.Apply
+                $capturedCtx.StatusBar.Text = "  [OK] Застосовано: $($capturedRec.Setting.Name)"
+                Write-AppLog -Level 'INFO' -Message "Apply OK :: $($capturedRec.Setting.Name)"
             } catch {
-                Write-AppError -Context "Toggle FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
+                Write-AppError -Context "Apply FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
+                $capturedCtx.StatusBar.Text = "  [ПОМИЛКА] $($capturedRec.Setting.Name): $($_.Exception.Message)"
+            }
+            Refresh-RowState -Context $capturedCtx -RowRecord $capturedRec
+        }.GetNewClosure())
+
+        $capturedRec.BtnRevert.Add_Click({
+            try {
+                & $capturedRec.Setting.Revert
+                $capturedCtx.StatusBar.Text = "  [OK] Скасовано: $($capturedRec.Setting.Name)"
+                Write-AppLog -Level 'INFO' -Message "Revert OK :: $($capturedRec.Setting.Name)"
+            } catch {
+                Write-AppError -Context "Revert FAILED :: $($capturedRec.Setting.Name)" -ErrorRecord $_
                 $capturedCtx.StatusBar.Text = "  [ПОМИЛКА] $($capturedRec.Setting.Name): $($_.Exception.Message)"
             }
             Refresh-RowState -Context $capturedCtx -RowRecord $capturedRec
