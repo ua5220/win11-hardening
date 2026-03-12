@@ -1937,6 +1937,291 @@ Revision=1
         }
     }
 
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 36: IPv6 / NetBIOS / WPAD / TCP-IP ────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Мережева приватність / IPv6 / NetBIOS"
+        Name  = "IPv6 — повністю вимкнути (DisabledComponents=0xFF)"
+        Desc  = "DisabledComponents=0xFF: відключити всі IPv6-компоненти у стеку Tcpip6 (окрім loopback)"
+        Apply = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0xFF
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents"
+        }
+        Check = {
+            (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0) -eq 0xFF
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева приватність / IPv6 / NetBIOS"
+        Name  = "NetBIOS over TCP/IP — вимкнути на всіх адаптерах (NetbiosOptions=2)"
+        Desc  = "NetbiosOptions=2 для кожного інтерфейсу в NetBT\Parameters\Interfaces; EnableLmHosts=0"
+        Apply = {
+            $root = "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"
+            Set-Reg $root "EnableLmHosts"          0
+            Set-Reg $root "NoNameReleaseOnDemand"  1
+            Get-ChildItem "$root\Interfaces" -ErrorAction SilentlyContinue | ForEach-Object {
+                Set-ItemProperty -Path $_.PSPath -Name "NetbiosOptions" -Value 2 -ErrorAction SilentlyContinue
+            }
+        }
+        Revert = {
+            $root = "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"
+            Set-Reg $root "EnableLmHosts" 1
+            Get-ChildItem "$root\Interfaces" -ErrorAction SilentlyContinue | ForEach-Object {
+                Set-ItemProperty -Path $_.PSPath -Name "NetbiosOptions" -Value 0 -ErrorAction SilentlyContinue
+            }
+        }
+        Check = {
+            $first = Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces" -ErrorAction SilentlyContinue |
+                     Select-Object -First 1
+            if ($first) {
+                (Get-ItemProperty -Path $first.PSPath -ErrorAction SilentlyContinue).NetbiosOptions -eq 2
+            } else { $false }
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева приватність / IPv6 / NetBIOS"
+        Name  = "WPAD / Auto-Detect Proxy — вимкнути"
+        Desc  = "HKCU AutoDetect=0 + WinHttpAutoProxySvc Disabled: заборонити автовиявлення проксі"
+        Apply = {
+            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" "AutoDetect" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" `
+                    "EnableAutoProxyResultCache" 0
+            Set-ServiceDisabled "WinHttpAutoProxySvc"
+        }
+        Revert = {
+            Remove-RegValue "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" "AutoDetect"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" `
+                            "EnableAutoProxyResultCache"
+            Set-ServiceManual "WinHttpAutoProxySvc"
+        }
+        Check = {
+            (Get-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" "AutoDetect" 1) -eq 0
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева приватність / IPv6 / NetBIOS"
+        Name  = "TCP/IP hardening — DeadGW / RouterDiscovery / TcpMaxDataRetransmissions"
+        Desc  = "EnableDeadGWDetect=0, PerformRouterDiscovery=0, TcpMaxDataRetransmissions=3"
+        Apply = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Set-Reg $tcp "EnableDeadGWDetect"        0
+            Set-Reg $tcp "PerformRouterDiscovery"    0
+            Set-Reg $tcp "TcpMaxDataRetransmissions" 3
+        }
+        Revert = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Remove-RegValue $tcp "EnableDeadGWDetect"
+            Remove-RegValue $tcp "PerformRouterDiscovery"
+            Remove-RegValue $tcp "TcpMaxDataRetransmissions"
+        }
+        Check = {
+            (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableDeadGWDetect" 1) -eq 0
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 37: ПРИВАТНІСТЬ (HKCU) ────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Приватність (HKCU)"
+        Name  = "Tailored experiences / Feedback notifications / SoftLanding — вимкнути"
+        Desc  = "DisableTailoredExperiencesWithDiagnosticData=1, DoNotShowFeedbackNotifications=1, DisableSoftLanding=1"
+        Apply = {
+            $p = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+            Set-Reg $p "DisableTailoredExperiencesWithDiagnosticData" 1
+            Set-Reg $p "DoNotShowFeedbackNotifications"               1
+            Set-Reg $p "DisableSoftLanding"                           1
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" `
+                    "TailoredExperiencesWithDiagnosticDataEnabled" 0
+        }
+        Revert = {
+            $p = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+            Remove-RegValue $p "DisableTailoredExperiencesWithDiagnosticData"
+            Remove-RegValue $p "DoNotShowFeedbackNotifications"
+            Remove-RegValue $p "DisableSoftLanding"
+        }
+        Check = {
+            (Get-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" `
+                     "DisableTailoredExperiencesWithDiagnosticData" 0) -eq 1
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність (HKCU)"
+        Name  = "Advertising ID — вимкнути (HKCU + HKLM GPO)"
+        Desc  = "AdvertisingInfo Enabled=0 (HKCU) + DisabledByGroupPolicy=1 (HKLM)"
+        Apply = {
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" `
+                    "Enabled" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" `
+                    "DisabledByGroupPolicy" 1
+        }
+        Revert = {
+            Remove-RegValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" "DisabledByGroupPolicy"
+        }
+        Check = {
+            (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 1) -eq 0
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність (HKCU)"
+        Name  = "LetApps: Camera / Microphone / Location = Deny"
+        Desc  = "ConsentStore webcam/microphone/location → Deny; LetAppsAccess* = 2 у AppPrivacy"
+        Apply = {
+            $cs = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore"
+            Set-Reg "$cs\webcam"     "Value" "Deny" "String"
+            Set-Reg "$cs\microphone" "Value" "Deny" "String"
+            Set-Reg "$cs\location"   "Value" "Deny" "String"
+            $ap = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy"
+            Set-Reg $ap "LetAppsAccessCamera"      2
+            Set-Reg $ap "LetAppsAccessMicrophone"  2
+            Set-Reg $ap "LetAppsAccessLocation"    2
+        }
+        Revert = {
+            $cs = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore"
+            Remove-RegValue "$cs\webcam"     "Value"
+            Remove-RegValue "$cs\microphone" "Value"
+            Remove-RegValue "$cs\location"   "Value"
+            $ap = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy"
+            Remove-RegValue $ap "LetAppsAccessCamera"
+            Remove-RegValue $ap "LetAppsAccessMicrophone"
+            Remove-RegValue $ap "LetAppsAccessLocation"
+        }
+        Check = {
+            $v = Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" "Value" ""
+            $v -eq "Deny"
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 38: СЕРВІСИ XBOX / DEMO / ГЕОЛОКАЦІЯ ──────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Сервіси: Xbox / Demo / Геолокація"
+        Name  = "Xbox Gaming Services — вимкнути"
+        Desc  = "XblGameSave, XblAuthManager, XboxNetApiSvc, XboxGipSvc → Disabled"
+        Apply = {
+            foreach ($svc in @("XblGameSave","XblAuthManager","XboxNetApiSvc","XboxGipSvc")) {
+                Set-ServiceDisabled $svc
+            }
+        }
+        Revert = {
+            foreach ($svc in @("XblGameSave","XblAuthManager","XboxNetApiSvc","XboxGipSvc")) {
+                Set-ServiceManual $svc
+            }
+        }
+        Check = {
+            $s = Get-Service "XblGameSave" -ErrorAction SilentlyContinue
+            $s -and $s.StartType -eq 'Disabled'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Сервіси: Xbox / Demo / Геолокація"
+        Name  = "Retail Demo / Media / Peer-кешування — вимкнути"
+        Desc  = "RetailDemo, WMPNetworkSvc, WpcMonSvc, PeerDistSvc, PhoneSvc → Disabled"
+        Apply = {
+            foreach ($svc in @("RetailDemo","WMPNetworkSvc","WpcMonSvc","PeerDistSvc","PhoneSvc")) {
+                Set-ServiceDisabled $svc
+            }
+        }
+        Revert = {
+            foreach ($svc in @("RetailDemo","WMPNetworkSvc","WpcMonSvc","PeerDistSvc","PhoneSvc")) {
+                Set-ServiceManual $svc
+            }
+        }
+        Check = {
+            $s = Get-Service "RetailDemo" -ErrorAction SilentlyContinue
+            $s -and $s.StartType -eq 'Disabled'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Сервіси: Xbox / Demo / Геолокація"
+        Name  = "Геолокація / Mobile Hotspot / SharedAccess / TapiSrv — вимкнути"
+        Desc  = "lfsvc (GPS), icssvc (hotspot), SharedAccess (ICS), TapiSrv (телефонія) → Disabled"
+        Apply = {
+            foreach ($svc in @("lfsvc","icssvc","SharedAccess","TapiSrv")) {
+                Set-ServiceDisabled $svc
+            }
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation" 1
+        }
+        Revert = {
+            foreach ($svc in @("lfsvc","icssvc","SharedAccess","TapiSrv")) {
+                Set-ServiceManual $svc
+            }
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation"
+        }
+        Check = {
+            $s = Get-Service "lfsvc" -ErrorAction SilentlyContinue
+            $s -and $s.StartType -eq 'Disabled'
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 39: SCHEDULED TASKS — ТЕЛЕМЕТРІЯ / CEIP ───────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Scheduled Tasks — телеметрія / CEIP"
+        Name  = "CEIP tasks — вимкнути (Consolidator / KernelCeipTask / UsbCeip / FamilySafetyMonitor)"
+        Desc  = "Завдання Customer Experience Improvement Program → Disabled"
+        Apply = {
+            $ceip = "\Microsoft\Windows\Customer Experience Improvement Program\"
+            Disable-Task $ceip "Consolidator"
+            Disable-Task $ceip "KernelCeipTask"
+            Disable-Task $ceip "UsbCeip"
+            Disable-Task "\Microsoft\Windows\Family Safety\" "FamilySafetyMonitor"
+            Disable-Task "\Microsoft\Windows\Family Safety\" "FamilySafetyRefreshTask"
+        }
+        Revert = {
+            $ceip = "\Microsoft\Windows\Customer Experience Improvement Program\"
+            Enable-Task $ceip "Consolidator"
+            Enable-Task $ceip "KernelCeipTask"
+            Enable-Task $ceip "UsbCeip"
+            Enable-Task "\Microsoft\Windows\Family Safety\" "FamilySafetyMonitor"
+        }
+        Check = {
+            $t = Get-ScheduledTask -TaskPath "\Microsoft\Windows\Customer Experience Improvement Program\" `
+                                   -TaskName "Consolidator" -ErrorAction SilentlyContinue
+            $t -and $t.State -eq 'Disabled'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Scheduled Tasks — телеметрія / CEIP"
+        Name  = "Feedback / Maps / DmClient tasks — вимкнути"
+        Desc  = "DmClient, DmClientOnScenarioDownload, MapsToastTask, MapsUpdateTask → Disabled"
+        Apply = {
+            Disable-Task "\Microsoft\Windows\Feedback\Siuf\" "DmClient"
+            Disable-Task "\Microsoft\Windows\Feedback\Siuf\" "DmClientOnScenarioDownload"
+            Disable-Task "\Microsoft\Windows\Maps\"          "MapsToastTask"
+            Disable-Task "\Microsoft\Windows\Maps\"          "MapsUpdateTask"
+        }
+        Revert = {
+            Enable-Task "\Microsoft\Windows\Feedback\Siuf\" "DmClient"
+            Enable-Task "\Microsoft\Windows\Feedback\Siuf\" "DmClientOnScenarioDownload"
+            Enable-Task "\Microsoft\Windows\Maps\"          "MapsToastTask"
+            Enable-Task "\Microsoft\Windows\Maps\"          "MapsUpdateTask"
+        }
+        Check = {
+            $t = Get-ScheduledTask -TaskPath "\Microsoft\Windows\Feedback\Siuf\" `
+                                   -TaskName "DmClient" -ErrorAction SilentlyContinue
+            $t -and $t.State -eq 'Disabled'
+        }
+    },
+
 
     ) # end $Settings
 
