@@ -96,6 +96,31 @@ win11-hardening/
 | `Invoke-WithRollback` | Застосування з автоматичним відкатом |
 | `Test-AdminRequired` | Перевірка прав адміністратора |
 
+## HTML-звіт
+
+Кнопка **"HTML Звіт"** у GUI генерує повний HTML-звіт зі статусом кожного налаштування:
+- Зелений / червоний статус для кожного Check-блоку
+- Coverage bar з відсотком застосованих налаштувань
+- Інформація про host, build, дату
+
+Звіти зберігаються у `%ProgramData%\win11-hardening\hardening-report-*.html`.
+
+## Тестування
+
+```powershell
+# Встановити Pester (якщо ще не встановлено)
+Install-Module Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+
+# Запустити тести
+Invoke-Pester ./tests/Settings.Check.Tests.ps1 -Output Detailed
+```
+
+Тести перевіряють: завантаження модулів, обов'язкові поля, виконання Check-блоків, унікальність Name.
+
+## CI/CD
+
+GitHub Actions автоматично запускає PSScriptAnalyzer та Pester при кожному push `.ps1` файлів.
+
 ## Логування
 
 Всі операції логуються у `%ProgramData%\HardeningGUI\hardeninggui.log`.

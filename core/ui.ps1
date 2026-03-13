@@ -116,8 +116,9 @@ function New-HardeningUi {
     $btnApplySelected = New-AppButton 'Застосувати вибране' $C::FromArgb(58,  90, 26)  'Застосувати відмічені параметри'
     $btnRevertAll     = New-AppButton 'Скасувати все'       $C::FromArgb(122, 32, 32)  'Повернути до стандарту Windows'
     $btnRefresh       = New-AppButton 'Оновити стани'       $C::FromArgb(26,  58, 107) 'Перечитати поточні значення'
+    $btnExport        = New-AppButton 'HTML Звіт'           $C::FromArgb(80,  50, 120) 'Експорт HTML-звіту зі статусами'
 
-    $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh))
+    $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh, $btnExport))
     $form.Controls.Add($btnPanel)
 
     # ── Filter toolbar ──────────────────────────────────────────────────
@@ -202,6 +203,7 @@ function New-HardeningUi {
             ApplySelected = $btnApplySelected
             RevertAll     = $btnRevertAll
             Refresh       = $btnRefresh
+            Export        = $btnExport
         }
     }
 }

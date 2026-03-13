@@ -1,0 +1,76 @@
+name: PSScriptAnalyzer Lint
+
+on:
+  push:
+    branches: ['**']
+    paths: ['**.ps1']
+  pull_request:
+    branches: [main]
+    paths: ['**.ps1']
+
+jobs:
+  lint:
+    name: PSScriptAnalyzer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer on core/
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path ./core/ -Recurse -Severity Warning,Error -ExcludeRule PSUseShouldProcessForStateChangingFunctions,PSAvoidUsingWriteHost
+          $results | Format-Table -AutoSize
+          if ($results | Where-Object Severity -eq 'Error') {
+            Write-Error "PSScriptAnalyzer знайшов помилки в core/"
+            exit 1
+          }
+
+      - name: Run PSScriptAnalyzer on settings/
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path ./settings/ -Recurse -Severity Warning,Error -ExcludeRule PSUseShouldProcessForStateChangingFunctions,PSAvoidUsingWriteHost,PSAvoidUsingInvokeExpression
+          $results | Format-Table -AutoSize
+          if ($results | Where-Object Severity -eq 'Error') {
+            Write-Error "PSScriptAnalyzer знайшов помилки в settings/"
+            exit 1
+          }
+
+      - name: Run PSScriptAnalyzer on Run-Hardening.ps1
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path ./Run-Hardening.ps1 -Severity Warning,Error
+          $results | Format-Table -AutoSize
+          if ($results | Where-Object Severity -eq 'Error') {
+            Write-Error "PSScriptAnalyzer знайшов помилки в Run-Hardening.ps1"
+            exit 1
+          }
+
+  pester:
+    name: Pester Tests (structure)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests/'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          $cfg.TestResult.Enabled = $true
+          $cfg.TestResult.OutputPath = './test-results.xml'
+          $cfg.TestResult.OutputFormat = 'NUnitXml'
+          Invoke-Pester -Configuration $cfg

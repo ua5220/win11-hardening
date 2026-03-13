@@ -6,7 +6,7 @@
     Exports: Set-BusyState, Refresh-AllRows,
              Invoke-ApplyAllSettings, Invoke-ApplySelectedSettings,
              Invoke-RevertAllSettings, Connect-RowActions,
-             Connect-HardeningActions
+             Connect-HardeningActions, Export-HardeningReport
 #>
 
 function Set-BusyState {
@@ -166,6 +166,102 @@ function Connect-RowActions {
     }
 }
 
+# ── HTML Report ───────────────────────────────────────────────────────────
+
+function Export-HardeningReport {
+    param([Parameter(Mandatory)]$Settings)
+
+    $ts       = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $hostname = $env:COMPUTERNAME
+    $build    = [System.Environment]::OSVersion.Version.Build
+
+    $rows = [System.Text.StringBuilder]::new()
+    $ok   = 0
+    $fail = 0
+    $lastGroup = ''
+
+    foreach ($s in $Settings) {
+        # Group header row
+        if ($s.Group -ne $lastGroup) {
+            [void]$rows.AppendLine("<tr class='group'><td colspan='3'>$([System.Net.WebUtility]::HtmlEncode($s.Group))</td></tr>")
+            $lastGroup = $s.Group
+        }
+
+        $status = $false
+        try { $status = [bool](& $s.Check) } catch {}
+
+        if ($status) { $ok++ } else { $fail++ }
+
+        $dot   = if ($status) { "<span class='dot on'></span> Applied" } else { "<span class='dot off'></span> Not Applied" }
+        $cls   = if ($status) { 'ok' } else { 'fail' }
+        $name  = [System.Net.WebUtility]::HtmlEncode($s.Name)
+        $desc  = [System.Net.WebUtility]::HtmlEncode($s.Desc) -replace "`n", '<br>'
+
+        [void]$rows.AppendLine("<tr class='$cls'><td>$name</td><td>$dot</td><td class='desc'>$desc</td></tr>")
+    }
+
+    $total = $ok + $fail
+    $pct   = if ($total -gt 0) { [math]::Round(($ok / $total) * 100) } else { 0 }
+
+    $html = @"
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Hardening Report - $hostname</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #121218; color: #ddd; margin: 20px; }
+  h1 { color: #64b4ff; }
+  .summary { background: #1e1e2e; padding: 16px 24px; border-radius: 8px; margin-bottom: 20px; }
+  .summary span { margin-right: 32px; }
+  .ok-count { color: #28b84a; font-weight: bold; }
+  .fail-count { color: #d44; font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1e1e2e; text-align: left; padding: 10px; color: #8ab4ff; }
+  td { padding: 8px 10px; border-bottom: 1px solid #2a2a3a; }
+  tr.group td { background: #23233a; color: #82b6ff; font-weight: 600; font-size: 1.05em; padding: 10px; }
+  tr.ok td { background: #141e14; }
+  tr.fail td { background: #1e1414; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .dot.on { background: #28b84a; }
+  .dot.off { background: #a02828; }
+  .desc { color: #888; font-size: 0.85em; max-width: 400px; }
+  .bar { background: #2a2a3a; border-radius: 4px; height: 22px; margin-top: 8px; overflow: hidden; }
+  .bar-fill { background: #28b84a; height: 100%; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<h1>Windows 11 Hardening Report</h1>
+<div class="summary">
+  <span>Host: <b>$hostname</b></span>
+  <span>Build: <b>$build</b></span>
+  <span>Date: <b>$ts</b></span><br><br>
+  <span class="ok-count">Applied: $ok</span>
+  <span class="fail-count">Not Applied: $fail</span>
+  <span>Total: $total</span>
+  <span>Coverage: <b>$pct%</b></span>
+  <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+</div>
+<table>
+<tr><th>Setting</th><th>Status</th><th>Description</th></tr>
+$($rows.ToString())
+</table>
+</body>
+</html>
+"@
+
+    $reportDir = Join-Path $env:ProgramData 'win11-hardening'
+    if (-not (Test-Path $reportDir)) {
+        New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
+    }
+    $reportFile = Join-Path $reportDir "hardening-report-$(Get-Date -Format 'yyyyMMdd-HHmmss').html"
+    $html | Set-Content -Path $reportFile -Encoding UTF8 -Force
+
+    Write-AppLog -Level 'INFO' -Message "Report exported: $reportFile (Applied=$ok, NotApplied=$fail, Coverage=$pct%)"
+
+    return $reportFile
+}
+
 # ── Filter helper ─────────────────────────────────────────────────────────
 
 function Invoke-Filter {
@@ -209,4 +305,17 @@ function Connect-HardeningActions {
     $Context.Buttons.ApplyAll.Add_Click({     Invoke-ApplyAllSettings     -Context $Context })
     $Context.Buttons.ApplySelected.Add_Click({ Invoke-ApplySelectedSettings -Context $Context })
     $Context.Buttons.RevertAll.Add_Click({    Invoke-RevertAllSettings     -Context $Context })
+
+    # Export report
+    $fnExport = ${function:Export-HardeningReport}
+    $Context.Buttons.Export.Add_Click({
+        $Context.StatusBar.Text = '  Генерація HTML-звіту...'
+        try {
+            $file = & $fnExport -Settings $Context.AllSettings
+            $Context.StatusBar.Text = "  Звіт збережено: $file"
+            [System.Diagnostics.Process]::Start($file) | Out-Null
+        } catch {
+            $Context.StatusBar.Text = "  [ПОМИЛКА] Звіт: $($_.Exception.Message)"
+        }
+    }.GetNewClosure())
 }
