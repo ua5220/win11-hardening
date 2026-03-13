@@ -1,5 +1,40 @@
 # Changelog
 
+## [3.2.0] - 2026-03-13
+
+### Security Audit — 23 виправлення
+
+#### Critical Fixes
+- **UAC конфлікт**: два взаємовиключних налаштування тепер мають `ExclusiveGroup = "UAC-Level"`
+- **DisableCAD**: логіку інвертовано — тепер **вимагає** Ctrl+Alt+Del (CIS 2.3.7.2)
+- **RDP fDenyTSConnections**: інвертовано на блокування (fDenyTSConnections=1) для Home-станцій
+- **LmCompatibilityLevel**: видалено дублікат з Null-сесій блоку
+- **SynAttackProtect**: значення 2→1 (SYN Cookies, актуальне для Win10/11)
+- **IPv6 DisabledComponents**: 0xFF→0xFE (зберігає loopback ::1) + Disable-NetAdapterBinding
+
+#### Important Fixes
+- **LAPS PasswordAgeDays**: 365→30 днів (CIS Benchmark L1)
+- **CachedLogonsCount**: додано перевірку доменної приналежності машини
+- **KerberosEncryptionTypes**: 24→2147483640 (AES256+сучасні типи, CIS 2024)
+- **Telеметрія IP**: додано попередження про застарілість списку
+- **SMBv2 вимкнення**: посилено попередження (зламає File Explorer, принтери)
+- **PasswordComplexity**: 0→1 (CIS 1.1.5 вимагає складності)
+- **FIPS**: додано попередження про несумісність з Chrome/.NET/VPN
+
+#### New Settings
+- **AppLocker** — базові правила, блокування виконання з %TEMP%
+- **Windows Script Host** — вимкнення wscript/cscript (.vbs/.js)
+- **Secure Boot + TPM** — верифікація, вимкнення test signing
+- **PowerShell Constrained Language Mode** — __PSLockdownPolicy=4
+- **AutoRun**: додано HKCU NoDriveTypeAutoRun для подвійного покриття
+
+#### Already Existed (verified present)
+- Credential Guard + HVCI + RunAsPPL (services.ps1)
+- Exploit Protection DEP+ASLR+CFG (defender.ps1)
+- ASR Rules 16 правил (defender.ps1)
+- Controlled Folder Access (defender.ps1)
+- ScriptBlock/Module/Transcription Logging (audit.ps1)
+
 ## [3.1.0] - 2026-03-13
 
 ### Added
