@@ -2179,6 +2179,1015 @@ Revision=1
                                    -TaskName "DmClient" -ErrorAction SilentlyContinue
             $t -and $t.State -eq 'Disabled'
         }
+    },
+
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 40: TCP/IP СТЕК — ЗАХИСТ ВІД АТАК ──────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "TCP/IP стек — захист від атак"
+        Name  = "SYN Flood захист (SynAttackProtect + обмеження з'єднань)"
+        Desc  = "SynAttackProtect=2, TcpMaxHalfOpen=25, TcpMaxHalfOpenRetried=20, TcpMaxSynRetransmissions=1"
+        Apply = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Set-Reg $tcp "SynAttackProtect"          2
+            Set-Reg $tcp "TcpMaxHalfOpen"            25
+            Set-Reg $tcp "TcpMaxHalfOpenRetried"     20
+            Set-Reg $tcp "TcpMaxSynRetransmissions"  1
+        }
+        Revert = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Remove-RegValue $tcp "SynAttackProtect"
+            Remove-RegValue $tcp "TcpMaxHalfOpen"
+            Remove-RegValue $tcp "TcpMaxHalfOpenRetried"
+            Remove-RegValue $tcp "TcpMaxSynRetransmissions"
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "SynAttackProtect" 0) -eq 2 }
+    },
+
+    [PSCustomObject]@{
+        Group = "TCP/IP стек — захист від атак"
+        Name  = "TCP Timestamps вимкнути (захист від OS fingerprinting)"
+        Desc  = "Tcp1323Opts=0: вимкнути TCP timestamps щоб запобігти визначенню ОС через аналіз clock skew"
+        Apply = {
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "Tcp1323Opts" 0
+            netsh int tcp set global timestamps=disabled 2>$null | Out-Null
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "Tcp1323Opts"
+            netsh int tcp set global timestamps=enabled 2>$null | Out-Null
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "Tcp1323Opts" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "TCP/IP стек — захист від атак"
+        Name  = "TIME_WAIT скорочення + розширений порт-діапазон"
+        Desc  = "TcpTimedWaitDelay=30, MaxUserPort=61000: швидше звільнення портів + більший ephemeral range"
+        Apply = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Set-Reg $tcp "TcpTimedWaitDelay" 30
+            Set-Reg $tcp "MaxUserPort"       61000
+        }
+        Revert = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Remove-RegValue $tcp "TcpTimedWaitDelay"
+            Remove-RegValue $tcp "MaxUserPort"
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "TcpTimedWaitDelay" 240) -eq 30 }
+    },
+
+    [PSCustomObject]@{
+        Group = "TCP/IP стек — захист від атак"
+        Name  = "PMTU Discovery вимкнути + Black Hole Detection"
+        Desc  = "EnablePMTUDiscovery=0, EnablePMTUBHDetect=1: відключити ICMP-based MTU, увімкнути BH-recovery"
+        Apply = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Set-Reg $tcp "EnablePMTUDiscovery" 0
+            Set-Reg $tcp "EnablePMTUBHDetect"  1
+        }
+        Revert = {
+            $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+            Set-Reg $tcp "EnablePMTUDiscovery" 1
+            Remove-RegValue $tcp "EnablePMTUBHDetect"
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnablePMTUDiscovery" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "TCP/IP стек — захист від атак"
+        Name  = "ARP Spoofing захист (WeakHost вимкнути)"
+        Desc  = "WeakHostSend=Disabled, WeakHostReceive=Disabled на всіх IPv4 інтерфейсах"
+        Apply = {
+            Get-NetIPInterface -AddressFamily IPv4 -ErrorAction SilentlyContinue | ForEach-Object {
+                Set-NetIPInterface -InterfaceIndex $_.InterfaceIndex -WeakHostSend Disabled -WeakHostReceive Disabled -ErrorAction SilentlyContinue
+            }
+        }
+        Revert = {
+            Get-NetIPInterface -AddressFamily IPv4 -ErrorAction SilentlyContinue | ForEach-Object {
+                Set-NetIPInterface -InterfaceIndex $_.InterfaceIndex -WeakHostSend Enabled -WeakHostReceive Enabled -ErrorAction SilentlyContinue
+            }
+        }
+        Check = {
+            $iface = Get-NetIPInterface -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object -First 1
+            $iface -and $iface.WeakHostSend -eq 'Disabled' -and $iface.WeakHostReceive -eq 'Disabled'
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 41: БРАНДМАУЕР — ПРОФІЛІ ТА ПРАВИЛА ────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall — увімкнути всі профілі + Block Inbound за замовчуванням"
+        Desc  = "Увімкнути брандмауер Domain/Private/Public, DefaultInboundAction=Block, DefaultOutboundAction=Allow"
+        Apply = {
+            Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True -DefaultInboundAction Block -DefaultOutboundAction Allow -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True -DefaultInboundAction NotConfigured -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $p = Get-NetFirewallProfile -Profile Public -ErrorAction SilentlyContinue
+            $p -and $p.Enabled -and $p.DefaultInboundAction -eq 'Block'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall Stealth Mode (IPsec)"
+        Desc  = "EnableStealthModeForIPsec=True на всіх профілях: не відповідати на unsolicited трафік"
+        Apply = {
+            @("Domain","Private","Public") | ForEach-Object {
+                Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\${_}Profile" "EnableStealthModeForIPsec" 1
+            }
+            netsh advfirewall set allprofiles firewallpolicy blockinbound,allowoutbound 2>$null | Out-Null
+        }
+        Revert = {
+            @("Domain","Private","Public") | ForEach-Object {
+                Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\${_}Profile" "EnableStealthModeForIPsec"
+            }
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile" "EnableStealthModeForIPsec" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall Logging — увімкнути журнал для всіх профілів"
+        Desc  = "LogAllowed=True, LogBlocked=True, LogMaxSizeKilobytes=16384 для Domain/Private/Public"
+        Apply = {
+            Set-NetFirewallProfile -Profile Domain,Private,Public `
+                -LogAllowed True -LogBlocked True -LogMaxSizeKilobytes 16384 `
+                -LogFileName "%SystemRoot%\System32\LogFiles\Firewall\pfirewall.log" `
+                -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            Set-NetFirewallProfile -Profile Domain,Private,Public `
+                -LogAllowed False -LogBlocked False -LogMaxSizeKilobytes 4096 `
+                -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $p = Get-NetFirewallProfile -Profile Public -ErrorAction SilentlyContinue
+            $p -and $p.LogBlocked -eq 'True'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall — заблокувати ICMP Timestamp (Type 13/14)"
+        Desc  = "Блокувати вхідні ICMP Timestamp Request (13) та Reply (14) для захисту від розвідки"
+        Apply = {
+            New-NetFirewallRule -DisplayName "Block ICMP Timestamp Request In"  -Direction Inbound  -Protocol ICMPv4 -IcmpType 13 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block ICMP Timestamp Reply In"    -Direction Inbound  -Protocol ICMPv4 -IcmpType 14 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+        }
+        Revert = {
+            Remove-NetFirewallRule -DisplayName "Block ICMP Timestamp Request In"  -ErrorAction SilentlyContinue
+            Remove-NetFirewallRule -DisplayName "Block ICMP Timestamp Reply In"    -ErrorAction SilentlyContinue
+        }
+        Check = { $null -ne (Get-NetFirewallRule -DisplayName "Block ICMP Timestamp Request In" -ErrorAction SilentlyContinue) }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall — заблокувати SNMP порти (161/162)"
+        Desc  = "Блокувати UDP 161 та 162 (SNMP) вхідний/вихідний трафік"
+        Apply = {
+            New-NetFirewallRule -DisplayName "Block SNMP Inbound UDP 161"   -Direction Inbound  -Protocol UDP -LocalPort 161 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block SNMP Inbound UDP 162"   -Direction Inbound  -Protocol UDP -LocalPort 162 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block SNMP Outbound UDP 161"  -Direction Outbound -Protocol UDP -RemotePort 161 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block SNMP Outbound UDP 162"  -Direction Outbound -Protocol UDP -RemotePort 162 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+        }
+        Revert = {
+            Remove-NetFirewallRule -DisplayName "Block SNMP*" -ErrorAction SilentlyContinue
+        }
+        Check = { $null -ne (Get-NetFirewallRule -DisplayName "Block SNMP Inbound UDP 161" -ErrorAction SilentlyContinue) }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall — заблокувати SMB порт 445 (TCP/UDP)"
+        Desc  = "Блокувати порт 445 (SMB/CIFS) вхідний/вихідний для повного блокування SMB"
+        Apply = {
+            New-NetFirewallRule -DisplayName "Block SMB Inbound TCP 445"   -Direction Inbound  -Protocol TCP -LocalPort 445  -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block SMB Outbound TCP 445"  -Direction Outbound -Protocol TCP -RemotePort 445 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block SMB Inbound UDP 445"   -Direction Inbound  -Protocol UDP -LocalPort 445  -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block SMB Outbound UDP 445"  -Direction Outbound -Protocol UDP -RemotePort 445 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+        }
+        Revert = {
+            Remove-NetFirewallRule -DisplayName "Block SMB*" -ErrorAction SilentlyContinue
+        }
+        Check = { $null -ne (Get-NetFirewallRule -DisplayName "Block SMB Inbound TCP 445" -ErrorAction SilentlyContinue) }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall — заблокувати IRC порти"
+        Desc  = "Блокувати TCP 194, 529, 6660-6669, 6697, 7000 (IRC) вхідний трафік"
+        Apply = {
+            New-NetFirewallRule -DisplayName "Block IRC Inbound" -Direction Inbound -Protocol TCP `
+                -LocalPort 194,529,6660,6661,6662,6663,6664,6665,6666,6667,6668,6669,6697,7000 `
+                -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+        }
+        Revert = {
+            Remove-NetFirewallRule -DisplayName "Block IRC Inbound" -ErrorAction SilentlyContinue
+        }
+        Check = { $null -ne (Get-NetFirewallRule -DisplayName "Block IRC Inbound" -ErrorAction SilentlyContinue) }
+    },
+
+    [PSCustomObject]@{
+        Group = "Брандмауер — профілі та правила"
+        Name  = "Firewall — заблокувати Port 0 (HPING3 DDoS)"
+        Desc  = "Блокувати TCP/UDP порт 0 вхідний/вихідний (HPING3 DDoS-атаки)"
+        Apply = {
+            New-NetFirewallRule -DisplayName "Block Port0 Inbound TCP"   -Direction Inbound  -Protocol TCP -LocalPort 0  -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block Port0 Outbound TCP"  -Direction Outbound -Protocol TCP -RemotePort 0 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block Port0 Inbound UDP"   -Direction Inbound  -Protocol UDP -LocalPort 0  -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+            New-NetFirewallRule -DisplayName "Block Port0 Outbound UDP"  -Direction Outbound -Protocol UDP -RemotePort 0 -Action Block -Profile Any -ErrorAction SilentlyContinue | Out-Null
+        }
+        Revert = {
+            Remove-NetFirewallRule -DisplayName "Block Port0*" -ErrorAction SilentlyContinue
+        }
+        Check = { $null -ne (Get-NetFirewallRule -DisplayName "Block Port0 Inbound TCP" -ErrorAction SilentlyContinue) }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 42: МЕРЕЖЕВІ ПРОТОКОЛИ — БЛОКУВАННЯ ────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Мережеві протоколи — блокування"
+        Name  = "File & Printer Sharing binding — вимкнути на адаптерах"
+        Desc  = "Вимкнути ms_server компонент (File and Printer Sharing) на Ethernet та Wi-Fi адаптерах"
+        Apply = {
+            Get-NetAdapter -ErrorAction SilentlyContinue | ForEach-Object {
+                Disable-NetAdapterBinding -Name $_.Name -ComponentID ms_server -ErrorAction SilentlyContinue
+            }
+        }
+        Revert = {
+            Get-NetAdapter -ErrorAction SilentlyContinue | ForEach-Object {
+                Enable-NetAdapterBinding -Name $_.Name -ComponentID ms_server -ErrorAction SilentlyContinue
+            }
+        }
+        Check = {
+            $adapter = Get-NetAdapter -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($adapter) {
+                $b = Get-NetAdapterBinding -Name $adapter.Name -ComponentID ms_server -ErrorAction SilentlyContinue
+                $b -and -not $b.Enabled
+            } else { $false }
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережеві протоколи — блокування"
+        Name  = "WinRM / PowerShell Remoting — повністю вимкнути"
+        Desc  = "Зупинити WinRM, вимкнути PS Remoting, LocalAccountTokenFilterPolicy=0"
+        Apply = {
+            Set-ServiceDisabled "WinRM"
+            Disable-PSRemoting -Force -ErrorAction SilentlyContinue 2>$null
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "LocalAccountTokenFilterPolicy" 0
+        }
+        Revert = {
+            Set-ServiceManual "WinRM"
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "LocalAccountTokenFilterPolicy" 1
+        }
+        Check = { $s = Get-Service "WinRM" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережеві протоколи — блокування"
+        Name  = "SSTP VPN сервіс — вимкнути"
+        Desc  = "Зупинити та вимкнути SstpSvc (Secure Socket Tunneling Protocol)"
+        Apply  = { Set-ServiceDisabled "SstpSvc" }
+        Revert = { Set-ServiceManual "SstpSvc" }
+        Check  = { $s = Get-Service "SstpSvc" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережеві протоколи — блокування"
+        Name  = "SMBv2 протокол — вимкнути (тільки для ізольованих станцій)"
+        Desc  = "Вимкнути SMB2Protocol через Set-SmbServerConfiguration (УВАГА: може вплинути на мережеві ресурси)"
+        Apply = {
+            Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            Set-SmbServerConfiguration -EnableSMB2Protocol $true -Force -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $cfg = Get-SmbServerConfiguration -ErrorAction SilentlyContinue
+            $cfg -and -not $cfg.EnableSMB2Protocol
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережеві протоколи — блокування"
+        Name  = "LMHosts / LanmanServer / LanmanWorkstation — вимкнути"
+        Desc  = "Зупинити сервіси lmhosts, LanmanServer, LanmanWorkstation для ізольованих станцій"
+        Apply = {
+            foreach ($svc in @("lmhosts","LanmanServer","LanmanWorkstation")) {
+                Set-ServiceDisabled $svc
+            }
+        }
+        Revert = {
+            foreach ($svc in @("lmhosts","LanmanServer","LanmanWorkstation")) {
+                Set-ServiceManual $svc
+            }
+        }
+        Check = { $s = Get-Service "LanmanServer" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережеві протоколи — блокування"
+        Name  = "Null Sessions / Anonymous Pipes — розширений захист"
+        Desc  = "NullSessionPipes='', NullSessionShares='', RestrictNullSessAccess=1, LmCompatibilityLevel=5"
+        Apply = {
+            $lsa = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+            $smb = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+            Set-Reg $lsa "LmCompatibilityLevel"   5
+            Set-Reg $smb "NullSessionPipes"        "" "MultiString"
+            Set-Reg $smb "NullSessionShares"       "" "MultiString"
+            Set-Reg $smb "RestrictNullSessAccess"  1
+        }
+        Revert = {
+            $smb = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+            Remove-RegValue $smb "NullSessionPipes"
+            Remove-RegValue $smb "NullSessionShares"
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "RestrictNullSessAccess" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 43: ПАРОЛІ — ІСТОРІЯ ТА LOCKOUT (CIS) ──────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Паролі — історія та lockout (CIS)"
+        Name  = "Password History — зберігати 24 останніх паролі (CIS 1.1.1)"
+        Desc  = "Заборонити повторне використання 24 останніх паролів через secedit"
+        Apply = {
+            $tmp = "$env:TEMP\pwhistory.inf"; $db = "$env:TEMP\pwhistory.sdb"
+            @"
+[Unicode]
+Unicode=yes
+[System Access]
+PasswordHistorySize = 24
+[Version]
+signature="`$CHICAGO`$"
+Revision=1
+"@ | Set-Content $tmp -Encoding Unicode
+            secedit /configure /db $db /cfg $tmp /areas SECURITYPOLICY /quiet 2>$null
+            Remove-Item $tmp,$db -Force -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            $tmp = "$env:TEMP\pwhistory.inf"; $db = "$env:TEMP\pwhistory.sdb"
+            @"
+[Unicode]
+Unicode=yes
+[System Access]
+PasswordHistorySize = 0
+[Version]
+signature="`$CHICAGO`$"
+Revision=1
+"@ | Set-Content $tmp -Encoding Unicode
+            secedit /configure /db $db /cfg $tmp /areas SECURITYPOLICY /quiet 2>$null
+            Remove-Item $tmp,$db -Force -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $tmp = "$env:TEMP\secpol_check.inf"
+            secedit /export /cfg $tmp /areas SECURITYPOLICY /quiet 2>$null
+            $val = (Get-Content $tmp -ErrorAction SilentlyContinue | Where-Object { $_ -match 'PasswordHistorySize' }) -replace '.*=\s*', ''
+            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+            [int]$val -ge 24
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Паролі — історія та lockout (CIS)"
+        Name  = "Minimum Password Age — 1 день (CIS 1.1.3)"
+        Desc  = "Мінімальний вік пароля 1 день: запобігти швидкій ротації паролів"
+        Apply = { net accounts /minpwage:1 2>$null | Out-Null }
+        Revert = { net accounts /minpwage:0 2>$null | Out-Null }
+        Check = {
+            $out = net accounts 2>$null
+            $line = $out | Where-Object { $_ -match 'Minimum password age' -or $_ -match 'мін.*пароля' }
+            if ($line) { ($line -replace '\D','') -ge 1 } else { $false }
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Паролі — історія та lockout (CIS)"
+        Name  = "Account Lockout Duration — 30 хвилин (CIS 1.2.1)"
+        Desc  = "Тривалість блокування облікового запису 30 хв після перевищення спроб входу"
+        Apply = { net accounts /lockoutduration:30 2>$null | Out-Null }
+        Revert = { net accounts /lockoutduration:0 2>$null | Out-Null }
+        Check = {
+            $out = net accounts 2>$null
+            $line = $out | Where-Object { $_ -match 'Lockout duration' -or $_ -match 'блокування' }
+            if ($line) { ($line -replace '\D','') -ge 30 } else { $false }
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Паролі — історія та lockout (CIS)"
+        Name  = "Reset Lockout Counter — 15 хвилин (CIS 1.2.3)"
+        Desc  = "Скинути лічильник невдалих спроб через 15 хв"
+        Apply = { net accounts /lockoutwindow:15 2>$null | Out-Null }
+        Revert = { net accounts /lockoutwindow:30 2>$null | Out-Null }
+        Check = {
+            $out = net accounts 2>$null
+            $line = $out | Where-Object { $_ -match 'Lockout observation' -or $_ -match 'спостереження' }
+            if ($line) { ($line -replace '\D','') -ge 15 } else { $false }
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 44: IE / EDGE — ЗАХИСТ ──────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "IE / Edge — захист"
+        Name  = "IE — 64-bit Tab Isolation + ActiveX захист"
+        Desc  = "Isolation64Bit=1: 64-bit процес-ізоляція для IE; 270C=0: захист ActiveX від malware в Internet Zone"
+        Apply = {
+            Set-Reg "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" "Isolation64Bit" 1
+            Set-Reg "HKLM:\Software\Policies\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\3" "270C" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" "Isolation64Bit"
+            Remove-RegValue "HKLM:\Software\Policies\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\3" "270C"
+        }
+        Check = { (Get-Reg "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" "Isolation64Bit" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "IE / Edge — захист"
+        Name  = "IE — Enhanced Protected Mode + заборонити Flash"
+        Desc  = "Isolation=PMEM, Enhanced Protected Mode, вимкнути Flash Player для IE"
+        Apply = {
+            $ie = "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main"
+            Set-Reg $ie "Isolation"          "PMEM" "String"
+            Set-Reg $ie "EnableEnhancedProtectedMode" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BLOCK_SHOCKWAVE_FLASH" "iexplore.exe" 1
+        }
+        Revert = {
+            $ie = "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main"
+            Remove-RegValue $ie "Isolation"
+            Remove-RegValue $ie "EnableEnhancedProtectedMode"
+        }
+        Check = { (Get-Reg "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" "EnableEnhancedProtectedMode" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "IE / Edge — захист"
+        Name  = "Edge — заблокувати збір даних та рекламу"
+        Desc  = "DoNotTrack=1, FormSuggest=no, PersonalizationReportingEnabled=0"
+        Apply = {
+            $edge = "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main"
+            Set-Reg $edge "DoNotTrack"     1
+            Set-Reg $edge "FormSuggest"    "no" "String"
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy" "EnableEncryptedMediaExtensions" 0
+            Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" "PersonalizationReportingEnabled" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" "DoNotTrack"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" "FormSuggest"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" "DoNotTrack" 0) -eq 1 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 45: РОЗШИРЕНИЙ АУДИТ (CIS / STIG) ──────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Розширений аудит (CIS / STIG)"
+        Name  = "Audit — Account Logon та Group Management (CIS)"
+        Desc  = "Credential Validation, Application/Security/Distribution Group Management — Success+Failure"
+        Apply = {
+            $subs = @("Credential Validation","Application Group Management",
+                      "Security Group Management","Distribution Group Management",
+                      "Computer Account Management","Other Account Management Events")
+            foreach ($s in $subs) {
+                auditpol /set /subcategory:"$s" /success:enable /failure:enable 2>$null | Out-Null
+            }
+        }
+        Revert = {
+            $subs = @("Credential Validation","Application Group Management",
+                      "Security Group Management","Distribution Group Management",
+                      "Computer Account Management","Other Account Management Events")
+            foreach ($s in $subs) {
+                auditpol /set /subcategory:"$s" /success:disable /failure:disable 2>$null | Out-Null
+            }
+        }
+        Check = {
+            $out = auditpol /get /subcategory:"Credential Validation" 2>$null
+            $out -match 'Success and Failure'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Розширений аудит (CIS / STIG)"
+        Name  = "Audit — Object Access та Privilege Use (STIG)"
+        Desc  = "File System, Registry, Handle Manipulation, SAM, Sensitive/Non-Sensitive Privilege Use"
+        Apply = {
+            $subs = @("File System","Registry","Handle Manipulation","SAM",
+                      "Sensitive Privilege Use","Non Sensitive Privilege Use",
+                      "Filtering Platform Packet Drop","Filtering Platform Connection")
+            foreach ($s in $subs) {
+                auditpol /set /subcategory:"$s" /success:enable /failure:enable 2>$null | Out-Null
+            }
+        }
+        Revert = {
+            $subs = @("File System","Registry","Handle Manipulation","SAM",
+                      "Sensitive Privilege Use","Non Sensitive Privilege Use",
+                      "Filtering Platform Packet Drop","Filtering Platform Connection")
+            foreach ($s in $subs) {
+                auditpol /set /subcategory:"$s" /success:disable /failure:disable 2>$null | Out-Null
+            }
+        }
+        Check = {
+            $out = auditpol /get /subcategory:"Sensitive Privilege Use" 2>$null
+            $out -match 'Success and Failure'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Розширений аудит (CIS / STIG)"
+        Name  = "Event Log — розширені розміри (Security 200MB, інші 50MB)"
+        Desc  = "Security=204800KB, Application/System/Setup=51200KB, PowerShell Operational=51200KB"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security"    "MaxSize" 204800
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application" "MaxSize" 51200
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\System"      "MaxSize" 51200
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Setup"       "MaxSize" 51200
+            wevtutil sl "Microsoft-Windows-PowerShell/Operational" /ms:52428800 2>$null
+        }
+        Revert = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security"    "MaxSize" 20480
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application" "MaxSize" 20480
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\System"      "MaxSize" 20480
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security" "MaxSize" 20480) -ge 204800 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Розширений аудит (CIS / STIG)"
+        Name  = "Audit — Logon/Logoff розширений + NTLM аудит"
+        Desc  = "Network Policy Server, IPsec Main/Quick/Extended Mode, Detailed Tracking, NTLM Audit"
+        Apply = {
+            $subs = @("Network Policy Server","IPsec Main Mode","IPsec Quick Mode",
+                      "IPsec Extended Mode","Detailed File Share","DPAPI Activity",
+                      "RPC Events","Token Right Adjusted Events")
+            foreach ($s in $subs) {
+                auditpol /set /subcategory:"$s" /success:enable /failure:enable 2>$null | Out-Null
+            }
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "AuditReceivingNTLMTraffic" 2
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "RestrictSendingNTLMTraffic" 1
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "AuditReceivingNTLMTraffic"
+            Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "RestrictSendingNTLMTraffic"
+        }
+        Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" "AuditReceivingNTLMTraffic" 0) -eq 2 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 46: ПРИВАТНІСТЬ — РОЗШИРЕНА (HKLM) ─────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKLM)"
+        Name  = "Connected Devices Platform (CDP) — вимкнути"
+        Desc  = "EnableCdp=0: вимкнути крос-девайсну синхронізацію, clipboard sharing, Continue on PC"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableCdp" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableCdp"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableCdp" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKLM)"
+        Name  = "Cortana / Search — повністю вимкнути"
+        Desc  = "AllowCortana=0, DisableWebSearch=1, ConnectedSearchUseWeb=0, AllowSearchToUseLocation=0"
+        Apply = {
+            $ws = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+            Set-Reg $ws "AllowCortana"           0
+            Set-Reg $ws "DisableWebSearch"       1
+            Set-Reg $ws "ConnectedSearchUseWeb"  0
+            Set-Reg $ws "AllowSearchToUseLocation" 0
+            Set-Reg $ws "AllowCloudSearch"       0
+            Set-Reg $ws "AllowCortanaAboveLock"  0
+        }
+        Revert = {
+            $ws = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+            Set-Reg $ws "AllowCortana"      1
+            Set-Reg $ws "DisableWebSearch"  0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortana" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKLM)"
+        Name  = "Windows Store — вимкнути автооновлення та пропозиції"
+        Desc  = "AutoDownload=4, DisableOSUpgrade=1: обмежити автозавантаження, вимкнути upgrade через Store"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "AutoDownload"    4
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "DisableOSUpgrade" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableSoftLanding" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableCloudOptimizedContent" 1
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "AutoDownload"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "DisableOSUpgrade"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "AutoDownload" 0) -eq 4 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKLM)"
+        Name  = "Microsoft Accounts — вимкнути автентифікацію"
+        Desc  = "DisableUserAuth=1, AllowMicrosoftAccountsToBeOptional=1: блокувати MSA auth на пристрої"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional" 1
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKLM)"
+        Name  = "Delivery Optimization — вимкнути P2P оновлення"
+        Desc  = "DODownloadMode=0: тільки HTTP, без P2P розповсюдження оновлень"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0
+            Set-ServiceDisabled "DoSvc"
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode"
+            Set-ServiceManual "DoSvc"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKLM)"
+        Name  = "Encrypted Files — заборонити індексацію (CIS)"
+        Desc  = "AllowIndexingEncryptedStoresOrItems=0: не індексувати шифровані файли Windows Search"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowIndexingEncryptedStoresOrItems" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowIndexingEncryptedStoresOrItems"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowIndexingEncryptedStoresOrItems" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 47: ЗАХИСТ СЕРВІСІВ ТА ДРАЙВЕРІВ ───────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Захист сервісів та драйверів"
+        Name  = "SNMP сервіс — вимкнути та видалити"
+        Desc  = "Зупинити SNMP Service, вимкнути та деінсталювати Windows Feature SNMP-Service"
+        Apply = {
+            Set-ServiceDisabled "SNMP"
+            Get-WindowsCapability -Online -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -like '*SNMP*' -and $_.State -eq 'Installed' } |
+                ForEach-Object { Remove-WindowsCapability -Online -Name $_.Name -ErrorAction SilentlyContinue }
+        }
+        Revert = {
+            Set-ServiceManual "SNMP"
+        }
+        Check = {
+            $s = Get-Service "SNMP" -ErrorAction SilentlyContinue
+            -not $s -or $s.StartType -eq 'Disabled'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Захист сервісів та драйверів"
+        Name  = "Remote Registry — вимкнути"
+        Desc  = "Зупинити та вимкнути Remote Registry сервіс (віддалений доступ до реєстру)"
+        Apply  = { Set-ServiceDisabled "RemoteRegistry" }
+        Revert = { Set-ServiceManual "RemoteRegistry" }
+        Check  = { $s = Get-Service "RemoteRegistry" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    },
+
+    [PSCustomObject]@{
+        Group = "Захист сервісів та драйверів"
+        Name  = "Fax / XboxGipSvc / RetailDemo — вимкнути"
+        Desc  = "Зупинити Fax, XboxGipSvc, XboxNetApiSvc, RetailDemo сервіси"
+        Apply = {
+            foreach ($svc in @("Fax","XboxGipSvc","XboxNetApiSvc","RetailDemo","MapsBroker")) {
+                Set-ServiceDisabled $svc
+            }
+        }
+        Revert = {
+            foreach ($svc in @("Fax","XboxGipSvc","XboxNetApiSvc","RetailDemo","MapsBroker")) {
+                Set-ServiceManual $svc
+            }
+        }
+        Check = { $s = Get-Service "XboxGipSvc" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    },
+
+    [PSCustomObject]@{
+        Group = "Захист сервісів та драйверів"
+        Name  = "Bluetooth Support / SSDP Discovery — вимкнути"
+        Desc  = "Зупинити bthserv (Bluetooth), SSDPSRV (SSDP Discovery), upnphost (UPnP)"
+        Apply = {
+            foreach ($svc in @("bthserv","SSDPSRV","upnphost")) {
+                Set-ServiceDisabled $svc
+            }
+        }
+        Revert = {
+            foreach ($svc in @("bthserv","SSDPSRV","upnphost")) {
+                Set-ServiceManual $svc
+            }
+        }
+        Check = { $s = Get-Service "SSDPSRV" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 48: WINDOWS SANDBOX / VIRTUALIZATION SECURITY ───────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Windows Sandbox / Virtualization Security"
+        Name  = "HVCI — Hypervisor-protected Code Integrity"
+        Desc  = "HypervisorEnforcedCodeIntegrity=1, HVCIMATRequired=1: захист ядра від unsigned drivers"
+        Apply = {
+            $dg = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard"
+            Set-Reg $dg "HypervisorEnforcedCodeIntegrity" 1
+            Set-Reg $dg "HVCIMATRequired"                 1
+        }
+        Revert = {
+            $dg = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard"
+            Set-Reg $dg "HypervisorEnforcedCodeIntegrity" 0
+            Set-Reg $dg "HVCIMATRequired"                 0
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "HypervisorEnforcedCodeIntegrity" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Windows Sandbox / Virtualization Security"
+        Name  = "System Guard Secure Launch + Kernel Shadow Stacks"
+        Desc  = "ConfigureSystemGuardLaunch=1, ConfigureKernelShadowStacksLaunch=1"
+        Apply = {
+            $dg = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard"
+            Set-Reg $dg "ConfigureSystemGuardLaunch"            1
+            Set-Reg $dg "ConfigureKernelShadowStacksLaunch"    1
+        }
+        Revert = {
+            $dg = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard"
+            Remove-RegValue $dg "ConfigureSystemGuardLaunch"
+            Remove-RegValue $dg "ConfigureKernelShadowStacksLaunch"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "ConfigureSystemGuardLaunch" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Windows Sandbox / Virtualization Security"
+        Name  = "Заборонити Custom SSPs/APs (LSASS захист)"
+        Desc  = "AllowCustomSSPsAPs=0: не дозволяти нестандартним SSP/AP підключатися до LSASS"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs" 1) -eq 0 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 49: МЕРЕЖЕВА ІЗОЛЯЦІЯ / DOMAIN HARDENING ───────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Мережева ізоляція / Domain Hardening"
+        Name  = "Заблокувати підключення до non-domain мереж при domain з'єднанні"
+        Desc  = "fBlockNonDomain=1, fMinimizeConnections=3: ізоляція від публічних мереж при підключенні до домену"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fBlockNonDomain"       1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fMinimizeConnections"  3
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fBlockNonDomain"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fMinimizeConnections"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fBlockNonDomain" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева ізоляція / Domain Hardening"
+        Name  = "UNC Hardened Paths — SYSVOL та NETLOGON"
+        Desc  = "RequireMutualAuthentication=1, RequireIntegrity=1 для \\*\\SYSVOL та \\*\\NETLOGON"
+        Apply = {
+            $hp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths"
+            Set-Reg $hp "\\*\SYSVOL"    "RequireMutualAuthentication=1, RequireIntegrity=1" "String"
+            Set-Reg $hp "\\*\NETLOGON"  "RequireMutualAuthentication=1, RequireIntegrity=1" "String"
+        }
+        Revert = {
+            $hp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths"
+            Remove-RegValue $hp "\\*\SYSVOL"
+            Remove-RegValue $hp "\\*\NETLOGON"
+        }
+        Check = {
+            $val = Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths" "\\*\SYSVOL" ""
+            $val -match 'RequireMutualAuthentication=1'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева ізоляція / Domain Hardening"
+        Name  = "Network Connections — приховати Shared Access UI"
+        Desc  = "NC_ShowSharedAccessUI=0: заборонити Internet Connection Sharing UI"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" "NC_ShowSharedAccessUI" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" "NC_ShowSharedAccessUI"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" "NC_ShowSharedAccessUI" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева ізоляція / Domain Hardening"
+        Name  = "Insecure Guest Auth — заборонити для SMB"
+        Desc  = "AllowInsecureGuestAuth=0: заблокувати гостьовий доступ до SMB ресурсів"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" "AllowInsecureGuestAuth" 0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" "AllowInsecureGuestAuth"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" "AllowInsecureGuestAuth" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева ізоляція / Domain Hardening"
+        Name  = "SMB Encryption — увімкнути обов'язкове шифрування"
+        Desc  = "EncryptData=True, RejectUnencryptedAccess=True: весь SMB трафік має бути зашифрований"
+        Apply = {
+            Set-SmbServerConfiguration -EncryptData $true -RejectUnencryptedAccess $true -Force -ErrorAction SilentlyContinue
+        }
+        Revert = {
+            Set-SmbServerConfiguration -EncryptData $false -RejectUnencryptedAccess $false -Force -ErrorAction SilentlyContinue
+        }
+        Check = {
+            $cfg = Get-SmbServerConfiguration -ErrorAction SilentlyContinue
+            $cfg -and $cfg.EncryptData
+        }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 50: ПРИВАТНІСТЬ — РОЗШИРЕНА (HKCU) ─────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKCU)"
+        Name  = "Advertising ID — вимкнути для поточного користувача"
+        Desc  = "Enabled=0: вимкнути рекламний ідентифікатор Windows"
+        Apply = {
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 0
+        }
+        Revert = {
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 1
+        }
+        Check = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKCU)"
+        Name  = "Input Personalization / Inking — вимкнути"
+        Desc  = "RestrictImplicitInkCollection=1, RestrictImplicitTextCollection=1: не збирати дані рукопису/друку"
+        Apply = {
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\InputPersonalization" "RestrictImplicitInkCollection"  1
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\InputPersonalization" "RestrictImplicitTextCollection" 1
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Personalization\Settings" "AcceptedPrivacyPolicy" 0
+        }
+        Revert = {
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\InputPersonalization" "RestrictImplicitInkCollection"  0
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\InputPersonalization" "RestrictImplicitTextCollection" 0
+        }
+        Check = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\InputPersonalization" "RestrictImplicitInkCollection" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKCU)"
+        Name  = "Clipboard Cloud Sync / History — вимкнути"
+        Desc  = "AllowCrossDeviceClipboard=0, AllowClipboardHistory=0: вимкнути хмарний буфер обміну"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCrossDeviceClipboard" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowClipboardHistory"     0
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCrossDeviceClipboard"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowClipboardHistory"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCrossDeviceClipboard" 1) -eq 0 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKCU)"
+        Name  = "Diagnostic Data / Feedback — мінімізувати"
+        Desc  = "NumberOfSIUFInPeriod=0, DoNotShowFeedbackNotifications=1: вимкнути запити зворотного зв'язку"
+        Apply = {
+            Set-Reg "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" "NumberOfSIUFInPeriod" 0
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "DoNotShowFeedbackNotifications" 1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "LimitDiagnosticLogCollection"    1
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "LimitDumpCollection"             1
+        }
+        Revert = {
+            Remove-RegValue "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" "NumberOfSIUFInPeriod"
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "DoNotShowFeedbackNotifications"
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "DoNotShowFeedbackNotifications" 0) -eq 1 }
+    },
+
+    [PSCustomObject]@{
+        Group = "Приватність — розширена (HKCU)"
+        Name  = "App Permissions — заборонити доступ до камери/мікрофона/локації"
+        Desc  = "LetAppsAccessCamera=2, LetAppsAccessMicrophone=2, LetAppsAccessLocation=2 (Force Deny)"
+        Apply = {
+            $ap = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore"
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessCamera"     2
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessMicrophone" 2
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessLocation"   2
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessContacts"   2
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessCalendar"   2
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessCallHistory" 2
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessMessaging"  2
+        }
+        Revert = {
+            $keys = @("LetAppsAccessCamera","LetAppsAccessMicrophone","LetAppsAccessLocation",
+                      "LetAppsAccessContacts","LetAppsAccessCalendar","LetAppsAccessCallHistory","LetAppsAccessMessaging")
+            foreach ($k in $keys) {
+                Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" $k
+            }
+        }
+        Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsAccessCamera" 0) -eq 2 }
+    },
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 51: SCHEDULED TASKS — РОЗШИРЕНЕ ВІДКЛЮЧЕННЯ ─────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+    [PSCustomObject]@{
+        Group = "Scheduled Tasks — розширене відключення"
+        Name  = "Telemetry Tasks — Office / Device Census / Cloud Experience"
+        Desc  = "Вимкнути задачі: OfficeTelemetryAgentFallBack, Proxy, Consolidator, DeviceCensus, CreateObjectTask"
+        Apply = {
+            Disable-Task "\Microsoft\Office\OfficeTelemetryAgentFallBack2016\" "OfficeTelemetryAgentFallBack2016"
+            Disable-Task "\Microsoft\Office\OfficeTelemetryAgentLogOn2016\"    "OfficeTelemetryAgentLogOn2016"
+            Disable-Task "\Microsoft\Windows\Device Information\"     "Device"
+            Disable-Task "\Microsoft\Windows\CloudExperienceHost\"    "CreateObjectTask"
+            Disable-Task "\Microsoft\Windows\License Manager\"        "TempSignedLicenseExchange"
+        }
+        Revert = {
+            Enable-Task "\Microsoft\Office\OfficeTelemetryAgentFallBack2016\" "OfficeTelemetryAgentFallBack2016"
+            Enable-Task "\Microsoft\Office\OfficeTelemetryAgentLogOn2016\"    "OfficeTelemetryAgentLogOn2016"
+            Enable-Task "\Microsoft\Windows\Device Information\"     "Device"
+            Enable-Task "\Microsoft\Windows\CloudExperienceHost\"    "CreateObjectTask"
+            Enable-Task "\Microsoft\Windows\License Manager\"        "TempSignedLicenseExchange"
+        }
+        Check = {
+            $t = Get-ScheduledTask -TaskPath "\Microsoft\Windows\Device Information\" `
+                                   -TaskName "Device" -ErrorAction SilentlyContinue
+            $t -and $t.State -eq 'Disabled'
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Scheduled Tasks — розширене відключення"
+        Name  = "Background Tasks — Defrag / WDI / Memory Diagnostic"
+        Desc  = "Вимкнути ScheduledDefrag, WDI ResolutionHost, MemoryDiagnostic RunFullMemoryDiagnostic"
+        Apply = {
+            Disable-Task "\Microsoft\Windows\Defrag\"                  "ScheduledDefrag"
+            Disable-Task "\Microsoft\Windows\WDI\"                     "ResolutionHost"
+            Disable-Task "\Microsoft\Windows\MemoryDiagnostic\"        "RunFullMemoryDiagnostic"
+            Disable-Task "\Microsoft\Windows\Power Efficiency Diagnostics\" "AnalyzeSystem"
+        }
+        Revert = {
+            Enable-Task "\Microsoft\Windows\Defrag\"                  "ScheduledDefrag"
+            Enable-Task "\Microsoft\Windows\WDI\"                     "ResolutionHost"
+            Enable-Task "\Microsoft\Windows\MemoryDiagnostic\"        "RunFullMemoryDiagnostic"
+            Enable-Task "\Microsoft\Windows\Power Efficiency Diagnostics\" "AnalyzeSystem"
+        }
+        Check = {
+            $t = Get-ScheduledTask -TaskPath "\Microsoft\Windows\Defrag\" `
+                                   -TaskName "ScheduledDefrag" -ErrorAction SilentlyContinue
+            $t -and $t.State -eq 'Disabled'
+        }
     }
 
 
