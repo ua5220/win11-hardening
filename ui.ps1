@@ -217,44 +217,16 @@ function Refresh-RowState {
 
     $C = $Context.Theme
 
-    # Update status dot if present in RowRecord
     if ($RowRecord.PSObject.Properties['StatusDot'] -and $RowRecord.StatusDot) {
         $RowRecord.StatusDot.BackColor = if ($isActive) { $C.StatusOnDot } else { $C.StatusOffDot }
     }
 
-    # ── Discover buttons by Tag, falling back to Text ────────────────────
-    $applyBtn  = $null
-    $revertBtn = $null
-
-    foreach ($propName in $RowRecord.PSObject.Properties.Name) {
-        $val = $RowRecord.$propName
-        if ($val -isnot [System.Windows.Forms.Button]) { continue }
-
-        $marker = $val.Tag
-        if (-not $marker) { $marker = $val.Text }
-
-        if     ($marker -match '(?i)apply|застосувати')  { $applyBtn  = $val }
-        elseif ($marker -match '(?i)revert|відновити')   { $revertBtn = $val }
+    if ($RowRecord.PSObject.Properties['BtnApply'] -and $RowRecord.BtnApply) {
+        $RowRecord.BtnApply.BackColor = if ($isActive) { $C.ButtonApplied } else { $C.ButtonApply }
+        $RowRecord.BtnApply.Text      = if ($isActive) { '✓ Applied'       } else { 'Apply'        }
     }
-
-    # Fallback: first discovered Button = Apply, second = Revert
-    if (-not $applyBtn -and -not $revertBtn) {
-        $allBtns = @(
-            $RowRecord.PSObject.Properties.Name |
-            ForEach-Object { $RowRecord.$_ } |
-            Where-Object   { $_ -is [System.Windows.Forms.Button] }
-        )
-        if ($allBtns.Count -ge 1) { $applyBtn  = $allBtns[0] }
-        if ($allBtns.Count -ge 2) { $revertBtn = $allBtns[1] }
-    }
-
-    # ── Update button state ───────────────────────────────────────────────
-    if ($applyBtn) {
-        $applyBtn.BackColor = if ($isActive) { $C.ButtonApplied } else { $C.ButtonApply }
-        $applyBtn.Text      = if ($isActive) { '✓ Applied'       } else { 'Apply'        }
-    }
-    if ($revertBtn) {
-        $revertBtn.Enabled = $isActive
+    if ($RowRecord.PSObject.Properties['BtnRevert'] -and $RowRecord.BtnRevert) {
+        $RowRecord.BtnRevert.Enabled = $isActive
     }
 }
 

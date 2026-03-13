@@ -19,14 +19,17 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'Stop'
+
+# ── Завантаження спільних хелперів ───────────────────────────────────────────
+. (Join-Path $PSScriptRoot 'helpers.ps1')
 
 # ── Визначення архітектури ─────────────────────────────────────────────────────
 $Is64 = [Environment]::Is64BitOperatingSystem
 $WinVer = [System.Environment]::OSVersion.Version
 $IsWin11 = ($WinVer.Build -ge 22000)
 
-# ── Логування ──────────────────────────────────────────────────────────────────
+# ── CLI-логування (консольне з кольорами) ────────────────────────────────────
 $LogFile = "$env:TEMP\PrivacyHarden_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 
 function Write-Log {
@@ -41,47 +44,43 @@ function Write-Log {
     }
     $line = "[{0}] {1} {2}" -f (Get-Date -Format 'HH:mm:ss'), $icon, $Msg
     Write-Host $line -ForegroundColor $color
-    Add-Content -Path $LogFile -Value $line -Encoding UTF8
+    try { Add-Content -Path $LogFile -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue } catch {}
 }
 
-# ── Допоміжні функції ──────────────────────────────────────────────────────────
-function Set-Reg {
-    param([string]$Path, [string]$Name, $Value, [string]$Type = 'DWord')
-    try {
-        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
-        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
-    } catch { Write-Log "Set-Reg помилка: $Path\$Name — $_" 'ERROR' }
-}
-
-function Remove-Reg {
-    param([string]$Path, [string]$Name = $null)
-    if ($Name) { Remove-ItemProperty -Path $Path -Name $Name -Force -ErrorAction SilentlyContinue }
-    else       { Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue }
-}
+# ── CLI-специфічні обгортки (використовують Set-Reg/Remove-RegValue з helpers.ps1) ─
 
 function Disable-Svc {
-    param([string]$Name)
-    $s = Get-Service -Name $Name -ErrorAction SilentlyContinue
-    if ($s) {
-        Stop-Service  -Name $Name -Force  -ErrorAction SilentlyContinue
-        Set-Service   -Name $Name -StartupType Disabled -ErrorAction SilentlyContinue
+    param([Parameter(Mandatory)][string]$Name)
+    try {
+        Set-ServiceDisabled -Name $Name
         Write-Log "Сервіс вимкнено: $Name" 'OK'
+    } catch {
+        Write-Log "Disable-Svc помилка: $Name — $_" 'ERROR'
     }
 }
 
+function Remove-Reg {
+    param([Parameter(Mandatory)][string]$Path, [string]$Name = $null)
+    if ($Name) { Remove-RegValue -Path $Path -Name $Name }
+    else       { Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue }
+}
+
 function Disable-Task {
-    param([string]$Path, [string]$Name)
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Name
+    )
     $t = Get-ScheduledTask -TaskPath $Path -TaskName $Name -ErrorAction SilentlyContinue
     if ($t) {
-        Disable-ScheduledTask -TaskPath $Path -TaskName $Name | Out-Null
+        Disable-ScheduledTask -TaskPath $Path -TaskName $Name -ErrorAction SilentlyContinue | Out-Null
         Write-Log "Завдання вимкнено: $Path$Name" 'OK'
     }
 }
 
 function Add-FirewallBlock {
-    param([string]$Name, [string[]]$IPs)
+    param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][string[]]$IPs)
     $existing = Get-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue
-    if ($existing) { Remove-NetFirewallRule -DisplayName $Name }
+    if ($existing) { Remove-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue }
     New-NetFirewallRule -DisplayName $Name -Direction Outbound `
         -RemoteAddress $IPs -Action Block -Profile Any -Enabled True | Out-Null
     Write-Log "Брандмауер: заблоковано '$Name' ($($IPs.Count) IP)" 'OK'

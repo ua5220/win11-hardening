@@ -53,6 +53,13 @@ function Remove-RegValue {
     Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
 }
 
+function Remove-RegKey {
+    param(
+        [Parameter(Mandatory)][string]$Path
+    )
+    Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 # ── Services & Tasks ──────────────────────────────────────────────────────
 
 function Set-ServiceDisabled {
