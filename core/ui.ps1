@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    WinForms UI factory and row rendering for HardeningGUI_v2
+    WinForms UI factory and row rendering for Windows 11 Hardening Suite
 .NOTES
-    Dot-sourced by HardeningGUI_v2.ps1 after helpers.ps1.
+    Dot-sourced by Run-Hardening.ps1 after helpers.ps1.
     Exports: New-AppTheme, New-AppButton, New-HardeningUi,
              Refresh-RowState, Show-SettingInfo, Build-SettingRows,
              Update-FilteredSettings

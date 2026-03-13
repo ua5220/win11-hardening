@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    Bulk actions and event wiring for HardeningGUI_v2
+    Bulk actions and event wiring for Windows 11 Hardening Suite
 .NOTES
-    Dot-sourced by HardeningGUI_v2.ps1 after ui.ps1.
+    Dot-sourced by Run-Hardening.ps1 after ui.ps1.
     Exports: Set-BusyState, Refresh-AllRows,
              Invoke-ApplyAllSettings, Invoke-ApplySelectedSettings,
              Invoke-RevertAllSettings, Connect-RowActions,

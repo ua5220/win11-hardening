@@ -1,10 +1,11 @@
 <#
 .SYNOPSIS
-    Infrastructure helpers for HardeningGUI_v2
+    Infrastructure helpers for Windows 11 Hardening Suite
 .NOTES
-    Dot-sourced by HardeningGUI_v2.ps1 before any other module.
+    Dot-sourced by Run-Hardening.ps1 before any other module.
     Provides: WinForms init, registry/service/task helpers,
-              logging, startup self-check, Test-SettingEnabled.
+              firewall, logging, backup, rollback, startup self-check,
+              Test-SettingEnabled.
 #>
 
 # ── WinForms ─────────────────────────────────────────────────────────────
@@ -176,4 +177,70 @@ function Test-SettingEnabled {
     param([Parameter(Mandatory)]$Setting)
     try   { return [bool](& $Setting.Check) }
     catch { return $false }
+}
+
+# ── Firewall ─────────────────────────────────────────────────────────────
+
+function Set-FirewallRule {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$Direction,
+        [string]$Protocol = 'TCP',
+        [string]$LocalPort,
+        [string]$Action = 'Block',
+        [string]$Profile = 'Any'
+    )
+    $exists = Get-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue
+    if ($exists) { Remove-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue }
+    $params = @{
+        DisplayName = $Name
+        Direction   = $Direction
+        Action      = $Action
+        Profile     = $Profile
+        Enabled     = 'True'
+    }
+    if ($Protocol -and $Protocol -ne 'Any') { $params.Protocol = $Protocol }
+    if ($LocalPort) { $params.LocalPort = $LocalPort }
+    New-NetFirewallRule @params | Out-Null
+}
+
+# ── Admin check ──────────────────────────────────────────────────────────
+
+function Test-AdminRequired {
+    if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+        ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw "Необхідні права адміністратора"
+    }
+}
+
+# ── Backup & Rollback ────────────────────────────────────────────────────
+
+function Backup-RegistryKey {
+    param([Parameter(Mandatory)][string]$Path)
+    $backupDir = Join-Path $env:ProgramData 'win11-hardening\backup'
+    if (-not (Test-Path $backupDir)) {
+        New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+    }
+    $safeName = $Path -replace '[:\\]', '-'
+    $outFile  = Join-Path $backupDir "$safeName-$(Get-Date -Format 'yyyyMMdd_HHmmss').reg"
+    reg export $Path $outFile /y 2>$null
+    Write-AppLog -Level 'INFO' -Message "Backup: $Path -> $outFile"
+}
+
+function Invoke-WithRollback {
+    param(
+        [Parameter(Mandatory)][scriptblock]$Apply,
+        [Parameter(Mandatory)][scriptblock]$Revert,
+        [Parameter(Mandatory)][string]$Name
+    )
+    try {
+        Write-AppLog -Level 'INFO' -Message "Застосування: $Name"
+        & $Apply
+        Write-AppLog -Level 'INFO' -Message "OK: $Name"
+    } catch {
+        Write-AppLog -Level 'ERROR' -Message "ПОМИЛКА в $Name — відкат: $_"
+        try { & $Revert } catch {
+            Write-AppLog -Level 'ERROR' -Message "Відкат також не вдався для $Name : $_"
+        }
+    }
 }
