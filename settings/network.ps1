@@ -207,6 +207,141 @@
 # ════════════════════════════════════════════════════════════════════════
 
 [PSCustomObject]@{
+    Group = "Мережева приватність / Hosts / DNS"
+    Name  = "Firewall — заблокувати IP-адреси телеметрії Microsoft та NVIDIA"
+    Desc  = "Вихідне блокування відомих IP-адрес телеметрії Microsoft (24 IP) та NVIDIA (2 IP) через Windows Firewall"
+    Apply = {
+        $msIPs = @(
+            '134.170.30.202','137.116.81.24','157.56.106.189',
+            '184.86.53.99','2.22.61.43','2.22.61.44',
+            '204.79.197.200','23.218.212.69','65.55.108.23',
+            '65.55.252.43','64.4.54.254','65.52.108.33',
+            '191.232.139.254','65.55.252.63','65.52.100.7',
+            '207.68.128.11','94.245.121.3','111.221.29.177',
+            '23.102.21.4','23.102.4.253','131.253.40.37',
+            '65.52.108.29','191.237.218.239','131.253.34.230'
+        )
+        $existing = Get-NetFirewallRule -DisplayName "Block MS Telemetry IPs" -ErrorAction SilentlyContinue
+        if ($existing) { Remove-NetFirewallRule -DisplayName "Block MS Telemetry IPs" -ErrorAction SilentlyContinue }
+        New-NetFirewallRule -DisplayName "Block MS Telemetry IPs" -Direction Outbound `
+            -RemoteAddress $msIPs -Action Block -Profile Any -Enabled True | Out-Null
+
+        $nvIPs = @('169.254.0.0','192.169.1.0')
+        $existing2 = Get-NetFirewallRule -DisplayName "Block NVIDIA Telemetry IPs" -ErrorAction SilentlyContinue
+        if ($existing2) { Remove-NetFirewallRule -DisplayName "Block NVIDIA Telemetry IPs" -ErrorAction SilentlyContinue }
+        New-NetFirewallRule -DisplayName "Block NVIDIA Telemetry IPs" -Direction Outbound `
+            -RemoteAddress $nvIPs -Action Block -Profile Any -Enabled True | Out-Null
+    }
+    Revert = {
+        Remove-NetFirewallRule -DisplayName "Block MS Telemetry IPs"     -ErrorAction SilentlyContinue
+        Remove-NetFirewallRule -DisplayName "Block NVIDIA Telemetry IPs" -ErrorAction SilentlyContinue
+    }
+    Check = { $null -ne (Get-NetFirewallRule -DisplayName "Block MS Telemetry IPs" -ErrorAction SilentlyContinue) }
+},
+
+[PSCustomObject]@{
+    Group = "Мережева приватність / Hosts / DNS"
+    Name  = "HOSTS файл — додати домени телеметрії Microsoft / NVIDIA / Adobe"
+    Desc  = "Заблокувати через hosts (0.0.0.0): vortex, telemetry, watson, sqm, oca, statsfe та ін."
+    Apply = {
+        $hostsPath = "$env:WINDIR\System32\drivers\etc\hosts"
+        $hostsBackup = "$hostsPath.bak_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        Copy-Item $hostsPath $hostsBackup -Force -ErrorAction SilentlyContinue
+
+        $telemetryDomains = @(
+            '0.0.0.0 vortex.data.microsoft.com',
+            '0.0.0.0 vortex-win.data.microsoft.com',
+            '0.0.0.0 telecommand.telemetry.microsoft.com',
+            '0.0.0.0 oca.telemetry.microsoft.com',
+            '0.0.0.0 sqm.telemetry.microsoft.com',
+            '0.0.0.0 watson.telemetry.microsoft.com',
+            '0.0.0.0 redir.metaservices.microsoft.com',
+            '0.0.0.0 choice.microsoft.com',
+            '0.0.0.0 df.telemetry.microsoft.com',
+            '0.0.0.0 reports.wes.df.telemetry.microsoft.com',
+            '0.0.0.0 wes.df.telemetry.microsoft.com',
+            '0.0.0.0 sqm.df.telemetry.microsoft.com',
+            '0.0.0.0 telemetry.microsoft.com',
+            '0.0.0.0 watson.ppe.telemetry.microsoft.com',
+            '0.0.0.0 telemetry.appex.bing.net',
+            '0.0.0.0 telemetry.urs.microsoft.com',
+            '0.0.0.0 settings-sandbox.data.microsoft.com',
+            '0.0.0.0 vortex-sandbox.data.microsoft.com',
+            '0.0.0.0 survey.watson.microsoft.com',
+            '0.0.0.0 watson.live.com',
+            '0.0.0.0 watson.microsoft.com',
+            '0.0.0.0 statsfe2.ws.microsoft.com',
+            '0.0.0.0 compatexchange.cloudapp.net',
+            '0.0.0.0 diagnostics.support.microsoft.com',
+            '0.0.0.0 rstats.update.microsoft.com',
+            '0.0.0.0 statsfe2.update.microsoft.com.akadns.net',
+            '0.0.0.0 fe2.update.microsoft.com.akadns.net',
+            '0.0.0.0 events.gfe.nvidia.com',
+            '0.0.0.0 telemetry.nvidia.com',
+            '0.0.0.0 ssl.google-analytics.com',
+            '0.0.0.0 www.google-analytics.com',
+            '0.0.0.0 activate.adobe.com',
+            '0.0.0.0 practivate.adobe.com',
+            '0.0.0.0 ereg.adobe.com'
+        )
+        $existingContent = Get-Content $hostsPath -ErrorAction SilentlyContinue
+        $newEntries = $telemetryDomains | Where-Object { $existingContent -notcontains $_ }
+        if ($newEntries.Count -gt 0) {
+            Add-Content -Path $hostsPath -Value "`n# === Privacy Hardening $(Get-Date -Format 'yyyy-MM-dd') ===" -Encoding UTF8
+            $newEntries | Add-Content -Path $hostsPath -Encoding UTF8
+        }
+        Clear-DnsClientCache -ErrorAction SilentlyContinue
+    }
+    Revert = {
+        # Відновити hosts з останнього .bak файлу
+        $hostsPath = "$env:WINDIR\System32\drivers\etc\hosts"
+        $bak = Get-ChildItem "$hostsPath.bak_*" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($bak) {
+            Copy-Item $bak.FullName $hostsPath -Force
+        } else {
+            # Видалити рядки що починаються з 0.0.0.0 (додані блокуванням)
+            $lines = Get-Content $hostsPath -ErrorAction SilentlyContinue
+            $filtered = $lines | Where-Object { $_ -notmatch '^0\.0\.0\.0\s+' -and $_ -notmatch '=== Privacy Hardening' }
+            $filtered | Set-Content $hostsPath -Encoding UTF8
+        }
+        Clear-DnsClientCache -ErrorAction SilentlyContinue
+    }
+    Check = {
+        $hostsPath = "$env:WINDIR\System32\drivers\etc\hosts"
+        $content = Get-Content $hostsPath -ErrorAction SilentlyContinue
+        $content -contains '0.0.0.0 vortex.data.microsoft.com'
+    }
+},
+
+[PSCustomObject]@{
+    Group = "Мережева приватність / Hosts / DNS"
+    Name  = "DNS — перемкнути на Cloudflare (1.1.1.1 / 1.0.0.1)"
+    Desc  = "Set-DnsClientServerAddress на всіх активних адаптерах; Flush DNS після зміни"
+    Apply = {
+        $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+        foreach ($a in $adapters) {
+            Set-DnsClientServerAddress -InterfaceIndex $a.InterfaceIndex `
+                -ServerAddresses @('1.1.1.1','1.0.0.1') -ErrorAction SilentlyContinue
+        }
+        Clear-DnsClientCache -ErrorAction SilentlyContinue
+    }
+    Revert = {
+        $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+        foreach ($a in $adapters) {
+            Set-DnsClientServerAddress -InterfaceIndex $a.InterfaceIndex -ResetServerAddresses -ErrorAction SilentlyContinue
+        }
+        Clear-DnsClientCache -ErrorAction SilentlyContinue
+    }
+    Check = {
+        $adapter = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' } | Select-Object -First 1
+        if ($adapter) {
+            $dns = (Get-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue).ServerAddresses
+            $dns -contains '1.1.1.1'
+        } else { $false }
+    }
+},
+
+[PSCustomObject]@{
     Group = "Мережева приватність / IPv6 / NetBIOS"
     Name  = "IPv6 — повністю вимкнути (DisabledComponents=0xFF)"
     Desc  = "DisabledComponents=0xFF: відключити всі IPv6-компоненти у стеку Tcpip6 (окрім loopback)"

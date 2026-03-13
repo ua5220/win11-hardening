@@ -214,6 +214,91 @@
 
 [PSCustomObject]@{
     Group = "Scheduled Tasks — розширене відключення"
+    Name  = "Задачі телеметрії v5 — AppExperience / Autochk / DiskDiagnostic / NetTrace / Clip / PI"
+    Desc  = "MareBackup, StartupAppTask, Proxy (Autochk), DiskDiagnosticDataCollector/Resolver, GatherNetworkInfo, SmartScreenSpecific (AppID), License Validation (Clip), Sqm-Tasks (PI)"
+    Apply = {
+        $tasks = @(
+            @('\Microsoft\Windows\Application Experience\',                  'MareBackup'),
+            @('\Microsoft\Windows\Application Experience\',                  'StartupAppTask'),
+            @('\Microsoft\Windows\Autochk\',                                 'Proxy'),
+            @('\Microsoft\Windows\DiskDiagnostic\',                          'Microsoft-Windows-DiskDiagnosticDataCollector'),
+            @('\Microsoft\Windows\DiskDiagnostic\',                          'Microsoft-Windows-DiskDiagnosticResolver'),
+            @('\Microsoft\Windows\NetTrace\',                                 'GatherNetworkInfo'),
+            @('\Microsoft\Windows\AppID\',                                    'SmartScreenSpecific'),
+            @('\Microsoft\Windows\Clip\',                                     'License Validation'),
+            @('\Microsoft\Windows\PI\',                                       'Sqm-Tasks'),
+            @('\Microsoft\Windows\Maintenance\',                              'WinSAT')
+        )
+        foreach ($t in $tasks) { Disable-Task $t[0] $t[1] }
+    }
+    Revert = {
+        $tasks = @(
+            @('\Microsoft\Windows\Application Experience\',                  'MareBackup'),
+            @('\Microsoft\Windows\Application Experience\',                  'StartupAppTask'),
+            @('\Microsoft\Windows\Autochk\',                                 'Proxy'),
+            @('\Microsoft\Windows\DiskDiagnostic\',                          'Microsoft-Windows-DiskDiagnosticDataCollector'),
+            @('\Microsoft\Windows\DiskDiagnostic\',                          'Microsoft-Windows-DiskDiagnosticResolver'),
+            @('\Microsoft\Windows\NetTrace\',                                 'GatherNetworkInfo'),
+            @('\Microsoft\Windows\AppID\',                                    'SmartScreenSpecific'),
+            @('\Microsoft\Windows\Clip\',                                     'License Validation'),
+            @('\Microsoft\Windows\PI\',                                       'Sqm-Tasks'),
+            @('\Microsoft\Windows\Maintenance\',                              'WinSAT')
+        )
+        foreach ($t in $tasks) { Enable-Task $t[0] $t[1] }
+    }
+    Check = {
+        $t = Get-ScheduledTask -TaskPath '\Microsoft\Windows\Autochk\' `
+                               -TaskName 'Proxy' -ErrorAction SilentlyContinue
+        $t -and $t.State -eq 'Disabled'
+    }
+},
+
+[PSCustomObject]@{
+    Group = "Scheduled Tasks — розширене відключення"
+    Name  = "Задачі телеметрії v5 — WlanSvc / WCM / Shell / RemoteAssistance / SoftwareProtection / SpacePort"
+    Desc  = "CDSSync (WlanSvc), WiFiTask (WCM), FamilySafetyMonitor/Refresh, RemoteAssistanceTask, SvcRestartTask*, SpaceAgentTask"
+    Apply = {
+        $tasks = @(
+            @('\Microsoft\Windows\WlanSvc\',                 'CDSSync'),
+            @('\Microsoft\Windows\WCM\',                     'WiFiTask'),
+            @('\Microsoft\Windows\Shell\',                   'FamilySafetyMonitor'),
+            @('\Microsoft\Windows\Shell\',                   'FamilySafetyRefreshTask'),
+            @('\Microsoft\Windows\RemoteAssistance\',        'RemoteAssistanceTask'),
+            @('\Microsoft\Windows\SoftwareProtectionPlatform\', 'SvcRestartTask'),
+            @('\Microsoft\Windows\SoftwareProtectionPlatform\', 'SvcRestartTaskNetwork'),
+            @('\Microsoft\Windows\SoftwareProtectionPlatform\', 'SvcRestartTaskLogon'),
+            @('\Microsoft\Windows\SpacePort\',               'SpaceAgentTask'),
+            @('\Microsoft\Windows\SettingSync\',             'BackgroundUploadTask'),
+            @('\Microsoft\Windows\SettingSync\',             'NetworkStateChangeTask'),
+            @('\Microsoft\Windows\Work Folders\',            'Work Folders Logon Synchronization'),
+            @('\Microsoft\XblGameSave\',                     'XblGameSaveTask'),
+            @('\Microsoft\XblGameSave\',                     'XblGameSaveTaskLogon')
+        )
+        foreach ($t in $tasks) { Disable-Task $t[0] $t[1] }
+    }
+    Revert = {
+        $tasks = @(
+            @('\Microsoft\Windows\WlanSvc\',                 'CDSSync'),
+            @('\Microsoft\Windows\WCM\',                     'WiFiTask'),
+            @('\Microsoft\Windows\Shell\',                   'FamilySafetyMonitor'),
+            @('\Microsoft\Windows\Shell\',                   'FamilySafetyRefreshTask'),
+            @('\Microsoft\Windows\RemoteAssistance\',        'RemoteAssistanceTask'),
+            @('\Microsoft\Windows\SpacePort\',               'SpaceAgentTask'),
+            @('\Microsoft\Windows\Work Folders\',            'Work Folders Logon Synchronization'),
+            @('\Microsoft\XblGameSave\',                     'XblGameSaveTask'),
+            @('\Microsoft\XblGameSave\',                     'XblGameSaveTaskLogon')
+        )
+        foreach ($t in $tasks) { Enable-Task $t[0] $t[1] }
+    }
+    Check = {
+        $t = Get-ScheduledTask -TaskPath '\Microsoft\Windows\WlanSvc\' `
+                               -TaskName 'CDSSync' -ErrorAction SilentlyContinue
+        $t -and $t.State -eq 'Disabled'
+    }
+},
+
+[PSCustomObject]@{
+    Group = "Scheduled Tasks — розширене відключення"
     Name  = "Задачі телеметрії — Office / Device Census / Cloud Experience"
     Desc  = "Вимкнути задачі: OfficeTelemetryAgentFallBack, Proxy, Consolidator, DeviceCensus, CreateObjectTask"
     Apply = {
