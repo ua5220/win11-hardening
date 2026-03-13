@@ -879,6 +879,54 @@
         $cfg = Get-SmbServerConfiguration -ErrorAction SilentlyContinue
         $cfg -and $cfg.EncryptData
     }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 12: LEGACY TLS/SSL DISABLE — DOWNGRADE ATTACK PREVENTION ────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "TLS/SSL Hardening"
+    Name  = "Вимкнути SSL 2.0, SSL 3.0, TLS 1.0, TLS 1.1 (SCHANNEL)"
+    Desc  = @"
+Вимикає застарілі протоколи (SSL 2.0/3.0, TLS 1.0/1.1) для Server та Client:
+  Enabled=0, DisabledByDefault=1 для кожного протоколу.
+  Захист від downgrade-атак (POODLE, BEAST, DROWN).
+  TLS 1.2 залишається увімкненим.
+"@
+    Apply = {
+        $base = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+        foreach ($proto in @("SSL 2.0", "SSL 3.0", "TLS 1.0", "TLS 1.1")) {
+            foreach ($role in @("Server", "Client")) {
+                $p = "$base\$proto\$role"
+                Set-Reg $p "Enabled"            0
+                Set-Reg $p "DisabledByDefault"   1
+            }
+        }
+        # Переконатися що TLS 1.2 увімкнено
+        foreach ($role in @("Server", "Client")) {
+            $p = "$base\TLS 1.2\$role"
+            Set-Reg $p "Enabled"            1
+            Set-Reg $p "DisabledByDefault"   0
+        }
+        Write-AppLog -Level 'INFO' -Message "SCHANNEL: SSL 2.0/3.0, TLS 1.0/1.1 вимкнено; TLS 1.2 увімкнено"
+    }
+    Revert = {
+        $base = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+        foreach ($proto in @("TLS 1.0", "TLS 1.1")) {
+            foreach ($role in @("Server", "Client")) {
+                Remove-RegValue "$base\$proto\$role" "Enabled"
+                Remove-RegValue "$base\$proto\$role" "DisabledByDefault"
+            }
+        }
+    }
+    Check = {
+        $base = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+        $tls10 = Get-Reg "$base\TLS 1.0\Server" "Enabled" 1
+        $tls11 = Get-Reg "$base\TLS 1.1\Server" "Enabled" 1
+        $tls12 = Get-Reg "$base\TLS 1.2\Server" "Enabled" 0
+        ($tls10 -eq 0) -and ($tls11 -eq 0) -and ($tls12 -eq 1)
+    }
 }
 
 )
