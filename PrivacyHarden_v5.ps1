@@ -19,10 +19,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-
-# ── Завантаження спільних хелперів ───────────────────────────────────────────
-. (Join-Path $PSScriptRoot 'helpers.ps1')
+$ErrorActionPreference = 'SilentlyContinue'
 
 # ── Визначення архітектури ─────────────────────────────────────────────────────
 $Is64 = [Environment]::Is64BitOperatingSystem
@@ -47,32 +44,37 @@ function Write-Log {
     try { Add-Content -Path $LogFile -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue } catch {}
 }
 
-# ── CLI-специфічні обгортки (використовують Set-Reg/Remove-RegValue з helpers.ps1) ─
+# ── Локальні хелпери (самодостатні) ──────────────────────────────────────────
 
-function Disable-Svc {
-    param([Parameter(Mandatory)][string]$Name)
+function Set-Reg {
+    param([string]$Path, [string]$Name, $Value, [string]$Type = 'DWord')
     try {
-        Set-ServiceDisabled -Name $Name
-        Write-Log "Сервіс вимкнено: $Name" 'OK'
-    } catch {
-        Write-Log "Disable-Svc помилка: $Name — $_" 'ERROR'
-    }
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
+    } catch { Write-Log "Set-Reg помилка: $Path\$Name — $_" 'ERROR' }
 }
 
 function Remove-Reg {
-    param([Parameter(Mandatory)][string]$Path, [string]$Name = $null)
-    if ($Name) { Remove-RegValue -Path $Path -Name $Name }
+    param([string]$Path, [string]$Name = $null)
+    if ($Name) { Remove-ItemProperty -Path $Path -Name $Name -Force -ErrorAction SilentlyContinue }
     else       { Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
+function Disable-Svc {
+    param([string]$Name)
+    $s = Get-Service -Name $Name -ErrorAction SilentlyContinue
+    if ($s) {
+        Stop-Service  -Name $Name -Force  -ErrorAction SilentlyContinue
+        Set-Service   -Name $Name -StartupType Disabled -ErrorAction SilentlyContinue
+        Write-Log "Сервіс вимкнено: $Name" 'OK'
+    }
+}
+
 function Disable-Task {
-    param(
-        [Parameter(Mandatory)][string]$Path,
-        [Parameter(Mandatory)][string]$Name
-    )
+    param([string]$Path, [string]$Name)
     $t = Get-ScheduledTask -TaskPath $Path -TaskName $Name -ErrorAction SilentlyContinue
     if ($t) {
-        Disable-ScheduledTask -TaskPath $Path -TaskName $Name -ErrorAction SilentlyContinue | Out-Null
+        Disable-ScheduledTask -TaskPath $Path -TaskName $Name | Out-Null
         Write-Log "Завдання вимкнено: $Path$Name" 'OK'
     }
 }
