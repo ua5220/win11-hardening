@@ -603,6 +603,111 @@ Revision=1
         $line = $out | Where-Object { $_ -match 'Lockout observation' -or $_ -match 'спостереження' }
         if ($line) { ($line -replace '\D','') -ge 15 } else { $false }
     }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 57: WSL HARDENING ─────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "WSL / Підсистема Linux"
+    Name  = "WSL Hardening — вимкнення Windows Subsystem for Linux"
+    Desc  = @"
+Вимикає Windows Subsystem for Linux (WSL) та Virtual Machine Platform:
+  - Disable-WindowsOptionalFeature Microsoft-Windows-Subsystem-Linux
+  - Disable-WindowsOptionalFeature VirtualMachinePlatform
+  - GPO: DisableWindowsSubsystemForLinux=1 (HKLM Policies\Microsoft\Windows)
+  - Блокування запуску wsl.exe та wslhost.exe через AppLocker/реєстр
+WSL є вектором обходу захисту Windows: eBPF, bypass AV/EDR через Linux-бінари,
+доступ до файлової системи Windows з-під Linux без аудиту Windows.
+УВАГА: потребує перезавантаження для повного вимкнення.
+"@
+    Apply = {
+        # GPO вимкнення WSL
+        $wslPolicy = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsSubsystemForLinux"
+        Set-Reg $wslPolicy "AllowDevelopmentWithoutDevLicense" 0
+
+        # Вимкнення через реєстр (AppModel)
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" "AllowDevelopmentWithoutDevLicense" 0
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" "AllowAllTrustedApps" 0
+
+        # Вимкнення Windows Features (потребує перезавантаження)
+        $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -ErrorAction SilentlyContinue
+        if ($wslFeature -and $wslFeature.State -eq 'Enabled') {
+            Disable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "WSL feature вимкнено (потрібне перезавантаження)."
+        }
+
+        $vmpFeature = Get-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -ErrorAction SilentlyContinue
+        if ($vmpFeature -and $vmpFeature.State -eq 'Enabled') {
+            Disable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -NoRestart -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "VirtualMachinePlatform feature вимкнено."
+        }
+
+        # Зупинити LxssManager (WSL service)
+        Set-ServiceDisabled "LxssManager"
+
+        Write-AppLog -Level 'INFO' -Message "WSL Hardening застосовано. Перезавантажте для повного ефекту."
+    }
+    Revert = {
+        $wslPolicy = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsSubsystemForLinux"
+        Remove-RegValue $wslPolicy "AllowDevelopmentWithoutDevLicense"
+
+        Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -ErrorAction SilentlyContinue
+        Set-ServiceManual "LxssManager"
+
+        Write-AppLog -Level 'INFO' -Message "WSL відновлено (потрібне перезавантаження)."
+    }
+    Check = {
+        $feat = Get-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -ErrorAction SilentlyContinue
+        $feat -and $feat.State -eq 'Disabled'
+    }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 58: SUDO HARDENING (Windows 11) ──────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "Sudo / Підвищення привілеїв"
+    Name  = "Sudo Hardening — вимкнення Windows 11 Sudo"
+    Desc  = @"
+Вимикає функцію Sudo, введену у Windows 11 24H2 (build 26045+):
+  HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo Enabled=0
+Windows Sudo дозволяє запускати команди з підвищеними правами без UAC-
+підтвердження в тому ж вікні терміналу. Це знижує захист UAC та може
+використовуватися зловмисним ПЗ для приховано привілейованого виконання.
+Також вимикає режим 'inline' (найнебезпечніший) через SudoMode=1 (ForceNewWindow).
+Режими: 0=вимкнено, 1=нове вікно (безпечніший), 2=введення в новому вікні, 3=inline.
+"@
+    Apply = {
+        $sudoKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo"
+
+        # Повне вимкнення Sudo
+        Set-Reg $sudoKey "Enabled" 0
+
+        # Якщо Sudo все ж потрібен — примусовий режим нового вікна (найбезпечніший)
+        # Set-Reg $sudoKey "SudoMode" 1  # Розкоментувати для часткового захисту
+
+        Write-AppLog -Level 'INFO' -Message "Windows Sudo вимкнено (Enabled=0)."
+
+        # Перевірити чи Sudo взагалі доступний на цій версії
+        $sudoExe = "$env:WINDIR\System32\sudo.exe"
+        if (Test-Path $sudoExe) {
+            Write-AppLog -Level 'INFO' -Message "sudo.exe знайдено: $sudoExe"
+        } else {
+            Write-AppLog -Level 'INFO' -Message "sudo.exe не знайдено — Windows версія не підтримує Sudo (до 24H2)."
+        }
+    }
+    Revert = {
+        $sudoKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo"
+        Remove-RegValue $sudoKey "Enabled"
+        Write-AppLog -Level 'INFO' -Message "Windows Sudo відновлено до стандартного стану."
+    }
+    Check = {
+        $sudoKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo"
+        (Get-Reg $sudoKey "Enabled" -1) -eq 0
+    }
 }
 
 )
