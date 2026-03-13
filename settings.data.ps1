@@ -1033,6 +1033,8 @@ function Get-HardeningSettings {
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"    "AllowGameDVR"             0
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Widgets"    "DisableWidgetsOnLockScreen" 1
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Widgets"    "DisableWidgetsBoard"       1
+            # Disable News and Interests feed (private-secure-windows)
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"               "AllowNewsAndInterests"     0
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore"       "RemoveWindowsStore"        1
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\SoundRecorder"      "Soundrec"                  0
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System"     "DisableHTTPPrinting"       1
@@ -1309,12 +1311,18 @@ Revision=1
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "DisableHTTPPrinting"      1
             # MS Security Guide: RPC packet level privacy
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc" "EnableAuthEpResolution" 1
+            # Restrict printer driver file copying (private-secure-windows)
+            Set-Reg "$pr" "CopyFilesPolicy" 1
+            # Enforce encryption for Print Spooler RPC communications
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Print" "RpcAuthnLevelPrivacyEnabled" 1
         }
         Revert = {
             $pr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers"
             Remove-RegValue "$pr" "RequireIPPS"
             Remove-RegValue "$pr" "IPPTLSPolicy"
             Remove-RegValue "$pr" "RedirectionGuardPolicy"
+            Remove-RegValue "$pr" "CopyFilesPolicy"
+            Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Control\Print" "RpcAuthnLevelPrivacyEnabled"
         }
         Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" "RequireIPPS" 0) -eq 1 }
     },
@@ -1940,6 +1948,21 @@ Revision=1
             if ($first) {
                 (Get-ItemProperty -Path $first.PSPath -ErrorAction SilentlyContinue).NetbiosOptions -eq 2
             } else { $false }
+        }
+    },
+
+    [PSCustomObject]@{
+        Group = "Мережева приватність / IPv6 / NetBIOS"
+        Name  = "DNS Client — вимкнути NetBIOS name resolution (EnableNetbios=2)"
+        Desc  = "Забороняє NetBIOS через DNS Client policy (private-secure-windows)"
+        Apply = {
+            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "EnableNetbios" 2
+        }
+        Revert = {
+            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "EnableNetbios"
+        }
+        Check = {
+            (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "EnableNetbios" 0) -eq 2
         }
     },
 

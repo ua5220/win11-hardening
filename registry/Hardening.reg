@@ -156,9 +156,10 @@ Windows Registry Editor Version 5.00
 "fBlockNonDomain"=dword:00000001
 "fMinimizeConnections"=dword:00000003
 
-; --- DNS (LLMNR) ---
+; --- DNS (LLMNR / NetBIOS) ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient]
 "EnableMulticast"=dword:00000000
+"EnableNetbios"=dword:00000002
 
 ; --- RPC ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Rpc]
@@ -202,6 +203,10 @@ Windows Registry Editor Version 5.00
 "DisableWidgetsOnLockScreen"=dword:00000001
 "DisableWidgetsBoard"=dword:00000001
 
+; --- News and Interests ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Dsh]
+"AllowNewsAndInterests"=dword:00000000
+
 ; --- Windows Search ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search]
 "DisableWebSearch"=dword:00000001
@@ -236,6 +241,11 @@ Windows Registry Editor Version 5.00
 ; --- Printers ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Printers]
 "RestrictDriverInstallationToAdministrators"=dword:00000001
+"CopyFilesPolicy"=dword:00000001
+
+; --- Print Spooler RPC Encryption ---
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print]
+"RpcAuthnLevelPrivacyEnabled"=dword:00000001
 
 ; --- Game Recording ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\GameDVR]
