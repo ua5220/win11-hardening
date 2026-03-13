@@ -848,6 +848,24 @@
 },
 
 [PSCustomObject]@{
+    Group    = "Мережева безпека"
+    Name     = "NetBIOS — вимкнути через GPO на всіх мережах (25H2 Baseline)"
+    Desc     = "ConfigureNBT=2 у DNS Client policy: офіційний метод 25H2 замість NetbiosOptions на кожному адаптері"
+    MinBuild = 26200
+    Apply  = {
+        # Новий GPO-ключ 25H2 (DNS Client\Configure NetBIOS settings)
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "ConfigureNBT" 2
+        # Залишити старий метод як додатковий рівень
+        Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces" -EA SilentlyContinue |
+            ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name "NetbiosOptions" -Value 2 -EA SilentlyContinue }
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "ConfigureNBT"
+    }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "ConfigureNBT" 0) -eq 2 }
+},
+
+[PSCustomObject]@{
     Group = "Мережева ізоляція / Domain Hardening"
     Name  = "SMB Encryption — увімкнути обов'язкове шифрування"
     Desc  = "EncryptData=True, RejectUnencryptedAccess=True: весь SMB трафік має бути зашифрований"

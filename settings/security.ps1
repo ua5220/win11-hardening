@@ -60,6 +60,34 @@
 },
 
 [PSCustomObject]@{
+    Group          = "UAC / Вхід до системи"
+    Name           = "Administrator Protection — Windows Hello для UAC (25H2+)"
+    Desc           = "AdminProtectionEnabled=1: замість UAC-підказки — Windows Hello PIN/біометрія. Кожна admin-дія виконується через ізольований temp-аккаунт, не через поточний"
+    MinBuild       = 26200
+    ExclusiveGroup = "UAC-Level"
+    Apply  = {
+        $p = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+        # Увімкнути Administrator Protection
+        Set-Reg $p "AdminProtectionEnabled"        1
+        Set-Reg $p "EnableLUA"                     1
+        Set-Reg $p "ConsentPromptBehaviorAdmin"    1   # Prompt for credentials
+        Set-Reg $p "PromptOnSecureDesktop"         1
+        Set-Reg $p "FilterAdministratorToken"      1
+        # GPO шлях для Admin Protection
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\AdminProtection" `
+                "AdminProtectionEnabled" 1
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "AdminProtectionEnabled"
+        Remove-RegValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\AdminProtection" `
+                        "AdminProtectionEnabled"
+    }
+    Check  = {
+        (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "AdminProtectionEnabled" 0) -eq 1
+    }
+},
+
+[PSCustomObject]@{
     Group = "UAC / Вхід до системи"
     Name  = "Вимагати Ctrl+Alt+Del на екрані входу (CIS 2.3.7.2)"
     Desc  = "DisableCAD=0: примусово вимагати SAS-послідовність перед входом — захист від троянів підміни входу"
@@ -247,14 +275,22 @@
 
 [PSCustomObject]@{
     Group = "Credential / Logon Hardening"
-    Name  = "WDigest Authentication вимкнути (ACSC)"
-    Desc  = "UseLogonCredential=0: вимкнути зберігання паролів у пам'яті WDigest (потребує KB2871997)"
+    Name  = "WDigest Authentication — вимкнути (legacy, 24H2 і нижче)"
+    Desc  = "UseLogonCredential=0 (< 25H2). У 25H2+ WDigest вимкнено за замовчуванням, цей блок пропускається автоматично"
     Apply  = {
-        Backup-RegistryKey "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest"
-        Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 0
+        if ($Global:Win11Track -in @("Legacy","24H2")) {
+            Backup-RegistryKey "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest"
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 0
+        } else {
+            Write-AppLog -Level 'INFO' -Message "WDigest: 25H2+ — вимкнено за замовчуванням, пропущено"
+        }
     }
     Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 1 }
-    Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 1) -eq 0 }
+    Check  = {
+        if ($Global:Win11Track -in @("Legacy","24H2")) {
+            (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" "UseLogonCredential" 1) -eq 0
+        } else { $true }  # 25H2+ — завжди відповідає
+    }
 },
 
 [PSCustomObject]@{
@@ -666,26 +702,87 @@ Revision=1
 
 [PSCustomObject]@{
     Group = "Hardware Security"
-    Name  = "Перевірка Secure Boot + TPM 2.0 + захист цілісності"
-    Desc  = "Верифікація Secure Boot, TPM 2.0, вимкнення test signing та integrity checks bypass"
+    Name  = "Secure Boot — нові сертифікати 26H1 + NoIntegrityChecks вимкнути"
+    Desc  = "bcdedit: nointegritychecks=off, testsigning=off, recoveryenabled=no. 26H1 автоматично отримує нові SB-сертифікати якщо пристрій у хорошому стані"
     Apply = {
-        $sb  = $false
-        try { $sb = Confirm-SecureBootUEFI -ErrorAction Stop } catch {}
-        $tpm = Get-Tpm -ErrorAction SilentlyContinue
-        if (-not $sb)                        { Write-AppLog -Level 'WARN' -Message "Secure Boot ВИМКНЕНО! Увімкніть у BIOS/UEFI." }
-        if (-not $tpm -or -not $tpm.TpmReady) { Write-AppLog -Level 'WARN' -Message "TPM не готовий або відсутній!" }
-        # Вимкнути test signing та nointegritychecks
         bcdedit /set nointegritychecks off 2>$null | Out-Null
-        bcdedit /set testsigning off 2>$null | Out-Null
+        bcdedit /set testsigning        off 2>$null | Out-Null
+        bcdedit /set recoveryenabled     no 2>$null | Out-Null
+
+        if ($Global:Win11Track -eq "26H1") {
+            # 26H1: дозволити автоматичне отримання нових SB-сертифікатів
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\SecureBootPolicy" `
+                    "AllowAutoUpdate" 1
+        }
+
         # Заблокувати metadata з мережі
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings" "AllowDeviceMetadataFromNetwork" 0
-        Write-AppLog -Level 'INFO' -Message "Hardware Security: test signing=off, nointegritychecks=off."
+        # Перевірити стан Secure Boot
+        $sb = Confirm-SecureBootUEFI -EA SilentlyContinue
+        if (-not $sb) { Write-AppLog -Level 'WARN' -Message "Secure Boot ВИМКНЕНО у UEFI!" }
+        $tpm = Get-Tpm -EA SilentlyContinue
+        if (-not $tpm?.TpmReady) { Write-AppLog -Level 'WARN' -Message "TPM 2.0 не готовий!" }
+        Write-AppLog -Level 'INFO' -Message "Hardware Security: test signing=off, nointegritychecks=off, recoveryenabled=no."
     }
     Revert = {
         Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings" "AllowDeviceMetadataFromNetwork"
+        # bcdedit зміни не відкочуються автоматично
+        Write-AppLog -Level 'WARN' -Message "Secure Boot: ручне відновлення через UEFI"
     }
     Check = {
-        try { Confirm-SecureBootUEFI -ErrorAction Stop } catch { $false }
+        try { Confirm-SecureBootUEFI -EA Stop } catch { $false }
+    }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── APPLICATION HARDENING (25H2 BASELINE) ────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group    = "Application Hardening"
+    Name     = "IE11 COM Automation — вимкнути (25H2 Baseline)"
+    Desc     = "NotifyDisableIEOptions: заборонити CreateObject('InternetExplorer.Application') — блокує MSHTML/ActiveX-вектори атак"
+    MinBuild = 26200
+    Apply  = {
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" `
+                "NotifyDisableIEOptions" 0
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" `
+                "EnableIE11" 0
+        # Заблокувати iexplore.exe через брандмауер
+        Set-FirewallRule -Name "Block IE11 COM Outbound" -Direction Outbound `
+            -Protocol Any -LocalPort Any -Action Block
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" "NotifyDisableIEOptions"
+    }
+    Check  = {
+        (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" "EnableIE11" 1) -eq 0
+    }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── PRINTER HARDENING (25H2 BASELINE) ───────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group    = "Printer Hardening"
+    Name     = "Принтери — тільки IPPS + TLS/SSL сертифікат (25H2)"
+    Desc     = "RestrictDriverInstallationToAdministrators=1, IPPSPolicy=1: лише шифровані IPP-принтери з валідним TLS — захист від spoofed printers"
+    MinBuild = 26200
+    Apply  = {
+        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers"
+        Set-Reg $p "RestrictDriverInstallationToAdministrators" 1
+        Set-Reg $p "DisableWebPnPDownload"                      1
+        Set-Reg $p "DisableHTTPPrinting"                        1
+        # IPPS-only (нові ключі 25H2)
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\IPP" "RequireIpps"       1
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\IPP" "RequireSslCerts"   1
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\IPP" "RequireIpps"
+    }
+    Check  = {
+        (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\IPP" "RequireIpps" 0) -eq 1
     }
 },
 

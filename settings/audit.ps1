@@ -58,6 +58,25 @@
     Check = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" "ProcessCreationIncludeCmdLine_Enabled" 0) -eq 1 }
 },
 
+[PSCustomObject]@{
+    Group    = "Аудит процесів"
+    Name     = "Process Creation — включати командний рядок у події (25H2 Baseline)"
+    Desc     = "ProcessCreationIncludeCmdLine_Enabled=1: Event ID 4688 містить повний командний рядок — виявлення obfuscated payloads та credential tools"
+    MinBuild = 26200
+    Apply  = {
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" `
+                "ProcessCreationIncludeCmdLine_Enabled" 1
+    }
+    Revert = {
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" `
+                "ProcessCreationIncludeCmdLine_Enabled" 0
+    }
+    Check  = {
+        (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" `
+                 "ProcessCreationIncludeCmdLine_Enabled" 0) -eq 1
+    }
+},
+
 # ════════════════════════════════════════════════════════════════════════
 # ── РОЗДІЛ 39: SCHEDULED TASKS — ТЕЛЕМЕТРІЯ / CEIP ───────────────────────
 # ════════════════════════════════════════════════════════════════════════
