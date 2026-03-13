@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.1.0] - 2026-03-13
+
+### Added
+- **Pester-тести** (`tests/Settings.Check.Tests.ps1`):
+  - Перевірка завантаження кожного модуля
+  - Валідація обов'язкових полів (Group, Name, Desc, Apply, Revert, Check)
+  - Виконання Check scriptblocks без виключень
+  - Перевірка типів Apply/Revert (scriptblock)
+  - Унікальність Name серед усіх модулів
+- **GitHub Actions CI** (`.github/workflows/lint.yml`):
+  - PSScriptAnalyzer lint для core/, settings/, Run-Hardening.ps1
+  - Pester tests з детальним виводом та NUnit XML результатами
+- **Export-HardeningReport** (`core/actions.ps1`):
+  - HTML-звіт зі статусом кожного Check-блоку (зелений/червоний)
+  - Показує coverage bar, hostname, build, дату
+  - Dark theme стилізація, автоматичне відкриття у браузері
+  - Кнопка "HTML Звіт" у нижній панелі GUI
+
 ## [3.0.0] - 2026-03-13
 
 ### Restructured
