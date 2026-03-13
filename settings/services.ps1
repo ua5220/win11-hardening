@@ -158,6 +158,32 @@
 
 [PSCustomObject]@{
     Group = "Сервіси: History / Logs / Footprint"
+    Name  = "Додаткові сервіси телеметрії — вимкнути"
+    Desc  = "diagnosticshub.standardcollector.service, DcpSvc, NcbService, PcaSvc, WalletService, wcncsvc, SensrSvc, SensorService, SensorDataService, wisvc, wlidsvc → Вимкнено"
+    Apply = {
+        $svcs = @(
+            "diagnosticshub.standardcollector.service",  # Diagnostics Hub
+            "DcpSvc",                                    # DataCollectionPublishingService
+            "NcbService",                                # Network Connection Broker
+            "PcaSvc",                                    # Program Compatibility Assistant
+            "WalletService",
+            "wcncsvc",                                   # Windows Connect Now / WiFi
+            "SensrSvc", "SensorService", "SensorDataService",
+            "wisvc",                                     # Windows Insider Service
+            "wlidsvc"                                    # Microsoft Account Sign-in Assistant
+        )
+        foreach ($svc in $svcs) { Set-ServiceDisabled $svc }
+    }
+    Revert = {
+        $svcs = @("diagnosticshub.standardcollector.service","DcpSvc","NcbService",
+                  "PcaSvc","WalletService","wcncsvc","wisvc","wlidsvc")
+        foreach ($svc in $svcs) { Set-ServiceManual $svc }
+    }
+    Check = { $s = Get-Service "PcaSvc" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+},
+
+[PSCustomObject]@{
+    Group = "Сервіси: History / Logs / Footprint"
     Name  = "Вимкнути Compatibility Telemetry (AppCompat)"
     Desc  = "DisableInventory=1, DisableUAR=1, DisablePCA=1"
     Apply = {
@@ -241,6 +267,53 @@
         powercfg /hibernate on 2>$null
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "ShowSleepOption" 1) -eq 0 }
+},
+
+[PSCustomObject]@{
+    Group = "Живлення / Патчі / Автозапуск"
+    Name  = "Windows Update — відстрочити Feature Updates (365 днів) та Quality Updates (30 днів)"
+    Desc  = "DeferFeatureUpdates=1, DeferFeatureUpdatesPeriodInDays=365, DeferQualityUpdates=1, DeferQualityUpdatesPeriodInDays=30, ExcludeWUDriversInQualityUpdate=1"
+    Apply = {
+        $wu = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+        Set-Reg $wu "DeferFeatureUpdates"             1
+        Set-Reg $wu "DeferFeatureUpdatesPeriodInDays" 365
+        Set-Reg $wu "DeferQualityUpdates"             1
+        Set-Reg $wu "DeferQualityUpdatesPeriodInDays" 30
+        Set-Reg $wu "ExcludeWUDriversInQualityUpdate" 1
+        Set-Reg $wu "DisableWindowsUpdateAccess"      0
+        $wuau = "$wu\AU"
+        Set-Reg $wuau "NoAutoRebootWithLoggedOnUsers" 1
+        Set-Reg $wuau "AUPowerManagement"             0
+        Set-Reg $wuau "AutoInstallMinorUpdates"       0
+        Set-Reg $wuau "IncludeRecommendedUpdates"     0
+    }
+    Revert = {
+        $wu = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+        Remove-RegValue $wu "DeferFeatureUpdates"
+        Remove-RegValue $wu "DeferFeatureUpdatesPeriodInDays"
+        Remove-RegValue $wu "DeferQualityUpdates"
+        Remove-RegValue $wu "DeferQualityUpdatesPeriodInDays"
+        Remove-RegValue $wu "ExcludeWUDriversInQualityUpdate"
+    }
+    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "DeferFeatureUpdates" 0) -eq 1 }
+},
+
+[PSCustomObject]@{
+    Group = "Живлення / Патчі / Автозапуск"
+    Name  = "MCT / Windows Upgrade / GWX — вимкнути + BITS Manual"
+    Desc  = "HideMCTLink=1, DisableOSUpgrade=1, DisableGwx=1, BITS → Manual: заборонити апгрейд Windows та пропозиції"
+    Apply = {
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\OSUpgrade" "HideMCTLink"  1
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "DisableOSUpgrade"             1
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GWX"           "DisableGwx"                   1
+        Set-Service "BITS" -StartupType Manual -ErrorAction SilentlyContinue
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "DisableOSUpgrade"
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GWX"           "DisableGwx"
+        Set-Service "BITS" -StartupType Automatic -ErrorAction SilentlyContinue
+    }
+    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GWX" "DisableGwx" 0) -eq 1 }
 },
 
 [PSCustomObject]@{
