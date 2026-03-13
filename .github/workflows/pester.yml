@@ -1,0 +1,55 @@
+# Pester Hardening Tests — функціональне тестування Apply → Verify → Revert
+# Вимоги: Windows, права адміністратора, Pester 5+
+
+name: Pester Hardening Tests
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.ps1']
+  pull_request:
+    branches: [main]
+    paths: ['**.ps1']
+
+jobs:
+  pester:
+    name: Pester Hardening Tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Встановити Pester 5.x
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+
+      - name: Запустити PSScriptAnalyzer на тестах
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $results = Invoke-ScriptAnalyzer -Path ./tests/ -Recurse -Severity Error
+          $results | Format-Table -AutoSize
+          if ($results) {
+            Write-Error "PSScriptAnalyzer знайшов помилки в tests/"
+            exit 1
+          }
+
+      - name: Запустити Pester-тести
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path             = './tests/'
+          $cfg.Run.Exit             = $true
+          $cfg.Output.Verbosity     = 'Detailed'
+          $cfg.TestResult.Enabled   = $true
+          $cfg.TestResult.OutputPath = './test-results.xml'
+          $cfg.TestResult.OutputFormat = 'NUnitXml'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Завантажити результати тестів
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pester-results
+          path: ./test-results.xml
