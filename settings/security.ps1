@@ -15,7 +15,8 @@
 [PSCustomObject]@{
     Group = "UAC / Вхід до системи"
     Name  = "UAC рівень 5 — підтвердження без пароля (зручний)"
-    Desc  = "ConsentPromptBehaviorAdmin=5: сповіщення без запиту пароля, без захищеного робочого столу"
+    Desc  = "ConsentPromptBehaviorAdmin=5: сповіщення без запиту пароля, без захищеного робочого столу. УВАГА: взаємовиключний з 'UAC суворий'"
+    ExclusiveGroup = "UAC-Level"
     Apply = {
         $p = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
         Set-Reg $p "EnableLUA"                    1
@@ -36,7 +37,8 @@
 [PSCustomObject]@{
     Group = "UAC / Вхід до системи"
     Name  = "UAC суворий — запит пароля на захищений робочий стіл (ACSC)"
-    Desc  = "FilterAdministratorToken=1, ConsentPromptBehaviorAdmin=1, ConsentPromptBehaviorUser=0"
+    Desc  = "FilterAdministratorToken=1, ConsentPromptBehaviorAdmin=1, ConsentPromptBehaviorUser=0. УВАГА: взаємовиключний з 'UAC рівень 5'"
+    ExclusiveGroup = "UAC-Level"
     Apply = {
         $p = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
         Set-Reg $p "FilterAdministratorToken"     1
@@ -59,11 +61,11 @@
 
 [PSCustomObject]@{
     Group = "UAC / Вхід до системи"
-    Name  = "Вимкнути Ctrl+Alt+Del на екрані входу"
-    Desc  = "DisableCAD=1: не вимагати натискання Ctrl+Alt+Del перед входом"
-    Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableCAD" 1 }
-    Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableCAD" 0 }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableCAD" 0) -eq 1 }
+    Name  = "Вимагати Ctrl+Alt+Del на екрані входу (CIS 2.3.7.2)"
+    Desc  = "DisableCAD=0: примусово вимагати SAS-послідовність перед входом — захист від троянів підміни входу"
+    Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableCAD" 0 }
+    Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableCAD" 1 }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "DisableCAD" 1) -eq 0 }
 },
 
 [PSCustomObject]@{
@@ -203,7 +205,7 @@
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" "BackupDirectory"              1
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" "PasswordComplexity"           4
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" "PasswordLength"               30
-        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" "PasswordAgeDays"              365
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" "PasswordAgeDays"              30
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" "ADPasswordEncryptionEnabled"  1
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "LocalAccountTokenFilterPolicy" 0
     }
@@ -220,9 +222,16 @@
 
 [PSCustomObject]@{
     Group = "Credential / Logon Hardening"
-    Name  = "Logon cache — 1 попередній вхід (ACSC)"
-    Desc  = "CachedLogonsCount=1: кешувати лише 1 останній вхід при недоступності контролера домену"
-    Apply  = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "1" "String" }
+    Name  = "Logon cache — 1 попередній вхід (ACSC, тільки для домену)"
+    Desc  = "CachedLogonsCount=1: кешувати лише 1 останній вхід. Застосовується тільки на доменних машинах."
+    Apply  = {
+        if ((Get-WmiObject Win32_ComputerSystem).PartOfDomain) {
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "1" "String"
+            Write-AppLog -Level 'INFO' -Message "CachedLogonsCount=1 (доменна машина)."
+        } else {
+            Write-AppLog -Level 'WARN' -Message "CachedLogonsCount — машина не в домені, пропущено."
+        }
+    }
     Revert = { Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "10" "String" }
     Check  = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "10") -eq "1" }
 },
@@ -272,8 +281,8 @@
 
 [PSCustomObject]@{
     Group = "Паролі — розширена політика"
-    Name  = "Політика паролів — відповідає ACSC (макс. вік 0, послаблений мін. розмір)"
-    Desc  = "MaxPwAge=Unlimited, RelaxMinLength, складність вимкнено, зворотне шифрування вимкнено"
+    Name  = "Політика паролів — відповідає ACSC (макс. вік 0, складність увімкнена)"
+    Desc  = "MaxPwAge=Unlimited, RelaxMinLength, PasswordComplexity=1 (CIS 1.1.5), зворотне шифрування вимкнено"
     Apply = {
         Backup-RegistryKey "HKLM\SYSTEM\CurrentControlSet\Control\SAM"
         net accounts /maxpwage:unlimited 2>$null | Out-Null
@@ -283,7 +292,7 @@
 [Unicode]
 Unicode=yes
 [System Access]
-PasswordComplexity = 0
+PasswordComplexity = 1
 ClearTextPassword = 0
 [Version]
 signature="`$CHICAGO`$"
@@ -488,7 +497,7 @@ Revision=1
 [PSCustomObject]@{
     Group = "System Cryptography"
     Name  = "Системна криптографія — FIPS + Примусовий захист ключів (ACSC)"
-    Desc  = "FIPSAlgorithmPolicy=1, ForceKeyProtection=2: FIPS та пароль при кожному використанні ключа"
+    Desc  = "FIPSAlgorithmPolicy=1, ForceKeyProtection=2: УВАГА — може зламати Chrome, деякі .NET застосунки та VPN клієнти. Рекомендується лише для держустанов."
     Apply = {
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled"          1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Cryptography"                  "ForceKeyProtection" 2
@@ -520,11 +529,11 @@ Revision=1
 
 [PSCustomObject]@{
     Group = "Credential Delegation / RDP"
-    Name  = "RDP — дозволити підключення + fDenyTSConnections=0 (ACSC)"
-    Desc  = "fDenyTSConnections=0: дозволити підключення через Remote Desktop Services"
-    Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 0 }
-    Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 1 }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 1) -eq 0 }
+    Name  = "RDP — заборонити вхідні підключення (для Home-станцій)"
+    Desc  = "fDenyTSConnections=1: заблокувати RDP. Якщо RDP потрібен — використовуйте налаштування NLA/SSL у settings/network.ps1"
+    Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 1 }
+    Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 0 }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" "fDenyTSConnections" 0) -eq 1 }
 },
 
 # ════════════════════════════════════════════════════════════════════════
@@ -609,6 +618,90 @@ Revision=1
         $line = $out | Where-Object { $_ -match 'Lockout observation' -or $_ -match 'спостереження' }
         if ($line) { ($line -replace '\D','') -ge 15 } else { $false }
     }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 59: APPLICATION CONTROL / SCRIPT HOST ─────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "Application Control"
+    Name  = "AppLocker — базові правила (блокувати виконання з %TEMP%/%APPDATA%)"
+    Desc  = "Правила AppLocker: заборонити .exe з тимчасових папок. Потребує Windows Pro/Enterprise та сервіс AppIDSvc."
+    Apply = {
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe" "EnforcementMode" 1
+        # Увімкнути сервіс AppIDSvc для AppLocker
+        Set-Service AppIDSvc -StartupType Automatic -ErrorAction SilentlyContinue
+        Start-Service AppIDSvc -ErrorAction SilentlyContinue
+        Write-AppLog -Level 'INFO' -Message "AppLocker EnforcementMode=1, AppIDSvc запущено."
+    }
+    Revert = {
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe" "EnforcementMode" 0
+        Set-Service AppIDSvc -StartupType Manual -ErrorAction SilentlyContinue
+        Write-AppLog -Level 'INFO' -Message "AppLocker вимкнено."
+    }
+    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe" "EnforcementMode" 0) -eq 1 }
+},
+
+[PSCustomObject]@{
+    Group = "Application Control"
+    Name  = "Windows Script Host — вимкнути (wscript/cscript)"
+    Desc  = "Enabled=0: вимкнути WSH для запобігання виконанню .vbs/.js/.jse/.vbe через подвійний клік"
+    Apply = {
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled" 0
+        Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled" 0
+        Write-AppLog -Level 'INFO' -Message "Windows Script Host вимкнено (HKLM+HKCU)."
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled"
+        Remove-RegValue "HKCU:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled"
+        Write-AppLog -Level 'INFO' -Message "Windows Script Host відновлено."
+    }
+    Check = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled" 1) -eq 0 }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 60: HARDWARE SECURITY ─────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "Hardware Security"
+    Name  = "Перевірка Secure Boot + TPM 2.0 + захист цілісності"
+    Desc  = "Верифікація Secure Boot, TPM 2.0, вимкнення test signing та integrity checks bypass"
+    Apply = {
+        $sb  = $false
+        try { $sb = Confirm-SecureBootUEFI -ErrorAction Stop } catch {}
+        $tpm = Get-Tpm -ErrorAction SilentlyContinue
+        if (-not $sb)                        { Write-AppLog -Level 'WARN' -Message "Secure Boot ВИМКНЕНО! Увімкніть у BIOS/UEFI." }
+        if (-not $tpm -or -not $tpm.TpmReady) { Write-AppLog -Level 'WARN' -Message "TPM не готовий або відсутній!" }
+        # Вимкнути test signing та nointegritychecks
+        bcdedit /set nointegritychecks off 2>$null | Out-Null
+        bcdedit /set testsigning off 2>$null | Out-Null
+        # Заблокувати metadata з мережі
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings" "AllowDeviceMetadataFromNetwork" 0
+        Write-AppLog -Level 'INFO' -Message "Hardware Security: test signing=off, nointegritychecks=off."
+    }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings" "AllowDeviceMetadataFromNetwork"
+    }
+    Check = {
+        try { Confirm-SecureBootUEFI -ErrorAction Stop } catch { $false }
+    }
+},
+
+[PSCustomObject]@{
+    Group = "PowerShell Hardening"
+    Name  = "PowerShell Constrained Language Mode"
+    Desc  = "__PSLockdownPolicy=4: обмежити PS до Safe Language Mode. УВАГА: блокує деякі PS-скрипти та модулі."
+    Apply = {
+        [Environment]::SetEnvironmentVariable("__PSLockdownPolicy", "4", "Machine")
+        Write-AppLog -Level 'INFO' -Message "PowerShell Constrained Language Mode увімкнено (__PSLockdownPolicy=4)."
+    }
+    Revert = {
+        [Environment]::SetEnvironmentVariable("__PSLockdownPolicy", $null, "Machine")
+        Write-AppLog -Level 'INFO' -Message "PowerShell Constrained Language Mode вимкнено."
+    }
+    Check = { [System.Environment]::GetEnvironmentVariable("__PSLockdownPolicy", "Machine") -eq "4" }
 }
 
 )

@@ -22,7 +22,7 @@
         Set-Reg $lsa "NoLMHash"             1
         Set-Reg "$lsa\MSV1_0" "NTLMMinClientSec" 537395200
         Set-Reg "$lsa\MSV1_0" "NTLMMinServerSec" 537395200
-        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters" "SupportedEncryptionTypes" 24
+        Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters" "SupportedEncryptionTypes" 2147483640
     }
     Revert = {
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LmCompatibilityLevel" 3
@@ -210,7 +210,7 @@
 [PSCustomObject]@{
     Group = "Мережева приватність / Hosts / DNS"
     Name  = "Firewall — заблокувати IP-адреси телеметрії Microsoft та NVIDIA"
-    Desc  = "Вихідне блокування відомих IP-адрес телеметрії Microsoft (24 IP) та NVIDIA (2 IP) через Windows Firewall"
+    Desc  = "Вихідне блокування IP телеметрії через Firewall. УВАГА: IP-список може застаріти — використовуйте HOSTS блокування як основний метод."
     Apply = {
         $msIPs = @(
             '134.170.30.202','137.116.81.24','157.56.106.189',
@@ -344,16 +344,22 @@
 
 [PSCustomObject]@{
     Group = "Мережева приватність / IPv6 / NetBIOS"
-    Name  = "IPv6 — повністю вимкнути (DisabledComponents=0xFF)"
-    Desc  = "DisabledComponents=0xFF: відключити всі IPv6-компоненти у стеку Tcpip6 (окрім loopback)"
+    Name  = "IPv6 — вимкнути на адаптерах (DisabledComponents=0xFE)"
+    Desc  = "DisabledComponents=0xFE: відключити IPv6 на адаптерах, залишити loopback (::1) активним (KB929852)"
     Apply = {
-        Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0xFF
+        Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0xFE
+        Get-NetAdapter | Where-Object { $_.Status -eq 'Up' } | ForEach-Object {
+            Disable-NetAdapterBinding -Name $_.Name -ComponentID ms_tcpip6 -ErrorAction SilentlyContinue
+        }
     }
     Revert = {
         Remove-RegValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents"
+        Get-NetAdapter | ForEach-Object {
+            Enable-NetAdapterBinding -Name $_.Name -ComponentID ms_tcpip6 -ErrorAction SilentlyContinue
+        }
     }
     Check = {
-        (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0) -eq 0xFF
+        (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0) -eq 0xFE
     }
 },
 
@@ -449,10 +455,10 @@
 [PSCustomObject]@{
     Group = "TCP/IP стек — захист від атак"
     Name  = "Захист від SYN Flood (SynAttackProtect + обмеження з'єднань)"
-    Desc  = "SynAttackProtect=2, TcpMaxHalfOpen=25, TcpMaxHalfOpenRetried=20, TcpMaxSynRetransmissions=1"
+    Desc  = "SynAttackProtect=1 (SYN Cookies), TcpMaxHalfOpen=25, TcpMaxHalfOpenRetried=20, TcpMaxSynRetransmissions=1"
     Apply = {
         $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
-        Set-Reg $tcp "SynAttackProtect"          2
+        Set-Reg $tcp "SynAttackProtect"          1
         Set-Reg $tcp "TcpMaxHalfOpen"            25
         Set-Reg $tcp "TcpMaxHalfOpenRetried"     20
         Set-Reg $tcp "TcpMaxSynRetransmissions"  1
@@ -727,8 +733,8 @@
 
 [PSCustomObject]@{
     Group = "Мережеві протоколи — блокування"
-    Name  = "SMBv2 протокол — вимкнути (тільки для ізольованих станцій)"
-    Desc  = "Вимкнути SMB2Protocol через Set-SmbServerConfiguration (УВАГА: може вплинути на мережеві ресурси)"
+    Name  = "SMBv2 протокол — вимкнути (НЕБЕЗПЕЧНО, тільки для ізольованих станцій)"
+    Desc  = "УВАГА: вимикає File Explorer мережу, Windows Update (частково), мережеві принтери. Тільки для повністю ізольованих машин без мережі."
     Apply = {
         Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force -ErrorAction SilentlyContinue
     }
@@ -761,11 +767,9 @@
 [PSCustomObject]@{
     Group = "Мережеві протоколи — блокування"
     Name  = "Null-сесії / анонімні канали — розширений захист"
-    Desc  = "NullSessionPipes='', NullSessionShares='', RestrictNullSessAccess=1, LmCompatibilityLevel=5"
+    Desc  = "NullSessionPipes='', NullSessionShares='', RestrictNullSessAccess=1"
     Apply = {
-        $lsa = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
         $smb = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
-        Set-Reg $lsa "LmCompatibilityLevel"   5
         Set-Reg $smb "NullSessionPipes"        "" "MultiString"
         Set-Reg $smb "NullSessionShares"       "" "MultiString"
         Set-Reg $smb "RestrictNullSessAccess"  1
