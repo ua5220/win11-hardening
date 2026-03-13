@@ -72,7 +72,7 @@ function New-HardeningUi {
     $theme = New-AppTheme
     $C     = [System.Drawing.Color]
 
-    # ── Form ────────────────────────────────────────────────────────────
+    # ── Form ────────────────────────────────────────────────────────────────
     $form = [System.Windows.Forms.Form]::new()
     $form.Text          = 'Windows 11 Hardening Control Panel v2'
     $form.Size          = [System.Drawing.Size]::new(900, 760)
@@ -82,7 +82,7 @@ function New-HardeningUi {
     $form.ForeColor     = $theme.Foreground
     $form.Font          = [System.Drawing.Font]::new('Segoe UI', 9)
 
-    # ── Title ───────────────────────────────────────────────────────────
+    # ── Title ───────────────────────────────────────────────────────────────
     $lblTitle = [System.Windows.Forms.Label]::new()
     $lblTitle.Text      = '  Windows 11 Hardening Control Panel  v2  —  ACSC + Privacy'
     $lblTitle.Dock      = 'Top'
@@ -93,7 +93,7 @@ function New-HardeningUi {
     $lblTitle.TextAlign = 'MiddleLeft'
     $form.Controls.Add($lblTitle)
 
-    # ── Status bar ──────────────────────────────────────────────────────
+    # ── Status bar ──────────────────────────────────────────────────────────
     $statusBar = [System.Windows.Forms.Label]::new()
     $statusBar.Dock      = 'Bottom'
     $statusBar.Height    = 26
@@ -121,7 +121,7 @@ function New-HardeningUi {
     $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh, $btnExport))
     $form.Controls.Add($btnPanel)
 
-    # ── Filter toolbar ──────────────────────────────────────────────────
+    # ── Filter toolbar ──────────────────────────────────────────────────────
     $filterBar = [System.Windows.Forms.Panel]::new()
     $filterBar.Dock      = 'Top'
     $filterBar.Height    = 36
@@ -174,7 +174,7 @@ function New-HardeningUi {
     $filterBar.Controls.AddRange([System.Windows.Forms.Control[]]@($lblSearch, $txtSearch, $lblGroup, $cmbGroups, $btnResetFilter))
     $form.Controls.Add($filterBar)
 
-    # ── Scroll panel ────────────────────────────────────────────────────
+    # ── Scroll panel ──────────────────────────────────────────────────────────
     $scroll = [System.Windows.Forms.Panel]::new()
     $scroll.Dock       = 'Fill'
     $scroll.AutoScroll = $true
@@ -270,6 +270,10 @@ function Build-SettingRows {
     $scroll.Controls.Clear()
     $Context.RowControls.Clear()
 
+    # Capture function reference once — GetNewClosure() runs in a dynamic
+    # module that cannot resolve session-level functions by name.
+    $fnShowSettingInfo = ${function:Show-SettingInfo}
+
     $y         = 8
     $lastGroup = ''
     $rowIndex  = 0
@@ -282,7 +286,7 @@ function Build-SettingRows {
 
     foreach ($s in $Context.FilteredSettings) {
 
-        # ── Group header ────────────────────────────────────────────────
+        # ── Group header ──────────────────────────────────────────────────────
         if ($s.Group -ne $lastGroup) {
             $lbl = [System.Windows.Forms.Label]::new()
             $lbl.Text      = "  $($s.Group)"
@@ -296,7 +300,7 @@ function Build-SettingRows {
             $lastGroup = $s.Group
         }
 
-        # ── Row ─────────────────────────────────────────────────────────
+        # ── Row ──────────────────────────────────────────────────────────────────
         $rowBg = if (($rowIndex % 2) -eq 0) { $t.RowBackgroundA } else { $t.RowBackgroundB }
         $row = [System.Windows.Forms.Panel]::new()
         $row.Location  = [System.Drawing.Point]::new(10, $y)
@@ -329,7 +333,7 @@ function Build-SettingRows {
         $lblDesc.ForeColor = $t.DescriptionForeground
         $lblDesc.BackColor = $rowBg
 
-        # ── Apply button (Tag='apply' — used by Refresh-RowState discovery) ──
+        # ── Apply button ──────────────────────────────────────────────────
         $btnApply = [System.Windows.Forms.Button]::new()
         $btnApply.Tag      = 'apply'
         $btnApply.Location = [System.Drawing.Point]::new(572, 9)
@@ -340,7 +344,7 @@ function Build-SettingRows {
         $btnApply.Font      = $fontSB8
         $btnApply.Cursor    = 'Hand'
 
-        # ── Revert button (Tag='revert' — used by Refresh-RowState discovery) ─
+        # ── Revert button ─────────────────────────────────────────────────
         $btnRevert = [System.Windows.Forms.Button]::new()
         $btnRevert.Tag      = 'revert'
         $btnRevert.Text     = 'Revert'
@@ -379,7 +383,9 @@ function Build-SettingRows {
         Refresh-RowState -Context $Context -RowRecord $record
 
         $capturedSetting = $s
-        $infoBtn.Add_Click({ Show-SettingInfo -Setting $capturedSetting }.GetNewClosure())
+        $infoBtn.Add_Click({
+            & $fnShowSettingInfo -Setting $capturedSetting
+        }.GetNewClosure())
 
         [void]$Context.RowControls.Add($record)
         $y += 50
