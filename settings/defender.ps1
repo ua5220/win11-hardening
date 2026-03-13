@@ -418,6 +418,51 @@
 },
 
 [PSCustomObject]@{
+    Group    = "Defender — ASR Rules"
+    Name     = "ASR PSExec/WMI — Audit режим (25H2 Baseline рекомендація)"
+    Desc     = "d1e49aac: Block process creations from PSExec/WMI = 2 (Audit). Microsoft НЕ рекомендує Block (1) — ламає законні admin-скрипти"
+    MinBuild = 26200
+    Apply  = {
+        Add-MpPreference -AttackSurfaceReductionRules_Ids    "d1e49aac-8f56-4280-b9ba-993a6d77406c" `
+                         -AttackSurfaceReductionRules_Actions 2 -EA SilentlyContinue
+    }
+    Revert = {
+        Add-MpPreference -AttackSurfaceReductionRules_Ids    "d1e49aac-8f56-4280-b9ba-993a6d77406c" `
+                         -AttackSurfaceReductionRules_Actions 0 -EA SilentlyContinue
+    }
+    Check  = {
+        $p = Get-MpPreference -EA SilentlyContinue
+        $idx = [Array]::IndexOf($p.AttackSurfaceReductionRules_Ids, "d1e49aac-8f56-4280-b9ba-993a6d77406c")
+        $idx -ge 0 -and $p.AttackSurfaceReductionRules_Actions[$idx] -eq 2
+    }
+},
+
+[PSCustomObject]@{
+    Group    = "Application Control"
+    Name     = "WDAC — COM-об'єкти дозволені для системних процесів (26H1)"
+    Desc     = "Покращена обробка COM Allow-list у WDAC: 26H1 виправляє False Positive для системних COM"
+    MinBuild = 26300
+    Apply  = {
+        # Базова WDAC Audit-режим політика через PowerShell (не ламає систему)
+        $wdacPath = "$env:ProgramData\win11-hardening\WDAC"
+        $null = New-Item -ItemType Directory -Path $wdacPath -Force
+        # Генерувати базову Allow Microsoft Audit Policy
+        if (Get-Command New-CIPolicy -EA SilentlyContinue) {
+            New-CIPolicy -Level Publisher -Fallback Hash -FilePath "$wdacPath\BaseAudit.xml" `
+                         -UserPEs -MultiplePolicyFormat -EA SilentlyContinue
+            ConvertFrom-CIPolicy "$wdacPath\BaseAudit.xml" "$wdacPath\BaseAudit.bin" -EA SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "WDAC Audit Policy створено: $wdacPath\BaseAudit.bin"
+        } else {
+            Write-AppLog -Level 'WARN' -Message "WDAC: ConfigCI модуль недоступний на цій версії"
+        }
+    }
+    Revert = {
+        Remove-Item "$env:ProgramData\win11-hardening\WDAC" -Recurse -Force -EA SilentlyContinue
+    }
+    Check  = { Test-Path "$env:ProgramData\win11-hardening\WDAC\BaseAudit.bin" }
+},
+
+[PSCustomObject]@{
     Group = "Windows Sandbox / Virtualization Security"
     Name  = "Заборонити Custom SSPs/APs (LSASS захист)"
     Desc  = "AllowCustomSSPsAPs=0: не дозволяти нестандартним SSP/AP підключатися до LSASS"

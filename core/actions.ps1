@@ -9,6 +9,19 @@
              Connect-HardeningActions, Export-HardeningReport
 #>
 
+# ── MinBuild фільтрація (25H2/26H1) ──────────────────────────────────────
+
+function Get-ApplicableSettings {
+    param([Parameter(Mandatory)]$AllSettings)
+
+    $currentBuild = [System.Environment]::OSVersion.Version.Build
+    $AllSettings | Where-Object {
+        # Якщо MinBuild не задано — застосовується до всіх версій
+        if ($null -eq $_.MinBuild) { return $true }
+        $currentBuild -ge $_.MinBuild
+    }
+}
+
 function Set-BusyState {
     param(
         [Parameter(Mandatory)]$Context,

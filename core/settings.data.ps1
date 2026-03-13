@@ -20,17 +20,17 @@
 #>
 
 $Global:SettingsModules = @(
-    @{ Name="security";    File="settings\security.ps1";    Version="2.0" }
-    @{ Name="defender";    File="settings\defender.ps1";    Version="2.0" }
-    @{ Name="network";     File="settings\network.ps1";     Version="2.0" }
-    @{ Name="firewall";    File="settings\firewall.ps1";    Version="1.0" }
-    @{ Name="privacy";     File="settings\privacy.ps1";     Version="2.0" }
-    @{ Name="services";    File="settings\services.ps1";    Version="2.0" }
-    @{ Name="audit";       File="settings\audit.ps1";       Version="1.0" }
-    @{ Name="policy";      File="settings\policy.ps1";      Version="1.0" }
-    @{ Name="monitoring";  File="settings\monitoring.ps1";  Version="1.0" }
-    @{ Name="wsl-sudo";    File="settings\wsl-sudo.ps1";    Version="1.0" }
-    @{ Name="doh";         File="settings\doh.ps1";         Version="1.0" }
+    @{ Name="security";    File="settings\security.ps1";    Version="3.1"; MinBuild=22000 }
+    @{ Name="defender";    File="settings\defender.ps1";    Version="3.1"; MinBuild=22000 }
+    @{ Name="network";     File="settings\network.ps1";     Version="3.1"; MinBuild=22000 }
+    @{ Name="firewall";    File="settings\firewall.ps1";    Version="2.0"; MinBuild=22000 }
+    @{ Name="privacy";     File="settings\privacy.ps1";     Version="2.0"; MinBuild=22000 }
+    @{ Name="services";    File="settings\services.ps1";    Version="2.0"; MinBuild=22000 }
+    @{ Name="audit";       File="settings\audit.ps1";       Version="3.1"; MinBuild=22000 }
+    @{ Name="policy";      File="settings\policy.ps1";      Version="1.0"; MinBuild=22000 }
+    @{ Name="monitoring";  File="settings\monitoring.ps1";  Version="2.0"; MinBuild=22000 }
+    @{ Name="wsl-sudo";    File="settings\wsl-sudo.ps1";    Version="1.0"; MinBuild=22000 }
+    @{ Name="doh";         File="settings\doh.ps1";         Version="1.0"; MinBuild=22000 }
 )
 
 function Get-HardeningSettings {

@@ -46,6 +46,25 @@ Describe "audit.ps1 — PowerShell / Audit" {
     }
 }
 
+Describe "audit.ps1 — Аудит процесів (25H2 Baseline)" {
+
+    Context "Process Creation — командний рядок у подіях (25H2 Baseline)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "Process Creation.*25H2" }
+            $item.Apply.Invoke()
+        }
+        It "ProcessCreationIncludeCmdLine_Enabled дорівнює 1" {
+            Get-ItemPropertyValue `
+                "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" `
+                "ProcessCreationIncludeCmdLine_Enabled" | Should -Be 1
+        }
+        It "MinBuild дорівнює 26200" {
+            $item.MinBuild | Should -Be 26200
+        }
+        AfterAll { $item.Revert.Invoke() }
+    }
+}
+
 Describe "audit.ps1 — Розширений аудит (CIS / STIG)" {
 
     Context "Event Log — розширені розміри (Security 200MB)" {

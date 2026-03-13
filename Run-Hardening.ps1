@@ -22,10 +22,14 @@
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-# Перевірка версії ОС
-if ([System.Environment]::OSVersion.Version.Build -lt 22000) {
-    Write-Warning "Скрипт розроблено для Windows 11 (build 22000+)"
-    exit 1
+# Перевірка версії ОС та визначення треку Windows 11
+$build = [System.Environment]::OSVersion.Version.Build
+switch ($build) {
+    { $_ -ge 26300 } { $Global:Win11Track = "26H1";   Write-Host "Windows 11 26H1 (build $build)" -ForegroundColor Cyan }
+    { $_ -ge 26200 } { $Global:Win11Track = "25H2";   Write-Host "Windows 11 25H2 (build $build)" -ForegroundColor Cyan }
+    { $_ -ge 26100 } { $Global:Win11Track = "24H2";   Write-Host "Windows 11 24H2 (build $build)" -ForegroundColor Cyan }
+    { $_ -ge 22000 } { $Global:Win11Track = "Legacy"; Write-Warning "Windows 11 < 24H2 — деякі правила не підтримуються" }
+    default           { Write-Error "Windows 11 не виявлено (build $build)"; exit 1 }
 }
 
 # Завантаження ядра
@@ -46,7 +50,7 @@ if (-not (Test-Path $settingsDir -PathType Container)) {
 
 Initialize-WinForms
 
-$settings = Get-HardeningSettings
+$settings = Get-ApplicableSettings -AllSettings (Get-HardeningSettings)
 
 $check = Invoke-StartupSelfCheck -RootPath $PSScriptRoot -Settings $settings
 if ($check.Errors.Count -gt 0) {

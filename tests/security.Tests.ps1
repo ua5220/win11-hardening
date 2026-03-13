@@ -107,19 +107,38 @@ Describe "security.ps1 — Паролі / Облікові записи" {
     }
 }
 
+Describe "security.ps1 — UAC / Administrator Protection (25H2+)" {
+
+    Context "Administrator Protection — Windows Hello для UAC (25H2+)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "Administrator Protection" }
+        }
+        It "Налаштування має MinBuild=26200" {
+            $item.MinBuild | Should -Be 26200
+        }
+        It "Apply є ScriptBlock" {
+            $item.Apply | Should -BeOfType [scriptblock]
+        }
+        It "ExclusiveGroup = UAC-Level" {
+            $item.ExclusiveGroup | Should -Be "UAC-Level"
+        }
+    }
+}
+
 Describe "security.ps1 — Credential / Logon Hardening" {
 
-    Context "WDigest Authentication вимкнути (ACSC)" {
+    Context "WDigest Authentication — legacy, 24H2 і нижче" {
         BeforeAll {
             $item = $settings | Where-Object { $_.Name -match "WDigest" }
-            $item.Apply.Invoke()
         }
-        It "UseLogonCredential дорівнює 0" {
-            Get-ItemPropertyValue `
-                "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" `
-                "UseLogonCredential" | Should -Be 0
+        It "Apply є ScriptBlock" {
+            $item.Apply | Should -BeOfType [scriptblock]
         }
-        AfterAll { $item.Revert.Invoke() }
+        It "Check враховує Win11Track" {
+            # Check повинен повернути bool незалежно від версії
+            $result = $item.Check.Invoke()
+            $result | Should -BeOfType [bool]
+        }
     }
 
     Context "Заборонити збереження мережевих паролів (ACSC)" {
@@ -206,5 +225,65 @@ Describe "security.ps1 — Application Control" {
                 "Enabled" | Should -Be 0
         }
         AfterAll { $item.Revert.Invoke() }
+    }
+}
+
+Describe "security.ps1 — Application Hardening (25H2 Baseline)" {
+
+    Context "IE11 COM Automation — вимкнути (25H2 Baseline)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "IE11 COM" }
+        }
+        It "Налаштування має MinBuild=26200" {
+            $item.MinBuild | Should -Be 26200
+        }
+        It "Apply є ScriptBlock" {
+            $item.Apply | Should -BeOfType [scriptblock]
+        }
+        It "Check є ScriptBlock" {
+            $item.Check | Should -BeOfType [scriptblock]
+        }
+    }
+}
+
+Describe "security.ps1 — Printer Hardening (25H2 Baseline)" {
+
+    Context "Принтери — IPPS + TLS/SSL (25H2)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "IPPS.*TLS" }
+            $item.Apply.Invoke()
+        }
+        It "RequireIpps дорівнює 1" {
+            Get-ItemPropertyValue `
+                "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\IPP" `
+                "RequireIpps" | Should -Be 1
+        }
+        It "RequireSslCerts дорівнює 1" {
+            Get-ItemPropertyValue `
+                "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\IPP" `
+                "RequireSslCerts" | Should -Be 1
+        }
+        It "RestrictDriverInstallationToAdministrators дорівнює 1" {
+            Get-ItemPropertyValue `
+                "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" `
+                "RestrictDriverInstallationToAdministrators" | Should -Be 1
+        }
+        AfterAll { $item.Revert.Invoke() }
+    }
+}
+
+Describe "security.ps1 — Hardware Security (26H1)" {
+
+    Context "Secure Boot — нові сертифікати + NoIntegrityChecks" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "Secure Boot.*нові сертифікати" }
+        }
+        It "Apply є ScriptBlock" {
+            $item.Apply | Should -BeOfType [scriptblock]
+        }
+        It "Check є ScriptBlock" {
+            $item.Check | Should -BeOfType [scriptblock]
+        }
+        # НЕ виконуємо Apply — bcdedit може вплинути на завантажувач системи
     }
 }

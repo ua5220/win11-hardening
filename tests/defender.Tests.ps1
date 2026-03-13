@@ -151,6 +151,36 @@ Describe "defender.ps1 — Windows Sandbox / Virtualization Security" {
     }
 }
 
+Describe "defender.ps1 — ASR / WDAC (25H2/26H1 Baseline)" {
+
+    Context "ASR PSExec/WMI — Audit режим (25H2 Baseline)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "ASR PSExec/WMI" }
+        }
+        It "Налаштування має MinBuild=26200" {
+            $item.MinBuild | Should -Be 26200
+        }
+        It "Apply є ScriptBlock" {
+            $item.Apply | Should -BeOfType [scriptblock]
+        }
+        It "Check є ScriptBlock" {
+            $item.Check | Should -BeOfType [scriptblock]
+        }
+    }
+
+    Context "WDAC — COM-об'єкти (26H1)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "WDAC.*COM" }
+        }
+        It "Налаштування має MinBuild=26300" {
+            $item.MinBuild | Should -Be 26300
+        }
+        It "Apply є ScriptBlock" {
+            $item.Apply | Should -BeOfType [scriptblock]
+        }
+    }
+}
+
 Describe "defender.ps1 — Захист сервісів та драйверів" {
 
     Context "Remote Registry — вимкнути" {
