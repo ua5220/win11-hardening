@@ -64,7 +64,7 @@ function Invoke-BulkAction {
     Set-BusyState -Context $Context -Busy $false
     Refresh-AllRows -Context $Context
     Write-AppLog -Level 'INFO' -Message "$Label :: done (ok=$ok, err=$err)"
-    $Context.StatusBar.Text = "  $Label\ завершено: $ok OK, $err помилок."
+    $Context.StatusBar.Text = "  $Label завершено: $ok OK, $err помилок."
 }
 
 # ── Bulk commands ─────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ function Connect-RowActions {
 
 # ── Filter helper ─────────────────────────────────────────────────────────
 
-function Apply-Filter {
+function Invoke-Filter {
     param([Parameter(Mandatory)]$Context)
     Update-FilteredSettings -Context $Context
     Build-SettingRows       -Context $Context
@@ -183,7 +183,7 @@ function Connect-HardeningActions {
     Connect-RowActions -Context $Context
 
     # Capture function reference so GetNewClosure() closures can find it.
-    $fnApplyFilter = ${function:Apply-Filter}
+    $fnApplyFilter = ${function:Invoke-Filter}
 
     # Filter events
     $Context.Controls.SearchBox.Add_TextChanged({

@@ -26,7 +26,7 @@ $Is64 = [Environment]::Is64BitOperatingSystem
 $WinVer = [System.Environment]::OSVersion.Version
 $IsWin11 = ($WinVer.Build -ge 22000)
 
-# ── Логування ──────────────────────────────────────────────────────────────────
+# ── CLI-логування (консольне з кольорами) ────────────────────────────────────
 $LogFile = "$env:TEMP\PrivacyHarden_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 
 function Write-Log {
@@ -41,10 +41,11 @@ function Write-Log {
     }
     $line = "[{0}] {1} {2}" -f (Get-Date -Format 'HH:mm:ss'), $icon, $Msg
     Write-Host $line -ForegroundColor $color
-    Add-Content -Path $LogFile -Value $line -Encoding UTF8
+    try { Add-Content -Path $LogFile -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue } catch {}
 }
 
-# ── Допоміжні функції ──────────────────────────────────────────────────────────
+# ── Локальні хелпери (самодостатні) ──────────────────────────────────────────
+
 function Set-Reg {
     param([string]$Path, [string]$Name, $Value, [string]$Type = 'DWord')
     try {
@@ -79,9 +80,9 @@ function Disable-Task {
 }
 
 function Add-FirewallBlock {
-    param([string]$Name, [string[]]$IPs)
+    param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][string[]]$IPs)
     $existing = Get-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue
-    if ($existing) { Remove-NetFirewallRule -DisplayName $Name }
+    if ($existing) { Remove-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue }
     New-NetFirewallRule -DisplayName $Name -Direction Outbound `
         -RemoteAddress $IPs -Action Block -Profile Any -Enabled True | Out-Null
     Write-Log "Брандмауер: заблоковано '$Name' ($($IPs.Count) IP)" 'OK'

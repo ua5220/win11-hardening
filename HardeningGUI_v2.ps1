@@ -5,8 +5,11 @@
     Вимоги: PowerShell 5.1+, права адміністратора
     Структура:
       HardeningGUI_v2.ps1  -> цей файл (bootstrap + orchestration)
-      helpers.ps1          -> інфраструктурні функції
-      settings.data.ps1    -> Get-HardeningSettings (дані hardening-правил)
+      helpers.ps1          -> інфраструктурні функції (реєстр, сервіси, логування)
+      settings.data.ps1    -> Get-HardeningSettings (агрегатор налаштувань)
+      settings/             -> категоризовані файли налаштувань:
+        security.ps1, defender.ps1, network.ps1, privacy.ps1,
+        services.ps1, audit.ps1, policy.ps1
       ui.ps1               -> WinForms factory, row rendering
       actions.ps1          -> bulk operations, event wiring
 #>
@@ -17,12 +20,19 @@
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
+# Перевірка обов'язкових модулів
 foreach ($file in @('helpers.ps1', 'settings.data.ps1', 'ui.ps1', 'actions.ps1')) {
     $fullPath = Join-Path $PSScriptRoot $file
     if (-not (Test-Path $fullPath -PathType Leaf)) {
         throw "Відсутній обов'язковий файл: $fullPath"
     }
     . $fullPath
+}
+
+# Перевірка директорії налаштувань
+$settingsDir = Join-Path $PSScriptRoot 'settings'
+if (-not (Test-Path $settingsDir -PathType Container)) {
+    throw "Відсутня директорія налаштувань: $settingsDir"
 }
 
 Initialize-WinForms
