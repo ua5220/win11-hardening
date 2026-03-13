@@ -16,9 +16,10 @@ function Get-ApplicableSettings {
 
     $currentBuild = [System.Environment]::OSVersion.Version.Build
     $AllSettings | Where-Object {
-        # Якщо MinBuild не задано — застосовується до всіх версій
-        if ($null -eq $_.MinBuild) { return $true }
-        $currentBuild -ge $_.MinBuild
+        # Якщо об'єкт не має властивості MinBuild або вона $null — застосовується до всіх версій
+        $hasProp = $_.PSObject.Properties['MinBuild']
+        if (-not $hasProp -or $null -eq $hasProp.Value) { return $true }
+        $currentBuild -ge $hasProp.Value
     }
 }
 
