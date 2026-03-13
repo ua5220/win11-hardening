@@ -80,8 +80,8 @@ function Get-HardeningSettings {
 
     [PSCustomObject]@{
         Group = "UAC / Вхід до системи"
-        Name  = "Secure credential entry (ACSC 05)"
-        Desc  = "DisablePasswordReveal=1, EnumerateAdministrators=0, SoftwareSASGeneration=0, DisableAutomaticRestartSignOn=1"
+        Name  = "Захищений ввід облікових даних (ACSC 05)"
+        Desc  = "DisablePasswordReveal=1, EnumerateAdministrators=0, SoftwareSASGeneration=0, DisableAutomaticRestartSignOn=1 — приховати пароль, вимкнути перерахування адміністраторів та автоматичний вхід після перезапуску"
         Apply = {
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredUI" "DisablePasswordReveal"        1
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredUI" "EnumerateAdministrators"      0
@@ -100,8 +100,8 @@ function Get-HardeningSettings {
 
     [PSCustomObject]@{
         Group = "UAC / Вхід до системи"
-        Name  = "Inactivity lock — 15 хв (ACSC 33)"
-        Desc  = "InactivityTimeoutSecs=900, screensaver 900s + password, no lock screen camera/slideshow"
+        Name  = "Блокування при бездіяльності — 15 хв (ACSC 33)"
+        Desc  = "InactivityTimeoutSecs=900, заставка 900с + пароль, без камери/слайдшоу на екрані блокування"
         Apply = {
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "InactivityTimeoutSecs" 900
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" "NoLockScreenCamera"   1
@@ -232,7 +232,7 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "Defender / Antivirus"
         Name  = "Defender ACSC — повна безпечна конфігурація (ACSC 22)"
-        Desc  = "PUA Block, MAPS Advanced, Block at First Sight, хмарна перевірка 50с, сканування email/USB/архівів"
+        Desc  = "Блокування PUA, MAPS Розширений, Блокування при першому виявленні, хмарна перевірка 50с, сканування email/USB/архівів"
         Apply = {
             $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
             Set-Reg $d "PUAProtection"              1
@@ -314,7 +314,7 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "Defender / Antivirus"
         Name  = "ASR Rules — 16 правил Attack Surface Reduction (ACSC 02)"
-        Desc  = "Всі 16 ASR-правил у режимі Block: захист від Office-макросів, LSASS, WMI, скриптів, USB тощо"
+        Desc  = "Всі 16 ASR-правил у режимі Блокування: захист від Office-макросів, LSASS, WMI, скриптів, USB тощо"
         Apply = {
             $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR"
             $ru = "$rp\Rules"
@@ -389,7 +389,7 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "Defender / Antivirus"
         Name  = "Early Launch Antimalware — ELAM (ACSC 07)"
-        Desc  = "DriverLoadPolicy=1: завантажувати лише драйвери з позначкою Good (найсуворіший режим ACSC)"
+        Desc  = "DriverLoadPolicy=1: завантажувати лише драйвери з позначкою Добре (найсуворіший режим ACSC)"
         Apply  = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 1 }
         Revert = { Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" 7 }
         Check  = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Policies\EarlyLaunch" "DriverLoadPolicy" -1) -eq 1 }
@@ -543,7 +543,7 @@ function Get-HardeningSettings {
 
     [PSCustomObject]@{
         Group = "Мережева безпека"
-        Name  = "DMA Protection — заблокувати FireWire/Thunderbolt (ACSC 26)"
+        Name  = "DMA-захист — Заблокувати FireWire/Thunderbolt (ACSC 26)"
         Desc  = "DeviceEnumerationPolicy=0, заблокувати PCI CC_0C0010 та CC_0C0A"
         Apply = {
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection" "DeviceEnumerationPolicy" 0
@@ -633,7 +633,7 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "Мережева безпека"
         Name  = "LLMNR вимкнути, RPC restricted (ACSC 32)"
-        Desc  = "EnableMulticast=0, RestrictRemoteClients=1, Hardened UNC paths SYSVOL/NETLOGON"
+        Desc  = "EnableMulticast=0, RestrictRemoteClients=1, Захищені UNC-шляхи SYSVOL/NETLOGON"
         Apply = {
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "EnableMulticast" 0
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc"       "RestrictRemoteClients" 1
@@ -653,7 +653,7 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "Шифрування / BitLocker"
         Name  = "BitLocker — XTS-AES 128 + AD backup + мін PIN 15 (ACSC 27)"
-        Desc  = "EncryptionMethod XTS-AES128, AD backup required, Full encryption, PIN min 15, DMA disabled when locked"
+        Desc  = "Метод шифрування XTS-AES128, резервна копія в AD обов'язкова, повне шифрування, PIN мін. 15, DMA вимкнено при блокуванні"
         Apply = {
             $b = "HKLM:\SOFTWARE\Policies\Microsoft\FVE"
             Set-Reg $b "EncryptionMethodWithXtsOs"        4
@@ -751,7 +751,7 @@ function Get-HardeningSettings {
     [PSCustomObject]@{
         Group = "PowerShell / Audit"
         Name  = "Audit Policy — розширений аудит подій (ACSC 24)"
-        Desc  = "ProcessCreationIncludeCmdLine, event log sizes, advanced audit: logon/object/policy/system"
+        Desc  = "ProcessCreationIncludeCmdLine, розміри журналів подій, розширений аудит: вхід/об'єкти/політика/система"
         Apply = {
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" "ProcessCreationIncludeCmdLine_Enabled" 1
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application" "MaxSize" 20480
