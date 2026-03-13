@@ -141,15 +141,22 @@
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Controlled Folder Access — захист від ransomware (ACSC 04)"
-    Desc  = "EnableControlledFolderAccess=1 через реєстр та Set-MpPreference"
+    Desc  = "EnableControlledFolderAccess=1 через реєстр та Set-MpPreference. Revert видаляє GPO-ключ повністю — повертає контроль локальному адміністратору через UI та Set-MpPreference."
     Apply = {
         $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
         Set-Reg $p "EnableControlledFolderAccess" 1
         try { Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Enable :: $($_.Exception.Message)" }
     }
     Revert = {
+        # Видаляємо весь GPO-вузол CFA, а не просто встановлюємо 0.
+        # Якщо ключ існує в HKLM:\SOFTWARE\Policies\, Windows блокує локальний контроль
+        # навіть при значенні 0 — показує "Your administrator has blocked this action".
+        # Видалення вузла повертає повний контроль локальному адміністратору.
         $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        Set-Reg $p "EnableControlledFolderAccess" 0
+        if (Test-Path $p) {
+            Remove-Item -Path $p -Recurse -Force -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "CFA: GPO-ключ видалено, контроль повернуто локальному адміну"
+        }
         try { Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Disable :: $($_.Exception.Message)" }
     }
     Check = {
