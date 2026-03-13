@@ -17,6 +17,7 @@
       monitoring.ps1 — моніторинг PS, Token Impersonation, Defender audit, USB
       wsl-sudo.ps1   — WSL, Sudo (Win 11 24H2+)
       doh.ps1        — DNS-over-HTTPS, Edge DoH GPO, ARP захист
+      uefi-hardening.ps1 — UEFI/BIOS захист, Secure Boot, DMA, ASUS CVE
 #>
 
 $Global:SettingsModules = @(
@@ -30,7 +31,8 @@ $Global:SettingsModules = @(
     @{ Name="policy";      File="settings\policy.ps1";      Version="1.0"; MinBuild=22000 }
     @{ Name="monitoring";  File="settings\monitoring.ps1";  Version="2.0"; MinBuild=22000 }
     @{ Name="wsl-sudo";    File="settings\wsl-sudo.ps1";    Version="1.0"; MinBuild=22000 }
-    @{ Name="doh";         File="settings\doh.ps1";         Version="1.0"; MinBuild=22000 }
+    @{ Name="doh";             File="settings\doh.ps1";             Version="1.0"; MinBuild=22000 }
+    @{ Name="uefi-hardening"; File="settings\uefi-hardening.ps1"; Version="1.0"; MinBuild=22000 }
 )
 
 function Get-HardeningSettings {
