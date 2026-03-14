@@ -13,8 +13,8 @@
 
 [PSCustomObject]@{
     Group = "PowerShell / Audit"
-    Name  = "PowerShell — AllSigned + Module/Script logging + Transcription (ACSC 31)"
-    Desc  = "ExecutionPolicy=AllSigned, EnableModuleLogging=1, EnableScriptBlockLogging=1, EnableTranscripting=1"
+    Name  = "PowerShell — RemoteSigned + Module/Script logging + Transcription (ACSC 31)"
+    Desc  = "ExecutionPolicy=RemoteSigned (локальні скрипти без підпису), EnableModuleLogging=1, EnableScriptBlockLogging=1, EnableTranscripting=1"
     Apply = {
         $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
         Set-Reg "$ps\ModuleLogging"    "EnableModuleLogging"      1
@@ -22,7 +22,7 @@
         Set-Reg "$ps\ScriptBlockLogging" "EnableScriptBlockLogging" 1
         Set-Reg "$ps\Transcription"    "EnableTranscripting"      1
         Set-Reg $ps "EnableScripts"    1
-        Set-Reg $ps "ExecutionPolicy"  "AllSigned" "String"
+        Set-Reg $ps "ExecutionPolicy"  "RemoteSigned" "String"
     }
     Revert = {
         $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
@@ -274,12 +274,10 @@
 
 [PSCustomObject]@{
     Group = "Scheduled Tasks — розширене відключення"
-    Name  = "Задачі телеметрії v5 — WlanSvc / WCM / Shell / RemoteAssistance / SoftwareProtection / SpacePort"
-    Desc  = "CDSSync (WlanSvc), WiFiTask (WCM), FamilySafetyMonitor/Refresh, RemoteAssistanceTask, SvcRestartTask*, SpaceAgentTask"
+    Name  = "Задачі телеметрії v5 — Shell / RemoteAssistance / SoftwareProtection / SpacePort"
+    Desc  = "FamilySafetyMonitor/Refresh, RemoteAssistanceTask, SvcRestartTask*, SpaceAgentTask. CDSSync (WlanSvc) та WiFiTask (WCM) не вимикаються — критичні для стабільного WiFi-підключення"
     Apply = {
         $tasks = @(
-            @('\Microsoft\Windows\WlanSvc\',                 'CDSSync'),
-            @('\Microsoft\Windows\WCM\',                     'WiFiTask'),
             @('\Microsoft\Windows\Shell\',                   'FamilySafetyMonitor'),
             @('\Microsoft\Windows\Shell\',                   'FamilySafetyRefreshTask'),
             @('\Microsoft\Windows\RemoteAssistance\',        'RemoteAssistanceTask'),
@@ -297,8 +295,6 @@
     }
     Revert = {
         $tasks = @(
-            @('\Microsoft\Windows\WlanSvc\',                 'CDSSync'),
-            @('\Microsoft\Windows\WCM\',                     'WiFiTask'),
             @('\Microsoft\Windows\Shell\',                   'FamilySafetyMonitor'),
             @('\Microsoft\Windows\Shell\',                   'FamilySafetyRefreshTask'),
             @('\Microsoft\Windows\RemoteAssistance\',        'RemoteAssistanceTask'),
@@ -310,8 +306,8 @@
         foreach ($t in $tasks) { Enable-Task $t[0] $t[1] }
     }
     Check = {
-        $t = Get-ScheduledTask -TaskPath '\Microsoft\Windows\WlanSvc\' `
-                               -TaskName 'CDSSync' -ErrorAction SilentlyContinue
+        $t = Get-ScheduledTask -TaskPath '\Microsoft\Windows\Shell\' `
+                               -TaskName 'FamilySafetyMonitor' -ErrorAction SilentlyContinue
         $t -and $t.State -eq 'Disabled'
     }
 },

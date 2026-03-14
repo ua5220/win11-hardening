@@ -122,18 +122,15 @@
 
 [PSCustomObject]@{
     Group = "Microsoft Accounts / OneDrive"
-    Name  = "Заблокувати Consumer Microsoft accounts (ACSC)"
-    Desc  = "DisableUserAuth=1, AllowMicrosoftAccountsToBeOptional=1, DisableFileSyncNGSC=1"
+    Name  = "OneDrive — вимкнути синхронізацію (ACSC)"
+    Desc  = "DisableFileSyncNGSC=1: вимкнути OneDrive sync. DisableUserAuth прибрано — ламає MS Store та UWP-застосунки"
     Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount"   "DisableUserAuth"                  1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional" 1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"   "DisableFileSyncNGSC"              1
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 1
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 0
     }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 0) -eq 1 }
+    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 0) -eq 1 }
 },
 
 # ════════════════════════════════════════════════════════════════════════
@@ -682,17 +679,15 @@
 
 [PSCustomObject]@{
     Group = "Приватність — розширена (HKLM)"
-    Name  = "Microsoft Accounts — вимкнути автентифікацію"
-    Desc  = "DisableUserAuth=1, AllowMicrosoftAccountsToBeOptional=1: блокувати автентифікацію MSA на пристрої"
+    Name  = "Microsoft Accounts — зробити необов'язковими (не блокувати)"
+    Desc  = "AllowMicrosoftAccountsToBeOptional=1: MSA не обов'язковий, але автентифікація дозволена. DisableUserAuth прибрано — ламає MS Store та UWP"
     Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional" 1
     }
     Revert = {
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth"
         Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional"
     }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftAccount" "DisableUserAuth" 0) -eq 1 }
+    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppRuntime" "AllowMicrosoftAccountsToBeOptional" 0) -eq 1 }
 },
 
 [PSCustomObject]@{

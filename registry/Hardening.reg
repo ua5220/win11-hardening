@@ -11,7 +11,7 @@ Windows Registry Editor Version 5.00
 
 ; --- Credential Protection ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon]
-"CachedLogonsCount"="1"
+"CachedLogonsCount"="3"
 
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa]
 "DisableDomainCreds"=dword:00000001
@@ -152,13 +152,10 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Network Connections]
 "NC_ShowSharedAccessUI"=dword:00000000
 
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy]
-"fBlockNonDomain"=dword:00000001
-"fMinimizeConnections"=dword:00000003
 
-; --- DNS (LLMNR / NetBIOS) ---
+; --- DNS (NetBIOS) ---
+; EnableMulticast (LLMNR) прибрано — ламає пошук принтерів/NAS у локальній мережі
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient]
-"EnableMulticast"=dword:00000000
 "EnableNetbios"=dword:00000002
 
 ; --- RPC ---
@@ -222,7 +219,7 @@ Windows Registry Editor Version 5.00
 
 ; --- Microsoft Accounts ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MicrosoftAccount]
-"DisableUserAuth"=dword:00000001
+"DisableUserAuth"=dword:00000000
 
 ; --- Cloud Content ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CloudContent]
@@ -256,11 +253,7 @@ Windows Registry Editor Version 5.00
 "DisableInventory"=dword:00000001
 
 ; --- Cryptography ---
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Cryptography]
-"ForceKeyProtection"=dword:00000002
-
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy]
-"Enabled"=dword:00000001
+; ForceKeyProtection та FIPS прибрані — ламають Chrome, VPN, .NET застосунки
 
 ; --- System Integrity ---
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager]
