@@ -805,20 +805,6 @@ GPO: Computer Configuration > Administrative Templates > Network > DNS Client
 # ── РОЗДІЛ 49: МЕРЕЖЕВА ІЗОЛЯЦІЯ / DOMAIN HARDENING ───────────────────
 # ════════════════════════════════════════════════════════════════════════
 
-[PSCustomObject]@{
-    Group = "Мережева ізоляція / Domain Hardening"
-    Name  = "Заблокувати підключення до мереж поза доменом при підключенні до домену"
-    Desc  = "fBlockNonDomain=1, fMinimizeConnections=3: ізоляція від публічних мереж при підключенні до домену"
-    Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fBlockNonDomain"       1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fMinimizeConnections"  3
-    }
-    Revert = {
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fBlockNonDomain"
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fMinimizeConnections"
-    }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fBlockNonDomain" 0) -eq 1 }
-},
 
 [PSCustomObject]@{
     Group = "Мережева ізоляція / Domain Hardening"

@@ -235,16 +235,14 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 
 [PSCustomObject]@{
     Group = "Сервіси: Backup / Cache / Recovery"
-    Name  = "Вимкнути Delivery Optimization (DoSvc) + DNS cache"
-    Desc  = "DoSvc=Вимкнено, DODownloadMode=0, dnscache=Вимкнено"
+    Name  = "Вимкнути Delivery Optimization (DoSvc)"
+    Desc  = "DoSvc=Вимкнено, DODownloadMode=0. DNS cache (dnscache) не вимикається — критичний для стабільного інтернету"
     Apply = {
         Set-ServiceDisabled "DoSvc"
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0
-        Set-ServiceDisabled "dnscache"
     }
     Revert = {
         Set-ServiceManual "DoSvc"
-        Set-ServiceManual "dnscache"
     }
     Check  = { $s = Get-Service "DoSvc" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
 },

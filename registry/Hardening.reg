@@ -152,9 +152,6 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Network Connections]
 "NC_ShowSharedAccessUI"=dword:00000000
 
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy]
-"fBlockNonDomain"=dword:00000001
-"fMinimizeConnections"=dword:00000003
 
 ; --- DNS (LLMNR / NetBIOS) ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient]
