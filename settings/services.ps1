@@ -45,14 +45,6 @@
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\FVE" "DisableExternalDMAUnderLock" 0) -eq 1 }
 },
 
-[PSCustomObject]@{
-    Group = "Шифрування / BitLocker"
-    Name  = "Знімні носії — заборонити доступ (ACSC 28)"
-    Desc  = "Deny_All=1 у RemovableStorageDevices — повна заборона всіх знімних носіїв"
-    Apply  = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices" "Deny_All" 1 }
-    Revert = { Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices" "Deny_All" 0 }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices" "Deny_All" 0) -eq 1 }
-},
 
 [PSCustomObject]@{
     Group = "Шифрування / BitLocker"
@@ -76,7 +68,7 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
         Set-Reg "$lsa\SecurityProviders\WDigest" "UseLogonCredential" 0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs" 0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "RunAsPPL"           1
-        Set-Reg $lsa "CachedLogonsCount" "1" "String"
+        Set-Reg $lsa "CachedLogonsCount" "3" "String"
         Set-Reg $lsa "DisableDomainCreds" 1
     }
     Revert = {
@@ -210,27 +202,21 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 # ── РОЗДІЛ 9: СЕРВІСИ BACKUP / CACHE / RECOVERY ─────────────────────────
 # ════════════════════════════════════════════════════════════════════════
 
-[PSCustomObject]@{
-    Group = "Сервіси: Backup / Cache / Recovery"
-    Name  = "Вимкнути Volume Shadow Copy (VSS) + Windows Backup (SDRSVC)"
-    Desc  = "Зупинити VSS та SDRSVC — тіньові копії та резервне копіювання"
-    Apply  = { Set-ServiceDisabled "VSS"; Set-ServiceDisabled "SDRSVC" }
-    Revert = { Set-ServiceManual   "VSS"; Set-ServiceManual   "SDRSVC" }
-    Check  = { $s = Get-Service "VSS" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
-},
 
 [PSCustomObject]@{
     Group = "Сервіси: Backup / Cache / Recovery"
-    Name  = "Вимкнути Windows Search (WSearch) + Cortana"
-    Desc  = "Зупинити WSearch, AllowCortana=0, DisableWebSearch=1"
+    Name  = "Windows Search — вимкнути Cortana та веб-пошук"
+    Desc  = "AllowCortana=0, DisableWebSearch=1, ConnectedSearchUseWeb=0. Сервіс WSearch не вимикається — критичний для пошуку в системі"
     Apply = {
-        Set-ServiceDisabled "WSearch"
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortana"          0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch"      1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "ConnectedSearchUseWeb" 0
     }
-    Revert = { Set-ServiceManual "WSearch" }
-    Check  = { $s = Get-Service "WSearch" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    Revert = {
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortana"          1
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch"      0
+    }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortana" 1) -eq 0 }
 },
 
 [PSCustomObject]@{
@@ -453,18 +439,15 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 [PSCustomObject]@{
     Group = "Misc / Low Priority"
     Name  = "Показувати розширення файлів + блок Safe Mode для не-адмінів (ACSC 40)"
-    Desc  = "HideFileExt=0, SafeModeBlockNonAdmins=1, FIPS=1, ForceKeyProtection=2"
+    Desc  = "HideFileExt=0, SafeModeBlockNonAdmins=1, ProtectionMode=1. FIPS та ForceKeyProtection прибрані — ламають Chrome, VPN, .NET"
     Apply = {
         Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "SafeModeBlockNonAdmins" 1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Cryptography" "ForceKeyProtection" 2
-        Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled" 1
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" "ProtectionMode" 1
         Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableThirdPartySuggestions" 1
     }
     Revert = {
         Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 1
-        Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled" 0
     }
     Check = { (Get-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 1) -eq 0 }
 },
@@ -542,23 +525,6 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
     Check  = { (Get-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoCDBurning" 0) -eq 1 }
 },
 
-[PSCustomObject]@{
-    Group = "Пристрої — CD/WLAN/RSS/Search"
-    Name  = "Device Installation — заблокувати FireWire/Thunderbolt класи (ACSC)"
-    Desc  = "Заблокувати установку пристроїв IEEE 1394 класу {d48179be-ec20-11d1-b6b8-00c04fa372a7}"
-    Apply = {
-        $dr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions"
-        Set-Reg $dr "DenyDeviceClasses"  1
-        Set-Reg $dr "DenyDeviceClassesRetroactive" 1
-        $dc = "$dr\DenyDeviceClasses"
-        if (-not (Test-Path $dc)) { New-Item -Path $dc -Force | Out-Null }
-        Set-Reg $dc "1" "{d48179be-ec20-11d1-b6b8-00c04fa372a7}" "String"
-    }
-    Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions" "DenyDeviceClasses" 0
-    }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions" "DenyDeviceClasses" 0) -eq 1 }
-},
 
 [PSCustomObject]@{
     Group = "Пристрої — CD/WLAN/RSS/Search"

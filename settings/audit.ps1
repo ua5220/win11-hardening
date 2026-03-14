@@ -13,8 +13,8 @@
 
 [PSCustomObject]@{
     Group = "PowerShell / Audit"
-    Name  = "PowerShell — AllSigned + Module/Script logging + Transcription (ACSC 31)"
-    Desc  = "ExecutionPolicy=AllSigned, EnableModuleLogging=1, EnableScriptBlockLogging=1, EnableTranscripting=1"
+    Name  = "PowerShell — RemoteSigned + Module/Script logging + Transcription (ACSC 31)"
+    Desc  = "ExecutionPolicy=RemoteSigned (локальні скрипти без підпису), EnableModuleLogging=1, EnableScriptBlockLogging=1, EnableTranscripting=1"
     Apply = {
         $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
         Set-Reg "$ps\ModuleLogging"    "EnableModuleLogging"      1
@@ -22,7 +22,7 @@
         Set-Reg "$ps\ScriptBlockLogging" "EnableScriptBlockLogging" 1
         Set-Reg "$ps\Transcription"    "EnableTranscripting"      1
         Set-Reg $ps "EnableScripts"    1
-        Set-Reg $ps "ExecutionPolicy"  "AllSigned" "String"
+        Set-Reg $ps "ExecutionPolicy"  "RemoteSigned" "String"
     }
     Revert = {
         $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
