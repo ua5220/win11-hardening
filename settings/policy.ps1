@@ -165,6 +165,78 @@
         Set-Reg $ep "DisableLocalMachineRunOnce"  0
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "DisableLocalMachineRun" 0) -eq 1 }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 17: OFFICE / MSHTML / ACTIVEX HARDENING ──────────────────────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "Office / MSHTML Hardening"
+    Name  = "ActiveX обмеження для MSHTML/IE (CVE-2025-30397)"
+    Desc  = @"
+FEATURE_RESTRICT_ACTIVEXINSTALL=1 для explorer.exe та iexplore.exe: заборонити інсталяцію ActiveX-компонентів через MSHTML.
+CVE-2025-30397: scripting-engine exploit через MSHTML/ActiveX.
+GPO: Computer Configuration > Administrative Templates > Windows Components > Internet Explorer
+  → "Restrict ActiveX Install" = Enabled (для explorer.exe та iexplore.exe)
+"@
+    Apply = {
+        $feat = "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL"
+        Set-Reg $feat "explorer.exe"  1
+        Set-Reg $feat "iexplore.exe"  1
+    }
+    Revert = {
+        $feat = "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL"
+        Remove-RegValue $feat "explorer.exe"
+        Remove-RegValue $feat "iexplore.exe"
+    }
+    Check = {
+        $feat = "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL"
+        (Get-Reg $feat "explorer.exe" 0) -eq 1
+    }
+},
+
+[PSCustomObject]@{
+    Group = "Office / MSHTML Hardening"
+    Name  = "Office 365/2016+ — заблокувати макроси з інтернету + Protected View"
+    Desc  = @"
+blockcontentexecutionfrominternet=1, VBAWarnings=4: заблокувати VBA-макроси
+з інтернету для Word, Excel, PowerPoint (Office 16.0+).
+Protected View увімкнено для вкладень, інтернет-файлів та ненадійних розташувань.
+Захист від CVE-2026-21513, CVE-2026-21514, Office macro атак.
+GPO: User Configuration > Administrative Templates > Microsoft Word/Excel/PowerPoint 2016 >
+  Word Options > Security > Trust Center
+  → "Block macros from running in Office files from the Internet" = Enabled
+  → "VBA Macro Notification Settings" = Disable all with notification
+"@
+    Apply = {
+        foreach ($app in @("Word", "Excel", "PowerPoint")) {
+            $sec = "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\$app\Security"
+            Set-Reg $sec "blockcontentexecutionfrominternet" 1
+            Set-Reg $sec "VBAWarnings"                      4
+
+            $pv = "$sec\ProtectedView"
+            Set-Reg $pv "DisableAttachmentsInPV"      0
+            Set-Reg $pv "DisableInternetFilesInPV"    0
+            Set-Reg $pv "DisableUnsafeLocationsInPV"  0
+        }
+    }
+    Revert = {
+        foreach ($app in @("Word", "Excel", "PowerPoint")) {
+            $sec = "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\$app\Security"
+            Remove-RegValue $sec "blockcontentexecutionfrominternet"
+            Remove-RegValue $sec "VBAWarnings"
+
+            $pv = "$sec\ProtectedView"
+            Remove-RegValue $pv "DisableAttachmentsInPV"
+            Remove-RegValue $pv "DisableInternetFilesInPV"
+            Remove-RegValue $pv "DisableUnsafeLocationsInPV"
+        }
+    }
+    Check = {
+        $sec = "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security"
+        (Get-Reg $sec "blockcontentexecutionfrominternet" 0) -eq 1
+    }
 }
 
 )

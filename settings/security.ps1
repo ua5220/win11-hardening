@@ -276,7 +276,11 @@
 [PSCustomObject]@{
     Group = "Credential / Logon Hardening"
     Name  = "WDigest Authentication — вимкнути (legacy, 24H2 і нижче)"
-    Desc  = "UseLogonCredential=0 (< 25H2). У 25H2+ WDigest вимкнено за замовчуванням, цей блок пропускається автоматично"
+    Desc  = @"
+UseLogonCredential=0 (< 25H2). У 25H2+ WDigest вимкнено за замовчуванням, цей блок пропускається автоматично.
+GPO: Computer Configuration > Administrative Templates > MS Security Guide
+  → "WDigest Authentication" = Disabled
+"@
     Apply  = {
         if ($Global:Win11Track -in @("Legacy","24H2")) {
             Backup-RegistryKey "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest"
@@ -799,6 +803,35 @@ Revision=1
         Write-AppLog -Level 'INFO' -Message "PowerShell Constrained Language Mode вимкнено."
     }
     Check = { [System.Environment]::GetEnvironmentVariable("__PSLockdownPolicy", "Machine") -eq "4" }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 15: CLFS AUTHENTICATION — CVE-2025-29824 / 32701 / 32706 ────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "CLFS / Kernel Exploit Mitigation"
+    Name  = "CLFS Authentication — Enforcement mode (CVE-2025-29824, CVE-2025-32701, CVE-2025-32706)"
+    Desc  = @"
+Mode=0 (Enforcement): блокує пошкоджені/підроблені .blf файли.
+Захист від ланцюжка CLFS-вразливостей що активно експлуатуються (RansomEXX, Storm-2460):
+  CVE-2025-29824 (CVSS 7.8, CISA KEV), CVE-2025-32701, CVE-2025-32706, CVE-2024-49138.
+  Mode=1 = Learning (90 днів), Mode=2 = Disabled.
+GPO: Computer Configuration > Administrative Templates > System > Filesystem
+  → "Enable / disable CLFS logfile authentication" = Enabled
+Інструмент перевірки: fsutil clfs authenticate <шлях_до_blf_файлу>
+"@
+    Apply = {
+        $clfs = "HKLM:\SYSTEM\CurrentControlSet\Services\CLFS\Authentication"
+        Set-Reg $clfs "Mode" 0
+        Write-AppLog -Level 'INFO' -Message "CLFS Authentication: Enforcement mode (Mode=0)"
+    }
+    Revert = {
+        Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\CLFS\Authentication" "Mode" 1
+    }
+    Check = {
+        (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\CLFS\Authentication" "Mode" 2) -eq 0
+    }
 }
 
 )

@@ -105,7 +105,14 @@
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "ASR Rules — 16 правил Attack Surface Reduction (ACSC 02)"
-    Desc  = "Всі 16 ASR-правил у режимі Блокування: захист від Office-макросів, LSASS, WMI, скриптів, USB тощо"
+    Desc  = @"
+Всі 16 ASR-правил у режимі Блокування: захист від Office-макросів, LSASS, WMI, скриптів, USB тощо.
+CVE-2025-30397, CVE-2025-33053: scripting-engine та Office-атаки.
+GPO: Computer Configuration > Administrative Templates > Windows Components >
+  Microsoft Defender Antivirus > Microsoft Defender Exploit Guard > Attack Surface Reduction
+  → "Configure Attack Surface Reduction rules" = Enabled (GUID=1 для кожного правила)
+Значення: 0=Disabled, 1=Block, 2=Audit, 6=Warn
+"@
     Apply = {
         $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR"
         $ru = "$rp\Rules"

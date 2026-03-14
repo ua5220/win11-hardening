@@ -15,7 +15,14 @@
 [PSCustomObject]@{
     Group = "Мережева безпека"
     Name  = "NTLMv2 тільки, заборонити LM та NTLM (ACSC 26)"
-    Desc  = "LmCompatibilityLevel=5, NTLMMinClientSec/ServerSec=537395200, NoLMHash=1"
+    Desc  = @"
+LmCompatibilityLevel=5, NTLMMinClientSec/ServerSec=537395200, NoLMHash=1.
+CVE-2025-24054, CVE-2025-50154: NTLM relay/pass-the-hash.
+GPO: Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options
+  → "Network security: LAN Manager authentication level" = Send NTLMv2 response only. Refuse LM & NTLM
+  → "Network security: Restrict NTLM: Outgoing NTLM traffic" = Deny all
+  → "Network security: Do not store LAN Manager hash value on next password change" = Enabled
+"@
     Apply = {
         $lsa = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
         Set-Reg $lsa "LmCompatibilityLevel" 5
@@ -33,7 +40,15 @@
 [PSCustomObject]@{
     Group = "Мережева безпека"
     Name  = "SMB v1 вимкнути + SMB Signing (ACSC 26)"
-    Desc  = "mrxsmb10 Start=4, SMB1=0, RequireSecuritySignature=1 (клієнт і сервер)"
+    Desc  = @"
+mrxsmb10 Start=4, SMB1=0, RequireSecuritySignature=1 (клієнт і сервер).
+GPO: Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options
+  → "Microsoft network client: Digitally sign communications (always)" = Enabled
+  → "Microsoft network server: Digitally sign communications (always)" = Enabled
+  → Computer Configuration > Administrative Templates > Network > Lanman Workstation
+  → "Enable insecure guest logons" = Disabled
+PowerShell: Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart
+"@
     Apply = {
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10" "Start" 4
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "SMB1"                    0
@@ -140,7 +155,11 @@
 [PSCustomObject]@{
     Group = "Мережева безпека"
     Name  = "LLMNR вимкнути, RPC restricted (ACSC 32)"
-    Desc  = "EnableMulticast=0, RestrictRemoteClients=1, Захищені UNC-шляхи SYSVOL/NETLOGON"
+    Desc  = @"
+EnableMulticast=0, RestrictRemoteClients=1, Захищені UNC-шляхи SYSVOL/NETLOGON.
+GPO: Computer Configuration > Administrative Templates > Network > DNS Client
+  → "Turn off multicast name resolution" = Enabled
+"@
     Apply = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "EnableMulticast" 0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc"       "RestrictRemoteClients" 1
@@ -837,7 +856,11 @@
 [PSCustomObject]@{
     Group = "Мережева ізоляція / Domain Hardening"
     Name  = "Небезпечна гостьова автентифікація — заборонити для SMB"
-    Desc  = "AllowInsecureGuestAuth=0: заблокувати гостьовий доступ до SMB ресурсів"
+    Desc  = @"
+AllowInsecureGuestAuth=0: заблокувати гостьовий доступ до SMB ресурсів.
+GPO: Computer Configuration > Administrative Templates > Network > Lanman Workstation
+  → "Enable insecure guest logons" = Disabled
+"@
     Apply = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" "AllowInsecureGuestAuth" 0
     }
@@ -868,7 +891,12 @@
 [PSCustomObject]@{
     Group = "Мережева ізоляція / Domain Hardening"
     Name  = "SMB Encryption — увімкнути обов'язкове шифрування"
-    Desc  = "EncryptData=True, RejectUnencryptedAccess=True: весь SMB трафік має бути зашифрований"
+    Desc  = @"
+EncryptData=True, RejectUnencryptedAccess=True: весь SMB трафік має бути зашифрований.
+GPO: Computer Configuration > Administrative Templates > Network > Lanman Server
+  → "Require message encryption" = Enabled
+  → "Reject unencrypted access" = Enabled
+"@
     Apply = {
         Set-SmbServerConfiguration -EncryptData $true -RejectUnencryptedAccess $true -Force -ErrorAction SilentlyContinue
     }
@@ -878,6 +906,57 @@
     Check = {
         $cfg = Get-SmbServerConfiguration -ErrorAction SilentlyContinue
         $cfg -and $cfg.EncryptData
+    }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── РОЗДІЛ 12: LEGACY TLS/SSL DISABLE — DOWNGRADE ATTACK PREVENTION ────
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "TLS/SSL Hardening"
+    Name  = "Вимкнути SSL 2.0, SSL 3.0, TLS 1.0, TLS 1.1 (SCHANNEL)"
+    Desc  = @"
+Вимикає застарілі протоколи (SSL 2.0/3.0, TLS 1.0/1.1) для Server та Client:
+  Enabled=0, DisabledByDefault=1 для кожного протоколу.
+  Захист від downgrade-атак (POODLE, BEAST, DROWN).
+  TLS 1.2 залишається увімкненим.
+GPO: немає прямого GPO — тільки реєстр SCHANNEL\Protocols.
+  Протоколи для вимкнення: SSL 2.0, SSL 3.0, TLS 1.0, TLS 1.1
+  Протоколи для увімкнення: TLS 1.2, TLS 1.3
+"@
+    Apply = {
+        $base = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+        foreach ($proto in @("SSL 2.0", "SSL 3.0", "TLS 1.0", "TLS 1.1")) {
+            foreach ($role in @("Server", "Client")) {
+                $p = "$base\$proto\$role"
+                Set-Reg $p "Enabled"            0
+                Set-Reg $p "DisabledByDefault"   1
+            }
+        }
+        # Переконатися що TLS 1.2 увімкнено
+        foreach ($role in @("Server", "Client")) {
+            $p = "$base\TLS 1.2\$role"
+            Set-Reg $p "Enabled"            1
+            Set-Reg $p "DisabledByDefault"   0
+        }
+        Write-AppLog -Level 'INFO' -Message "SCHANNEL: SSL 2.0/3.0, TLS 1.0/1.1 вимкнено; TLS 1.2 увімкнено"
+    }
+    Revert = {
+        $base = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+        foreach ($proto in @("TLS 1.0", "TLS 1.1")) {
+            foreach ($role in @("Server", "Client")) {
+                Remove-RegValue "$base\$proto\$role" "Enabled"
+                Remove-RegValue "$base\$proto\$role" "DisabledByDefault"
+            }
+        }
+    }
+    Check = {
+        $base = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+        $tls10 = Get-Reg "$base\TLS 1.0\Server" "Enabled" 1
+        $tls11 = Get-Reg "$base\TLS 1.1\Server" "Enabled" 1
+        $tls12 = Get-Reg "$base\TLS 1.2\Server" "Enabled" 0
+        ($tls10 -eq 0) -and ($tls11 -eq 0) -and ($tls12 -eq 1)
     }
 }
 

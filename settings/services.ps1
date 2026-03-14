@@ -57,7 +57,12 @@
 [PSCustomObject]@{
     Group = "Шифрування / BitLocker"
     Name  = "Credential Guard — VBS + LSASS як protected process (ACSC 01)"
-    Desc  = "EnableVirtualizationBasedSecurity=1, LsaCfgFlags=1 (блокування UEFI), RunAsPPL=1, WDigest вимкнено"
+    Desc  = @"
+EnableVirtualizationBasedSecurity=1, LsaCfgFlags=1 (блокування UEFI), RunAsPPL=1, WDigest вимкнено.
+GPO: Computer Configuration > Administrative Templates > System > Local Security Authority
+  → "Configure LSASS to run as a protected process" = Enabled with UEFI Lock
+  RunAsPPL (DWORD) = 2, UseLogonCredential (DWORD) = 0
+"@
     Apply = {
         $dg = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard"
         Set-Reg $dg "EnableVirtualizationBasedSecurity"    1
