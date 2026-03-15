@@ -57,8 +57,7 @@
     Revert = {
         $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
         Set-Reg $d "PUAProtection" 0
-        Set-Reg "$d\Spynet" "SpynetReporting" 0
-        Set-Reg "$d\Spynet" "SubmitSamplesConsent" 2
+        # MAPS (SpynetReporting) не вимикається при відкаті — хмарний захист залишається активним
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" "PUAProtection" 0) -eq 1 }
 },
@@ -87,20 +86,6 @@
     }
 },
 
-[PSCustomObject]@{
-    Group = "Defender / Antivirus"
-    Name  = "Вимкнути Cloud Protection (MAPS)"
-    Desc  = "SpynetReporting=0, SubmitSamplesConsent=2 — вимкнути хмарну перевірку"
-    Apply  = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SpynetReporting"      0
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 2
-    }
-    Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SpynetReporting"      2
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 1
-    }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SpynetReporting" -1) -eq 0 }
-},
 
 [PSCustomObject]@{
     Group = "Defender / Antivirus"

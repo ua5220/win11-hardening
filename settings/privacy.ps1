@@ -611,17 +611,12 @@
         Set-Reg $act "IsCensusDisabled" 1
         Set-Reg $act "DontRetryOnError" 1
         Set-Reg $act "TaskEnableRun"    0
-        # Insider / Preview Builds
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" "AllowBuildPreview"      0
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" "EnableConfigFlighting"  0
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" "HideInsiderPage"        1
         # Видалити ETL файл
         $etl = "$env:ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl"
         if (Test-Path $etl) { Remove-Item $etl -Force -ErrorAction SilentlyContinue }
     }
     Revert = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows" "CEIPEnable" 1
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" "AllowBuildPreview"
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows" "CEIPEnable" 1) -eq 0 }
 },

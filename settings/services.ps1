@@ -156,7 +156,7 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 [PSCustomObject]@{
     Group = "Сервіси: History / Logs / Footprint"
     Name  = "Додаткові сервіси телеметрії — вимкнути"
-    Desc  = "diagnosticshub.standardcollector.service, DcpSvc, NcbService, PcaSvc, WalletService, wcncsvc, SensrSvc, SensorService, SensorDataService, wisvc, wlidsvc → Вимкнено"
+    Desc  = "diagnosticshub.standardcollector.service, DcpSvc, NcbService, PcaSvc, WalletService, wcncsvc, SensrSvc, SensorService, SensorDataService, wlidsvc → Вимкнено"
     Apply = {
         $svcs = @(
             "diagnosticshub.standardcollector.service",  # Diagnostics Hub
@@ -166,14 +166,13 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
             "WalletService",
             "wcncsvc",                                   # Windows Connect Now / WiFi
             "SensrSvc", "SensorService", "SensorDataService",
-            "wisvc",                                     # Windows Insider Service
             "wlidsvc"                                    # Microsoft Account Sign-in Assistant
         )
         foreach ($svc in $svcs) { Set-ServiceDisabled $svc }
     }
     Revert = {
         $svcs = @("diagnosticshub.standardcollector.service","DcpSvc","NcbService",
-                  "PcaSvc","WalletService","wcncsvc","wisvc","wlidsvc")
+                  "PcaSvc","WalletService","wcncsvc","wlidsvc")
         foreach ($svc in $svcs) { Set-ServiceManual $svc }
     }
     Check = { $s = Get-Service "PcaSvc" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
