@@ -1,0 +1,12 @@
+; ----------------------------------------------------------------------
+; PARSING Computer POLICY
+; Source file:  C:\WINDOWS\System32\GroupPolicy\Machine\Registry.pol
+
+Computer
+Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
+*
+CREATEKEY
+
+; PARSING COMPLETED.
+; ----------------------------------------------------------------------
+

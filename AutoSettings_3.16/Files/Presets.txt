@@ -1,0 +1,104 @@
+﻿
+ Свои значения названий и путей пишите аналогично в кавычках и символах "ровно"
+ В названиях и путях можно использовать переменные и пробелы. Спецсимволы нельзя: {})(=!&*?^>< и др.
+
+
+ Переименование компьютера:
+
+          Set-Comp-Name ="Ô益Ô"=     Тут указываете Имя компьютера
+
+
+
+ Установка иконок делается по принципу "с хитростью":
+ Всем дискам глобально заменяется иконка для USB, таким образом все диски,
+ подключенные уже или потом, как угодно, будут иметь иконку флешки. В том числе и локальные диски.
+ Кроме системного, так как у него принудительная иконка, и задачи ее сменить не стоит.
+ А так как локальные и RAM диски стационарные, т.е. буква не меняется, то
+ на основе дисков в системе заменяются иконки индивидуально под букву, для RAM дисков своя, для Локальных дисков своя.
+ Индивидуальная иконка на букву имеет приоритет, по этому эти диски будут с нужной иконкой. Остальные все с иконкой USB.
+ Другие иконки это не затрагивает, например, смартфоны будут со своей иконкой как обычно.
+
+   Set-Icon-Disks-LOCAL ="%SystemRoot%\System32\imageres.dll,-32"=    Ставится для локальных дисков индивидуально на букву (стандартная иконка)
+     Set-Icon-Disks-RAM ="%SystemRoot%\System32\imageres.dll,-34"=    Ставится для рам дисков индивидуально на букву (иконка микросхемы)
+     Set-Icon-Disks-USB ="%SystemRoot%\System32\DDORes.dll,-2389"=    Ставится для всех дисков в системе глобально (иконка флешки)
+
+
+
+ Обход блокировок сайтов провайдером через файл автонастройки proxy.pac
+ Обход производится только для сайтов из списка в файле, остальные сайты открываются на прямую.
+ В редких случаях, когда провайдер пускает клиентов через свой proxy, то для работы обхода через VPN
+ необходимо дополнительно снять галочку "Автоматическое определение параметров":
+ в ситемных свойствах браузера (IE) -> Подключения -> Настройка сети
+ В батнике сделаны 2 предустановки только для России. Для других регионов надо добавить свой файл в этот параметр:
+ например локально так: D:\proxy.pac, или удаленно так: https://www.test.ru/proxy.pac
+
+    Set-UnBlock-Site-My =""=    Тут нужно указать путь к вашему файлу proxy.pac, локально или удаленно
+
+
+
+ Скрытие пунктов меню: 13, 14, 15, 16, 17, предназначенных для опытных, из SelfMenu - меню Личных настроек
+ 0 = Отображены; 1 = Скрыты
+
+        Set-Deny-Newbie ="0"=   Настройка скрытия пунктов меню
+
+
+
+ Изменение расположения папок Temp:
+ Для решения проблем с кэшем Adobe, добавлен обратный слэш на конце путей папок Temp.
+ Для программ и системы это указывает, что путь является папкой, а не файлом.
+ Если вы не переносите, то можно к дефолтным параметрам добавить также. Хуже не будет.
+
+   Set-User-Temp-Folder ="F:\Temp\"=                 Расположение папки temp пользователя
+ Set-System-Temp-Folder ="%SystemDrive%\TempSys\"=   Расположение системной папки temp, не указывайте туже папку, что и для пользователей! Подробнее в Menu Info.txt
+
+
+
+ Файлы для блокировки (вариант), описание к файлам по желанию:
+
+    Set-Block-File-Name ="Narrator.exe"="Экранный диктор"=
+    Set-Block-File-Name ="sapisvr.exe"="Распознавание голоса"=
+    Set-Block-File-Name ="SpeechUXWiz.exe"="Настройки для распознавания голоса"=
+    Set-Block-File-Name ="OneDriveSetup.exe"="Установщик OneDrive"=
+    Set-Block-File-Name ="aitstatic.exe"=
+    Set-Block-File-Name ="AgentService.exe"=
+    Set-Block-File-Name ="djoin.exe"=
+    Set-Block-File-Name ="mobsync.exe"=
+    Set-Block-File-Name ="msfeedssync.exe"=
+    Set-Block-File-Name ="SensorDataService.exe"=
+    Set-Block-File-Name ="SettingSyncHost.exe"=
+    Set-Block-File-Name ="sessionmsg.exe"=
+    Set-Block-File-Name ="SearchUI.exe"=
+    Set-Block-File-Name ="sxstrace.exe"=
+    Set-Block-File-Name ="SyncAppvPublishingServer.exe"=
+    Set-Block-File-Name ="SyncHost.exe"=
+    Set-Block-File-Name ="tracerpt.exe"=
+    Set-Block-File-Name ="TSWbPrxy.exe"=
+    Set-Block-File-Name ="TsWpfWrp.exe"=
+    Set-Block-File-Name ="NvTmRep.exe"=
+    Set-Block-File-Name ="msoia.exe"=
+    Set-Block-File-Name ="AdminService.exe"=
+    Set-Block-File-Name ="MsMpEng.exe"="Microsoft Defender Antivirus Service"=
+    Set-Block-File-Name ="NisSrv.exe"="Microsoft Defender Antivirus Network Inspection Service"=
+    Set-Block-File-Name ="SIHClient.exe"=
+    Set-Block-File-Name ="CompatTelRunner.exe"=
+    Set-Block-File-Name ="DeviceCensus.exe"=
+    Set-Block-File-Name ="SecurityHealthSystray.exe"=
+    Set-Block-File-Name ="MpCmdRun.exe"="Microsoft Malware Protection Command Line Utility"=
+    Set-Block-File-Name ="MpDlpCmd.exe"="Microsoft Malware Protection DLP Command Line Utility"=
+    Set-Block-File-Name ="rpcnet.exe"="Absolute Software"=
+    Set-Block-File-Name ="SpeechRuntime.exe"=
+
+
+
+ Изменение расположения папок пользователя.
+ Не ставьте в конце пути знак слэш: \, например так нельзя: "D:\"
+ Примеры путей для папок:
+ "D:" - Папки переместятся в корень диска "D"
+ "Z:\MyFolder" - Папки переместятся на диск "Z" в папку "MyFolder"
+ "C:\My\%UserName%" - Папки переместятся в "C:\My\папка с именем пользователя"
+
+ Set-Dir-User-Folders   ="E:"=    Назначение расположения для переноса папок пользователя, кроме папки Загрузки
+ Set-Dir-User-Downloads ="E:"=    Назначение расположения для переноса папки Загрузки
+
+
+

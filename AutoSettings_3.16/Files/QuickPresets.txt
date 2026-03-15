@@ -1,0 +1,136 @@
+﻿
+ Quick Settings - Настраивайте под свои нужды
+ 
+ Если батник "Settings" запущен с параметром: /RunQuickSettings, будет выполнен автозапуск быстрых настроек из первого пункта,
+ затем остановка, и выход, после нажатия любой клавишы.
+ Для закрытия батника после завершения нужно добавить еще один параметр: /QuickExit
+ Пример: "D:\AutoSettings\_1__Settings.bat" /RunQuickSettings /QuickExit
+
+ Предустановки для Быстрого применения настроек почти всех меню в батнике из меню Quick Settings.
+ Менять в строчках только первый параметр "0" или "1"
+ 0 = пропустить, 1 = Применить.        Для пропуска можно удалить всю строчку целиком
+
+ Некоторые параметры нужно указывать только один из, так как это варианты.
+ Тут не настроить: Перемещение папок Temp и Пользователя, Языковые возможности и Блок .exe файлов
+
+ Можете скопировать этот файл в "QuickPresets_My.txt" и задать в нем свои предустановки.
+ Если "QuickPresets_My.txt" будет найден, то будет использован он, вместо "QuickPresets.txt"
+
+
+Quick-Apply-Settings ="0"=":DefenderExceptions"="Отключить дефендер стандартно и скрыть его из контекстного меню"="1"=  ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="1"=":DefenderExceptions"="Отключить дефендер полностью со всеми службами, задачами и меню"="2"=  ◄─│
+
+Quick-Apply-Settings ="1"=":Spy"="Spy отключение слежки, сбора и AppStore"=
+Quick-Apply-Settings ="1"=":Settings"="Settings дополнительные настройки Windows"=
+
+Quick-Apply-Settings ="1"=":ApplyGP"="Настроить Групповые Политики файлом LGPO"="0"=          ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="0"=":ApplyGP"="Настроить Групповые Политики Своим файлом LGPO"="2"=    ◄─│
+
+Quick-Apply-Settings ="0"=":UpdateOFF"="Полное отключение обновлений"=                  ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="1"=":UpdateCheck"="Проверять и сообщать о наличии обновлений"=   ◄─│
+
+Quick-Apply-Settings ="1"=":RebootOFF"="Отключить и заблокировать включение задачи Reboot"=
+
+Quick-Apply-Settings ="1"=":DrOFF"="Отключить только авто-установку драйверов"=            ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="0"=":DrOFF"="Отключить авто-установку драйверов + блокировка"="2"=  ◄─│
+
+Quick-Apply-Settings ="0"=":MaintDisable"="Запретить обслуживание системы"=
+Quick-Apply-Settings ="1"=":WakeOptOFF"="Запретить пробуждение для обслуживания"=
+
+Quick-Apply-Settings ="1"=":DiskInfo"="Получить инфо по дискам в системе для создания раздельных задач"=
+Quick-Apply-Settings ="1"=":CreateTasksDisks"="Создать раздельные задачи обслуживания SSD и HDD"=
+
+Quick-Apply-Settings ="1"=":LoadOFF"="Отключить оптимизацию загрузки системы, если диск SSD"=
+
+Quick-Apply-Settings ="0"=":IndexIn"="Отключить Индексирование и поиск в сети"=":IndexDelete"=                    ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="1"=":IndexIn"="Только Запретить при поиске использование Кортаны и Сети"=":SearchWebOFF"=  ◄─│
+
+Quick-Apply-Settings ="1"=":HipOFF"="Отключить Гибернацию"=
+
+Quick-Apply-Settings ="1"=":FastOFF"="Отключить Быструю загрузку системы"=
+
+Quick-Apply-Settings ="1"=":MenuNetWork"="Отключить SMB1"=":SMB1Disable"=
+Quick-Apply-Settings ="0"=":LocalSettingsDisable"="Отключить службу Сервер, протокол DCOM и драйвер NetBios через TCP/IP"=
+Quick-Apply-Settings ="0"=":RemoteOFF"="Отключить Общие Адм. ресурсы и Все Параметры по Удаленному доступу"=
+Quick-Apply-Settings ="1"=":IPv6OFF"="Отключить IPv6"=
+
+Quick-Apply-Settings ="0"=":UnBlockSiteON1"="Обход блокировок Сайтов 1, Работает только в России"=   ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="0"=":UnBlockSiteON2"="Обход блокировок Сайтов 2, Работает только в России"=   ◄─│
+
+Quick-Apply-Settings ="1"=":UserFolderHideSelect"="Скрыть папку пользователя Видео в проводнике"="2"=
+Quick-Apply-Settings ="1"=":UserFolderHideSelect"="Скрыть папку пользователя Документы в проводнике"="3"=
+Quick-Apply-Settings ="1"=":UserFolderHideSelect"="Скрыть папку пользователя Загрузки в проводнике"="4"=
+Quick-Apply-Settings ="1"=":UserFolderHideSelect"="Скрыть папку пользователя Изображения в проводнике"="5"=
+Quick-Apply-Settings ="1"=":UserFolderHideSelect"="Скрыть папку пользователя Музыка в проводнике"="6"=
+Quick-Apply-Settings ="1"=":UserFolderHideSelect"="Скрыть папку пользователя Рабочий стол в проводнике"="7"=
+
+Quick-Apply-Settings ="0"=":DuplicateDevices"="Скрыть дубликаты съемных устройств в проводнике"=
+
+Quick-Apply-Settings ="1"=":NetIcon"="Скрыть значок Сеть в проводнике"=
+
+Quick-Apply-Settings ="0"=":FastAccess"="Скрыть быстрый доступ в проводнике"=
+
+Quick-Apply-Settings ="1"=":MenuIconDisk"="Установить иконки на Локальные, RAM и USB диски"=
+
+Quick-Apply-Settings ="1"=":WPVreturn"="Вернуть поддержку Windows Photo Viewer"="0"=               ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Settings ="0"=":WPVreturn"="Вернуть поддержку и назначить Windows Photo Viewer"="2"=   ◄─│
+
+Quick-Apply-Settings ="0"=":CompReNameIn"="Переименовать компьютер"=
+
+Quick-Apply-Settings ="0"=":AutoAcceptUAC"="Авто-соглашение UAC"=  ◄─│
+Quick-Apply-Settings ="0"=":DisableUAC"="Отключить UAC"=           ◄─│ Что то одно из этих 4 параметров
+Quick-Apply-Settings ="0"=":ForceUAC"="Усиленный режим UAC"=       ◄─│
+Quick-Apply-Settings ="1"=":DefaultUAC"="UAC по умолчанию"=        ◄─│
+
+Quick-Apply-Settings ="1"=":EventLogsOff"="Отключить ведение журналов"=
+Quick-Apply-Settings ="1"=":ClearEventLogs"="Очистить все журналы"=
+
+
+
+
+
+======================================================================================================
+   Ниже идут предустановки для Быстрого сброса всех настроек из меню Quick Settings.
+   Тут не сбросить: Перемещение папок Temp и Пользователя, Языковые возможности и Блок .exe файлов
+   Менять в строчках только первый параметр "0" или "1"
+   0 = пропустить, 1 = Сбросить.        Для пропуска можно удалить всю строчку целиком
+======================================================================================================
+
+Quick-Apply-Default ="1"=":SpyRetn"="Spy, сброс слежения, сбора и AppStore"=
+Quick-Apply-Default ="1"=":SettRetn"="Settings, сброс дополнительных настроек Windows"=
+
+Quick-Apply-Default ="1"=":ResetGP"="Сброс всех настроек ГП"=
+
+Quick-Apply-Default ="1"=":UpdateDefault"="Восстановить Центр Обновлений"=
+Quick-Apply-Default ="1"=":RebootON"="Разблокировать и включить задачу Reboot"=
+Quick-Apply-Default ="1"=":DrON"="Восстановить авто-установку драйверов"=
+
+Quick-Apply-Default ="1"=":MaintEnable"="Разрешить обслуживание"=
+Quick-Apply-Default ="1"=":WakeOptON"="Разрешить пробуждение для обслуживания"=
+
+Quick-Apply-Default ="1"=":TaskDef"="Удалить все задачи дефрагментации, кроме ScheduledDefrag"=
+
+Quick-Apply-Default ="1"=":LoadON"="Включить оптимизацию загрузки"=
+
+Quick-Apply-Default ="1"=":IndexIn"="Включить Индексирование по умолчанию"=":IndexDefault"=                     ◄─│ Что то одно из этих 2 параметров
+Quick-Apply-Default ="0"=":IndexIn"="Только Разрешить при поиске использование Кортаны и Сети"=":SearchWebON"=  ◄─│
+
+Quick-Apply-Default ="1"=":HipON"="Включить Гибернацию"=
+
+Quick-Apply-Default ="1"=":FastON"="Включить Быструю загрузку"=
+
+Quick-Apply-Default ="1"=":MenuNetWork"="Включить SMB1"=":SMB1Default"=
+Quick-Apply-Default ="1"=":LocalSettingsDefault"="Включить службу Сервер, протокол DCOM и драйвер NetBios через TCP/IP"=
+Quick-Apply-Default ="1"=":RemoteON"="Включить Общие Адм. ресурсы и Все параметры Удаленного доступа"=
+Quick-Apply-Default ="1"=":IPv6ON"="Включить IPv6"=
+Quick-Apply-Default ="1"=":UnBlockSiteOFF"="Убрать Обход блокировок Сайтов"=
+
+Quick-Apply-Default ="1"=":ExplorerRestore"="Восстановить все настройки проводника"=
+
+Quick-Apply-Default ="1"=":DefaultIconDisks"="Восстановить иконки дисков"=
+
+Quick-Apply-Default ="1"=":DefaultUAC"="Восстановить UAC"=
+
+Quick-Apply-Default ="1"=":EventLogsDefaults"="Включить ведение журналов"=
+
+Quick-Apply-Default ="1"=":DefenderExceptions"="Восстановить запуск Windows Defender со службами и задачами"="3"=
