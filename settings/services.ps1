@@ -632,11 +632,16 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 [PSCustomObject]@{
     Group = "Відновлення / Зручність"
     Name  = "PowerShell + CMD — RemoteSigned замість AllSigned"
-    Desc  = "ExecutionPolicy=RemoteSigned: локальні скрипти не вимагають підпису; знімає Authenticode SRP (AuthenticodeEnabled=0)"
+    Desc  = @"
+ExecutionPolicy=RemoteSigned: локальні скрипти не вимагають підпису.
+AuthenticodeEnabled=0 в Apply та Revert — SRP Authenticode НЕ вмикається,
+щоб не блокувати mmc.exe / gpedit.msc (Publisher: Unknown).
+"@
     Apply = {
         $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
         Set-Reg $ps "ExecutionPolicy" "RemoteSigned" "String"
         Set-Reg $ps "EnableScripts"   1
+        # AuthenticodeEnabled=0: вимкнути SRP Authenticode — інакше блокується mmc.exe
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers" "AuthenticodeEnabled" 0
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" `
             -Name "ExecutionPolicy" -Value "RemoteSigned" -ErrorAction SilentlyContinue
@@ -644,7 +649,8 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
     Revert = {
         $ps = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
         Set-Reg $ps "ExecutionPolicy" "AllSigned" "String"
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers" "AuthenticodeEnabled" 1
+        # AuthenticodeEnabled залишається 0 — не вмикаємо SRP, щоб не блокувати mmc.exe
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers" "AuthenticodeEnabled" 0
     }
     Check = {
         $ep = Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" "ExecutionPolicy" "AllSigned"
