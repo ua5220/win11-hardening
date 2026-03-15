@@ -70,7 +70,7 @@ v3-gpo/
 
 ```
 Computer                           ; рівень (Computer = HKLM)
-\SOFTWARE\Policies\Microsoft\...   ; шлях реєстру без HKLM
+SOFTWARE\Policies\Microsoft\...    ; шлях реєстру без HKLM (без початкового \)
 ParameterName                      ; ім'я значення
 DWORD:1                            ; тип і значення (або DELETE для revert)
 ```
