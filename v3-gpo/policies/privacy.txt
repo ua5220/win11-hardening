@@ -5,389 +5,389 @@
 ; ══ Telemetry / Diagnostic Data ════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
 AllowTelemetry
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
 LimitDiagnosticLogCollection
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
 LimitDumpCollection
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
 DisableOneSettingsDownloads
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
 DoNotShowFeedbackNotifications
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
 DisableDiagnosticDataViewer
 DWORD:1
 
 ; ── CEIP / Customer Experience ─────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\SQMClient\Windows
+SOFTWARE\Policies\Microsoft\SQMClient\Windows
 CEIPEnable
 DWORD:0
 
 ; ── AppCompat Telemetry ────────────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
 AITEnable
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
 DisableInventory
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
 DisablePCA
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
 DisableUAR
 DWORD:1
 
 ; ══ Activity Feed ══════════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 EnableActivityFeed
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 PublishUserActivities
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 UploadUserActivities
 DWORD:0
 
 ; ══ Copilot — вимкнути ═════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot
+SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot
 TurnOffWindowsCopilot
 DWORD:1
 
 ; ── Copilot в Edge ─────────────────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Edge
+SOFTWARE\Policies\Microsoft\Edge
 HubsSidebarEnabled
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Edge
+SOFTWARE\Policies\Microsoft\Edge
 CopilotPageContext
 DWORD:0
 
 ; ══ Location / Camera / Microphone / Advertising ═══════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessLocation
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessCamera
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessMicrophone
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessContacts
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessCalendar
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessCallHistory
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessMessaging
 DWORD:2
 
 ; ── Advertising ID ─────────────────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo
+SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo
 DisabledByGroupPolicy
 DWORD:1
 
 ; ── Location Services — вимкнути ───────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
+SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
 DisableLocation
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
+SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
 DisableLocationScripting
 DWORD:1
 
 ; ══ Cloud Content / Consumer Features ══════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+SOFTWARE\Policies\Microsoft\Windows\CloudContent
 DisableWindowsConsumerFeatures
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+SOFTWARE\Policies\Microsoft\Windows\CloudContent
 DisableSoftLanding
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+SOFTWARE\Policies\Microsoft\Windows\CloudContent
 DisableCloudOptimizedContent
 DWORD:1
 
 ; ══ Clipboard Sync / Cross-device ══════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 AllowClipboardHistory
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 AllowCrossDeviceClipboard
 DWORD:0
 
 ; ══ Connected Devices Platform ═════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 EnableCdp
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 LetAppsSyncWithDevices
 DWORD:2
 
 ; ══ Error Reporting ════════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting
+SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting
 Disabled
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting
+SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting
 DoReport
 DWORD:0
 
 ; ══ OneDrive — вимкнути синхронізацію ══════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\OneDrive
+SOFTWARE\Policies\Microsoft\Windows\OneDrive
 DisableFileSyncNGSC
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\OneDrive
+SOFTWARE\Policies\Microsoft\Windows\OneDrive
 DisableMeteredNetworkFileSync
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\OneDrive
+SOFTWARE\Policies\Microsoft\Windows\OneDrive
 DisableLibrariesDefaultSaveToOneDrive
 DWORD:1
 
 ; ══ Cortana / Search — вимкнути ════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 AllowCortana
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 DisableWebSearch
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 ConnectedSearchUseWeb
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 AllowSearchToUseLocation
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 AllowCloudSearch
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 AllowCortanaAboveLock
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
 AllowIndexingEncryptedStoresOrItems
 DWORD:0
 
 ; ══ Input Personalization — вимкнути ═══════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\InputPersonalization
+SOFTWARE\Policies\Microsoft\InputPersonalization
 AllowInputPersonalization
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\InputPersonalization
+SOFTWARE\Policies\Microsoft\InputPersonalization
 RestrictImplicitInkCollection
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\InputPersonalization
+SOFTWARE\Policies\Microsoft\InputPersonalization
 RestrictImplicitTextCollection
 DWORD:1
 
 ; ══ SettingSync — вимкнути ═════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+SOFTWARE\Policies\Microsoft\Windows\SettingSync
 DisableSettingSync
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+SOFTWARE\Policies\Microsoft\Windows\SettingSync
 DisableSettingSyncUserOverride
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+SOFTWARE\Policies\Microsoft\Windows\SettingSync
 DisableApplicationSettingSync
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+SOFTWARE\Policies\Microsoft\Windows\SettingSync
 DisableDesktopThemeSettingSync
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+SOFTWARE\Policies\Microsoft\Windows\SettingSync
 DisableWebBrowserSettingSync
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+SOFTWARE\Policies\Microsoft\Windows\SettingSync
 DisablePasswordSettingSync
 DWORD:2
 
 ; ══ News / Feeds / Widgets ═════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Dsh
+SOFTWARE\Policies\Microsoft\Dsh
 AllowNewsAndInterests
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds
+SOFTWARE\Policies\Microsoft\Windows\Windows Feeds
 EnableFeeds
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Widgets
+SOFTWARE\Policies\Microsoft\Windows\Widgets
 DisableWidgetsOnLockScreen
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Widgets
+SOFTWARE\Policies\Microsoft\Windows\Widgets
 DisableWidgetsBoard
 DWORD:1
 
 ; ══ Game DVR — вимкнути ════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\GameDVR
+SOFTWARE\Policies\Microsoft\Windows\GameDVR
 AllowGameDVR
 DWORD:0
 
 ; ══ Sound Recorder — вимкнути (ACSC) ═══════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\SoundRecorder
+SOFTWARE\Policies\Microsoft\SoundRecorder
 Soundrec
 DWORD:0
 
 ; ══ Windows Store — вимкнути автооновлення ═════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\WindowsStore
+SOFTWARE\Policies\Microsoft\WindowsStore
 AutoDownload
 DWORD:4
 
 ; ══ DRM / MRT — вимкнути онлайн-компоненти ═════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\WMDRM
+SOFTWARE\Policies\Microsoft\WMDRM
 DisableOnline
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\MRT
+SOFTWARE\Policies\Microsoft\MRT
 DontOfferThroughWUAU
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\MRT
+SOFTWARE\Policies\Microsoft\MRT
 DontReportInfectionInformation
 DWORD:1
 
 ; ══ Delivery Optimization — вимкнути P2P ═══════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization
+SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization
 DODownloadMode
 DWORD:0
 
 ; ══ Microsoft Accounts — необов'язкові ═════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\AppRuntime
+SOFTWARE\Policies\Microsoft\Windows\AppRuntime
 AllowMicrosoftAccountsToBeOptional
 DWORD:1
 
 ; ══ HTTP Printing — вимкнути ═══════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 DisableHTTPPrinting
 DWORD:1

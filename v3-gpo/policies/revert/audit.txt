@@ -1,51 +1,51 @@
 ; GPO Edition 3.0 — REVERT: Audit
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit
 ProcessCreationIncludeCmdLine_Enabled
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
+SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
 EnableScriptBlockLogging
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging
+SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging
 EnableModuleLogging
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription
+SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription
 EnableTranscripting
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\PowerShell
+SOFTWARE\Policies\Microsoft\Windows\PowerShell
 ExecutionPolicy
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Application
 MaxSize
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
 MaxSize
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\EventLog\System
+SOFTWARE\Policies\Microsoft\Windows\EventLog\System
 MaxSize
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\EventLog\Setup
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Setup
 MaxSize
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\FileSystem
+SOFTWARE\Policies\Microsoft\Windows\FileSystem
 ClfsMachineSigning
 DELETE

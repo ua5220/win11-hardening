@@ -1,16 +1,16 @@
 ; GPO Edition 3.0 — REVERT: Windows Firewall
 
 Computer
-\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
+SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 EnableFirewall
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
 EnableFirewall
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
 EnableFirewall
 DELETE

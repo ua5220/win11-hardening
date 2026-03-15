@@ -5,286 +5,286 @@
 ; ══ UAC ════════════════════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 EnableLUA
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 ConsentPromptBehaviorAdmin
 DWORD:2
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 ConsentPromptBehaviorUser
 DWORD:0
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 PromptOnSecureDesktop
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 EnableVirtualization
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 EnableInstallerDetection
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 ValidateAdminCodeSignatures
 DWORD:0
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 FilterAdministratorToken
 DWORD:1
 
 ; ── Safe Mode блок для не-адмінів ──────────────────────────────────────────
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 SafeModeBlockNonAdmins
 DWORD:1
 
 ; ── Max Failed Password Attempts ───────────────────────────────────────────
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 MaxDevicePasswordFailedAttempts
 DWORD:10
 
 ; ══ LSASS Protection (PPL) ═════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 RunAsPPL
 DWORD:1
 
 ; ── Custom SSP/AP block ────────────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 AllowCustomSSPsAPs
 DWORD:0
 
 ; ══ LSA Security ═══════════════════════════════════════════════════════════
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 LimitBlankPasswordUse
 DWORD:1
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 NoLMHash
 DWORD:1
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 LmCompatibilityLevel
 DWORD:5
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 RestrictAnonymous
 DWORD:1
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 RestrictAnonymousSAM
 DWORD:1
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 EveryoneIncludesAnonymous
 DWORD:0
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 DisableDomainCreds
 DWORD:1
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 CachedLogonsCount
 SZ:3
 
 ; ── Аудит NTLM (Security Advanced) ────────────────────────────────────────
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa
+SYSTEM\CurrentControlSet\Control\Lsa
 SCENoApplyLegacyAuditPolicy
 DWORD:1
 
 ; ── WDigest — вимкнути кешування паролів у пам'яті ─────────────────────────
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa\SecurityProviders\WDigest
+SYSTEM\CurrentControlSet\Control\Lsa\SecurityProviders\WDigest
 UseLogonCredential
 DWORD:0
 
 ; ── NTLM Security ─────────────────────────────────────────────────────────
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
+SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
 NTLMMinClientSec
 DWORD:537395200
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
+SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
 NTLMMinServerSec
 DWORD:537395200
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
+SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
 AuditReceivingNTLMTraffic
 DWORD:2
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
+SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
 RestrictSendingNTLMTraffic
 DWORD:1
 
 ; ── SMB Server — Null Session ──────────────────────────────────────────────
 
 Computer
-\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
 RestrictNullSessAccess
 DWORD:1
 
 ; ── NetBIOS Name Release ───────────────────────────────────────────────────
 
 Computer
-\SYSTEM\CurrentControlSet\Services\NetBT\Parameters
+SYSTEM\CurrentControlSet\Services\NetBT\Parameters
 NoNameReleaseOnDemand
 DWORD:1
 
 ; ══ Device Guard / Virtualization Based Security ═══════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 EnableVirtualizationBasedSecurity
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 RequirePlatformSecurityFeatures
 DWORD:3
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 HypervisorEnforcedCodeIntegrity
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 HVCIMATRequired
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 LsaCfgFlags
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 ConfigureSystemGuardLaunch
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 ConfigureKernelShadowStacksLaunch
 DWORD:1
 
 ; ══ Credential Delegation ══════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
 AllowProtectedCreds
 DWORD:1
 
 ; ── Encryption Oracle Remediation (CVE-2018-0886 / CredSSP) ───────────────
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters
 AllowEncryptionOracle
 DWORD:0
 
 ; ══ Remote Assistance — вимкнути (ACSC) ════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
 fAllowUnsolicited
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
 fAllowToGetHelp
 DWORD:0
 
 ; ══ RDP — вимкнути ═════════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
 fDenyTSConnections
 DWORD:1
 
 ; ══ RPC — обмежити неавтентифікованих клієнтів (ACSC) ══════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
 RestrictRemoteClients
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
 EnableAuthEpResolution
 DWORD:1
 
 ; ══ Biometrics — вимкнути (ACSC) ═══════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Biometrics
+SOFTWARE\Policies\Microsoft\Biometrics
 Enabled
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures
+SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures
 EnhancedAntiSpoofing
 DWORD:1
 
 ; ══ Windows Hello / Passport ═══════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\PassportForWork
+SOFTWARE\Policies\Microsoft\PassportForWork
 Enabled
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 AllowDomainPINLogon
 DWORD:0
 
 ; ══ AlwaysInstallElevated — вимкнути ═══════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Installer
+SOFTWARE\Policies\Microsoft\Windows\Installer
 AlwaysInstallElevated
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Installer
+SOFTWARE\Policies\Microsoft\Windows\Installer
 EnableUserControl
 DWORD:0
 
 ; ══ Session Manager Protection ═════════════════════════════════════════════
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Session Manager
+SYSTEM\CurrentControlSet\Control\Session Manager
 ProtectionMode
 DWORD:1

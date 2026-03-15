@@ -1,81 +1,81 @@
 ; GPO Edition 3.0 — REVERT: Security / UAC / LSA / VBS
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 ConsentPromptBehaviorAdmin
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 FilterAdministratorToken
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 SafeModeBlockNonAdmins
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 RunAsPPL
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 AllowCustomSSPsAPs
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 EnableVirtualizationBasedSecurity
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 HypervisorEnforcedCodeIntegrity
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 LsaCfgFlags
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 ConfigureSystemGuardLaunch
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 ConfigureKernelShadowStacksLaunch
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
 fDenyTSConnections
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
 fAllowToGetHelp
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
 RestrictRemoteClients
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Biometrics
+SOFTWARE\Policies\Microsoft\Biometrics
 Enabled
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\PassportForWork
+SOFTWARE\Policies\Microsoft\PassportForWork
 Enabled
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Installer
+SOFTWARE\Policies\Microsoft\Windows\Installer
 AlwaysInstallElevated
 DELETE

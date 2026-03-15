@@ -2,106 +2,106 @@
 ; Скидає значення до стандартних (Not Configured)
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender
+SOFTWARE\Policies\Microsoft\Windows Defender
 DisableAntiSpyware
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender
+SOFTWARE\Policies\Microsoft\Windows Defender
 PUAProtection
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender
+SOFTWARE\Policies\Microsoft\Windows Defender
 DisableLocalAdminMerge
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender
+SOFTWARE\Policies\Microsoft\Windows Defender
 HideExclusionsFromLocalAdmins
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
 DisableRealtimeMonitoring
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
 DisableBehaviorMonitoring
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
 DisableScriptScanning
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
+SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
 MpEnablePus
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
+SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
 MpCloudBlockLevel
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet
+SOFTWARE\Policies\Microsoft\Windows Defender\Spynet
 SpynetReporting
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet
+SOFTWARE\Policies\Microsoft\Windows Defender\Spynet
 SubmitSamplesConsent
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection
+SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection
 EnableNetworkProtection
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR
+SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR
 ExploitGuard_ASR_Rules
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access
+SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access
 EnableControlledFolderAccess
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection
+SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection
 DisallowExploitProtectionOverride
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 EnableSmartScreen
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\System
+SOFTWARE\Policies\Microsoft\Windows\System
 ShellSmartScreenLevel
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
 DisableAIDataAnalysis
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
 AllowRecallEnablement
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
 EnableRecallOnDevice
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection
+SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection
 DeviceEnumerationPolicy
 DELETE

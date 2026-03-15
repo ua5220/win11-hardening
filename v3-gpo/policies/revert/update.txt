@@ -1,76 +1,76 @@
 ; GPO Edition 3.0 — REVERT: Windows Update / Autoplay / Group Policy
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AUOptions
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferFeatureUpdates
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferFeatureUpdatesPeriodInDays
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferQualityUpdates
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferQualityUpdatesPeriodInDays
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 ExcludeWUDriversInQualityUpdate
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 NoAutorun
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 NoDriveTypeAutoRun
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 DisableLocalMachineRun
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 DisableLocalMachineRunOnce
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
 NoGPOListChanges
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
 NoGPOListChanges
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Explorer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
 ShowHibernateOption
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Explorer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
 ShowSleepOption
 DELETE
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo
+SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo
 Enabled
 DELETE
