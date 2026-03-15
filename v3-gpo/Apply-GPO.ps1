@@ -68,7 +68,7 @@ function Invoke-LGPO {
     $Result = & $LGPOPath /t $FullPath /v 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "LGPO повернув код $LASTEXITCODE для $PolicyFile"
-        Write-Warning $Result
+        $Result | ForEach-Object { Write-Warning $_ }
     } else {
         Write-Host "  [OK] $PolicyFile" -ForegroundColor Green
     }
