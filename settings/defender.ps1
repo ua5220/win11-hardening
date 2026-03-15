@@ -23,7 +23,7 @@
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Defender ACSC — повна безпечна конфігурація (ACSC 22)"
-    Desc  = "Блокування PUA, MAPS Розширений, Блокування при першому виявленні, хмарна перевірка 50с, сканування email/USB/архівів"
+    Desc  = "Блокування PUA, MAPS Advanced (SpynetReporting=2), Block at First Seen, SubmitSamplesConsent=3 (всі зразки), хмарна перевірка 50с, сканування email/USB/архівів"
     Apply = {
         $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
         Set-Reg $d "PUAProtection"              1
@@ -34,7 +34,7 @@
         Set-Reg "$d\Spynet" "LocalSettingOverrideSpynetReporting" 0
         Set-Reg "$d\Spynet" "DisableBlockAtFirstSeen"             0
         Set-Reg "$d\Spynet" "SpynetReporting"                     2
-        Set-Reg "$d\Spynet" "SubmitSamplesConsent"                1
+        Set-Reg "$d\Spynet" "SubmitSamplesConsent"                3
         Set-Reg "$d\MpEngine" "MpBafsExtendedTimeout"             50
         Set-Reg "$d\MpEngine" "EnableFileHashComputation"         1
         Set-Reg "$d\MpEngine" "MpCloudBlockLevel"                 2
@@ -465,6 +465,78 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
         Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs"
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs" 1) -eq 0 }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── ADVANCED DEFENDER: Network Protection / RestorePoint / BruteForce ──
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "Defender / Advanced Protection"
+    Name  = "Network Protection — увімкнути (EnableNetworkProtection=1)"
+    Desc  = @"
+EnableNetworkProtection=1 (Enabled): блокує доступ до шкідливих IP/доменів/URL.
+Потребує увімкненого Defender Real-Time Protection.
+Revert: повертає у режим AuditMode (2) — не блокує, але логує.
+"@
+    Apply = {
+        $np = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection"
+        Set-Reg $np "EnableNetworkProtection" 1
+        Write-AppLog -Level 'INFO' -Message "Network Protection: Enabled (1)."
+    }
+    Revert = {
+        $np = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection"
+        Set-Reg $np "EnableNetworkProtection" 2
+        Write-AppLog -Level 'INFO' -Message "Network Protection: AuditMode (2)."
+    }
+    Check = {
+        $np = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection"
+        (Get-Reg $np "EnableNetworkProtection" 0) -eq 1
+    }
+},
+
+[PSCustomObject]@{
+    Group = "Defender / Advanced Protection"
+    Name  = "Defender Advanced — DisableRestorePoint=false + BruteForceProtection + IntelTDT"
+    Desc  = @"
+Три рекомендовані налаштування з аналізу Get-MpPreference:
+  DisableRestorePoint=$false   — Defender створює точку відновлення перед лікуванням загрози.
+  BruteForceProtectionConfiguredState=1 — захист від атак перебором паролів (Enabled).
+  IntelTDTEnabled=$true        — Intel Threat Detection Technology (лише на Intel CPU;
+                                 ігнорується на AMD/ARM, помилка пригнічується).
+Revert: повертає до значень за замовчуванням через Set-MpPreference.
+"@
+    Apply = {
+        # Точки відновлення перед лікуванням
+        try { Set-MpPreference -DisableRestorePoint $false -ErrorAction Stop
+              Write-AppLog -Level 'INFO' -Message "DisableRestorePoint=false — точки відновлення увімкнено." }
+        catch { Write-AppLog -Level 'WARN' -Message "DisableRestorePoint: $_" }
+
+        # Захист від брутфорсу
+        try { Set-MpPreference -BruteForceProtectionConfiguredState 1 -ErrorAction Stop
+              Write-AppLog -Level 'INFO' -Message "BruteForceProtection=Enabled." }
+        catch { Write-AppLog -Level 'WARN' -Message "BruteForceProtection: $_" }
+
+        # Intel TDT — лише якщо Intel CPU
+        $cpu = (Get-WmiObject Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1).Name
+        if ($cpu -match 'Intel') {
+            try { Set-MpPreference -IntelTDTEnabled $true -ErrorAction Stop
+                  Write-AppLog -Level 'INFO' -Message "IntelTDTEnabled=true ($cpu)." }
+            catch { Write-AppLog -Level 'WARN' -Message "IntelTDT: $_" }
+        } else {
+            Write-AppLog -Level 'INFO' -Message "IntelTDT пропущено: CPU=$cpu (не Intel)."
+        }
+    }
+    Revert = {
+        try { Set-MpPreference -DisableRestorePoint $true  -ErrorAction SilentlyContinue } catch {}
+        try { Set-MpPreference -BruteForceProtectionConfiguredState 0 -ErrorAction SilentlyContinue } catch {}
+        try { Set-MpPreference -IntelTDTEnabled $false -ErrorAction SilentlyContinue } catch {}
+        Write-AppLog -Level 'INFO' -Message "Advanced Defender налаштування відновлено до дефолту."
+    }
+    Check = {
+        $pref = Get-MpPreference -ErrorAction SilentlyContinue
+        $pref -and ($pref.DisableRestorePoint -eq $false) -and ($pref.BruteForceProtectionConfiguredState -eq 1)
+    }
 }
 
 )
