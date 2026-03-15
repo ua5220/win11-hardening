@@ -191,9 +191,9 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS]
 "AllowRemoteShellAccess"=dword:00000000
 
-; --- Telemetry ---
+; --- Telemetry: Optional diagnostic data allowed (AllowTelemetry=3) ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection]
-"AllowTelemetry"=dword:00000000
+"AllowTelemetry"=dword:00000003
 
 ; --- Widgets ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Widgets]

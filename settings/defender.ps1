@@ -23,7 +23,7 @@
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Defender ACSC — повна безпечна конфігурація (ACSC 22)"
-    Desc  = "Блокування PUA, MAPS Розширений, Блокування при першому виявленні, хмарна перевірка 50с, сканування email/USB/архівів"
+    Desc  = "Блокування PUA, MAPS Advanced (SpynetReporting=2), Block at First Seen, SubmitSamplesConsent=3 (всі зразки), хмарна перевірка 50с, сканування email/USB/архівів"
     Apply = {
         $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
         Set-Reg $d "PUAProtection"              1
@@ -34,7 +34,7 @@
         Set-Reg "$d\Spynet" "LocalSettingOverrideSpynetReporting" 0
         Set-Reg "$d\Spynet" "DisableBlockAtFirstSeen"             0
         Set-Reg "$d\Spynet" "SpynetReporting"                     2
-        Set-Reg "$d\Spynet" "SubmitSamplesConsent"                1
+        Set-Reg "$d\Spynet" "SubmitSamplesConsent"                3
         Set-Reg "$d\MpEngine" "MpBafsExtendedTimeout"             50
         Set-Reg "$d\MpEngine" "EnableFileHashComputation"         1
         Set-Reg "$d\MpEngine" "MpCloudBlockLevel"                 2
@@ -57,8 +57,7 @@
     Revert = {
         $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
         Set-Reg $d "PUAProtection" 0
-        Set-Reg "$d\Spynet" "SpynetReporting" 0
-        Set-Reg "$d\Spynet" "SubmitSamplesConsent" 2
+        # MAPS (SpynetReporting) не вимикається при відкаті — хмарний захист залишається активним
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" "PUAProtection" 0) -eq 1 }
 },
@@ -87,20 +86,6 @@
     }
 },
 
-[PSCustomObject]@{
-    Group = "Defender / Antivirus"
-    Name  = "Вимкнути Cloud Protection (MAPS)"
-    Desc  = "SpynetReporting=0, SubmitSamplesConsent=2 — вимкнути хмарну перевірку"
-    Apply  = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SpynetReporting"      0
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 2
-    }
-    Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SpynetReporting"      2
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 1
-    }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SpynetReporting" -1) -eq 0 }
-},
 
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
@@ -148,27 +133,60 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Controlled Folder Access — захист від ransomware (ACSC 04)"
-    Desc  = "EnableControlledFolderAccess=1 через реєстр та Set-MpPreference. Revert видаляє GPO-ключ повністю — повертає контроль локальному адміністратору через UI та Set-MpPreference."
+    Desc  = @"
+Вмикає CFA виключно через Set-MpPreference — без запису в HKLM:\SOFTWARE\Policies\.
+Це критично: GPO-ключ у \Policies\ блокує UI "Allow an app through Controlled folder access"
+та показує "Your administrator has blocked this action" навіть на дозволених програмах.
+Додає до whitelist: powershell.exe та pwsh.exe (PowerShell 7, якщо встановлено).
+Revert: видаляє GPO-ключ (якщо лишився з попередніх запусків) та вимикає CFA.
+"@
     Apply = {
-        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        Set-Reg $p "EnableControlledFolderAccess" 1
-        try { Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Enable :: $($_.Exception.Message)" }
+        $gpoPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
+        # Видалити GPO-ключ якщо лишився з попередніх запусків — він блокує UI контроль
+        if (Test-Path $gpoPath) {
+            Remove-Item -Path $gpoPath -Recurse -Force -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "CFA: старий GPO-ключ видалено перед увімкненням."
+        }
+
+        # Вмикати лише через Set-MpPreference — UI "Allow an app" залишається доступним
+        try {
+            Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction Stop
+            Write-AppLog -Level 'INFO' -Message "CFA: увімкнено через Set-MpPreference."
+        } catch { Write-AppLog -Level 'WARN' -Message "CFA Enable :: $($_.Exception.Message)" }
+
+        # Дозволити PowerShell — системний інструмент, що легітимно пише у Documents
+        $ps1 = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $ps2 = "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+        $ps7 = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+        foreach ($exe in @($ps1, $ps2, $ps7)) {
+            if (Test-Path $exe) {
+                try {
+                    Add-MpPreference -ControlledFolderAccessAllowedApplications $exe -ErrorAction Stop
+                    Write-AppLog -Level 'INFO' -Message "CFA: allowed — $exe"
+                } catch { Write-AppLog -Level 'WARN' -Message "CFA AllowApp $exe :: $($_.Exception.Message)" }
+            }
+        }
     }
     Revert = {
-        # Видаляємо весь GPO-вузол CFA, а не просто встановлюємо 0.
-        # Якщо ключ існує в HKLM:\SOFTWARE\Policies\, Windows блокує локальний контроль
-        # навіть при значенні 0 — показує "Your administrator has blocked this action".
-        # Видалення вузла повертає повний контроль локальному адміністратору.
-        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        if (Test-Path $p) {
-            Remove-Item -Path $p -Recurse -Force -ErrorAction SilentlyContinue
-            Write-AppLog -Level 'INFO' -Message "CFA: GPO-ключ видалено, контроль повернуто локальному адміну"
+        # Видаляємо GPO-ключ якщо існує (на випадок старих запусків)
+        $gpoPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
+        if (Test-Path $gpoPath) {
+            Remove-Item -Path $gpoPath -Recurse -Force -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "CFA: GPO-ключ видалено."
+        }
+        # Прибрати PowerShell з whitelist і вимкнути CFA
+        $ps1 = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $ps2 = "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+        $ps7 = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+        foreach ($exe in @($ps1, $ps2, $ps7)) {
+            try { Remove-MpPreference -ControlledFolderAccessAllowedApplications $exe -ErrorAction SilentlyContinue } catch {}
         }
         try { Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Disable :: $($_.Exception.Message)" }
+        Write-AppLog -Level 'INFO' -Message "CFA: вимкнено, PowerShell видалено з whitelist."
     }
     Check = {
-        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        (Get-Reg $p "EnableControlledFolderAccess" 0) -eq 1
+        $pref = Get-MpPreference -ErrorAction SilentlyContinue
+        $pref -and ($pref.EnableControlledFolderAccess -eq 1)
     }
 },
 
@@ -257,18 +275,18 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
 
 [PSCustomObject]@{
     Group = "SmartScreen / Recall / Телеметрія"
-    Name  = "Вимкнути телеметрію (DiagTrack + AllowTelemetry=0)"
-    Desc  = "AllowTelemetry=0, зупинити DiagTrack та dmwappushservice"
+    Name  = "Діагностичні дані — дозволити додаткові (AllowTelemetry=3)"
+    Desc  = "AllowTelemetry=3 (Optional/Full): дозволяє відправку додаткових діагностичних даних. Не блокує toggle «Send optional diagnostic data» у Settings → Privacy → Diagnostics & feedback. DiagTrack залишається у режимі Manual."
     Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
-        Set-ServiceDisabled "DiagTrack"
-        Set-ServiceDisabled "dmwappushservice"
+        # AllowTelemetry=3 = Optional (Full) — не блокує toggle у Settings
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 3
+        Set-ServiceManual "DiagTrack"
     }
     Revert = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 1
         Set-ServiceManual "DiagTrack"
     }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" -1) -eq 0 }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" -1) -eq 3 }
 },
 
 [PSCustomObject]@{
@@ -480,6 +498,78 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
         Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs"
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCustomSSPsAPs" 1) -eq 0 }
+},
+
+# ════════════════════════════════════════════════════════════════════════
+# ── ADVANCED DEFENDER: Network Protection / RestorePoint / BruteForce ──
+# ════════════════════════════════════════════════════════════════════════
+
+[PSCustomObject]@{
+    Group = "Defender / Advanced Protection"
+    Name  = "Network Protection — увімкнути (EnableNetworkProtection=1)"
+    Desc  = @"
+EnableNetworkProtection=1 (Enabled): блокує доступ до шкідливих IP/доменів/URL.
+Потребує увімкненого Defender Real-Time Protection.
+Revert: повертає у режим AuditMode (2) — не блокує, але логує.
+"@
+    Apply = {
+        $np = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection"
+        Set-Reg $np "EnableNetworkProtection" 1
+        Write-AppLog -Level 'INFO' -Message "Network Protection: Enabled (1)."
+    }
+    Revert = {
+        $np = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection"
+        Set-Reg $np "EnableNetworkProtection" 2
+        Write-AppLog -Level 'INFO' -Message "Network Protection: AuditMode (2)."
+    }
+    Check = {
+        $np = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection"
+        (Get-Reg $np "EnableNetworkProtection" 0) -eq 1
+    }
+},
+
+[PSCustomObject]@{
+    Group = "Defender / Advanced Protection"
+    Name  = "Defender Advanced — DisableRestorePoint=false + BruteForceProtection + IntelTDT"
+    Desc  = @"
+Три рекомендовані налаштування з аналізу Get-MpPreference:
+  DisableRestorePoint=$false   — Defender створює точку відновлення перед лікуванням загрози.
+  BruteForceProtectionConfiguredState=1 — захист від атак перебором паролів (Enabled).
+  IntelTDTEnabled=$true        — Intel Threat Detection Technology (лише на Intel CPU;
+                                 ігнорується на AMD/ARM, помилка пригнічується).
+Revert: повертає до значень за замовчуванням через Set-MpPreference.
+"@
+    Apply = {
+        # Точки відновлення перед лікуванням
+        try { Set-MpPreference -DisableRestorePoint $false -ErrorAction Stop
+              Write-AppLog -Level 'INFO' -Message "DisableRestorePoint=false — точки відновлення увімкнено." }
+        catch { Write-AppLog -Level 'WARN' -Message "DisableRestorePoint: $_" }
+
+        # Захист від брутфорсу
+        try { Set-MpPreference -BruteForceProtectionConfiguredState 1 -ErrorAction Stop
+              Write-AppLog -Level 'INFO' -Message "BruteForceProtection=Enabled." }
+        catch { Write-AppLog -Level 'WARN' -Message "BruteForceProtection: $_" }
+
+        # Intel TDT — лише якщо Intel CPU
+        $cpu = (Get-WmiObject Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1).Name
+        if ($cpu -match 'Intel') {
+            try { Set-MpPreference -IntelTDTEnabled $true -ErrorAction Stop
+                  Write-AppLog -Level 'INFO' -Message "IntelTDTEnabled=true ($cpu)." }
+            catch { Write-AppLog -Level 'WARN' -Message "IntelTDT: $_" }
+        } else {
+            Write-AppLog -Level 'INFO' -Message "IntelTDT пропущено: CPU=$cpu (не Intel)."
+        }
+    }
+    Revert = {
+        try { Set-MpPreference -DisableRestorePoint $true  -ErrorAction SilentlyContinue } catch {}
+        try { Set-MpPreference -BruteForceProtectionConfiguredState 0 -ErrorAction SilentlyContinue } catch {}
+        try { Set-MpPreference -IntelTDTEnabled $false -ErrorAction SilentlyContinue } catch {}
+        Write-AppLog -Level 'INFO' -Message "Advanced Defender налаштування відновлено до дефолту."
+    }
+    Check = {
+        $pref = Get-MpPreference -ErrorAction SilentlyContinue
+        $pref -and ($pref.DisableRestorePoint -eq $false) -and ($pref.BruteForceProtectionConfiguredState -eq 1)
+    }
 }
 
 )
