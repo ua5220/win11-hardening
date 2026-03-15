@@ -1,0 +1,103 @@
+; GPO Edition 3.0 — Network: SMB / LLMNR / WPAD / LLTD / mDNS / NetBIOS
+; Формат: LGPO /t  (Machine policy)
+
+; ── SMB: Вимкнути гостьовий доступ (CVE-захист) ──────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation
+AllowInsecureGuestAuth
+DWORD:0
+
+; ── LLMNR — Вимкнути (Link-Local Multicast Name Resolution) ─────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+EnableMulticast
+DWORD:0
+
+; ── mDNS — Вимкнути Multicast DNS ───────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+EnableMDNS
+DWORD:0
+
+; ── NetBIOS — Вимкнути через DHCP (встановити через regedit: 2=вимкнути) ────
+; Примітка: NetBIOS вимикається через WINS/NIC-налаштування, не через LGPO безпосередньо
+; Нижче — вимкнення NetBT-запитів для FQDN
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+QueryNetBTForFQDN
+DWORD:0
+
+; ── WPAD — Вимкнути Web Proxy Auto-Discovery ─────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings
+WPADOverride
+DWORD:1
+
+; ── LLTD (Link Layer Topology Discovery) — Вимкнути ─────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+AllowLLTDIOOnDomain
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+AllowLLTDIOOnPublicNet
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+EnableLLTDIO
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+AllowRspndrOnDomain
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+AllowRspndrOnPublicNet
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+EnableRspndr
+DWORD:0
+
+; ── WCN (Windows Connect Now) — Вимкнути ─────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
+DisableWPDRegistrar
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
+DisableUPnPRegistrar
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
+DisableInBand802DOT11Registrar
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
+DisableFlashConfigRegistrar
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
+EnableRegistrars
+DWORD:0
+
+; ── Мінімізувати кількість одночасних підключень до Інтернету ────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
+fMinimizeConnections
+DWORD:3
+
+; ── Заблокувати підключення до не-доменних мереж при наявності доменної ──────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
+fBlockNonDomain
+DWORD:1

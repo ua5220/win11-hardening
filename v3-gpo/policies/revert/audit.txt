@@ -1,0 +1,16 @@
+; GPO Edition 3.0 — REVERT: Audit
+
+Computer
+\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit
+ProcessCreationIncludeCmdLine_Enabled
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
+EnableScriptBlockLogging
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging
+EnableModuleLogging
+DELETE

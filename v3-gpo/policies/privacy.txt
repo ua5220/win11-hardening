@@ -1,0 +1,115 @@
+; GPO Edition 3.0 — Privacy / Telemetry / Data Collection
+; Формат: LGPO /t  (Machine policy)
+
+; ── Telemetry / Diagnostic Data ──────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+AllowTelemetry
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+LimitDiagnosticLogCollection
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+LimitDumpCollection
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+DisableOneSettingsDownloads
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+DoNotShowFeedbackNotifications
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DataCollection
+DisableDiagnosticDataViewer
+DWORD:1
+
+; ── CEIP / Customer Experience ───────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\SQMClient\Windows
+CEIPEnable
+DWORD:0
+
+; ── Activity Feed ────────────────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+EnableActivityFeed
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+PublishUserActivities
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+UploadUserActivities
+DWORD:0
+
+; ── Location / Advertising ───────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessLocation
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessCamera
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessMicrophone
+DWORD:2
+
+; Advertising ID
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo
+DisabledByGroupPolicy
+DWORD:1
+
+; ── Cloud Content / Consumer Features ───────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+DisableWindowsConsumerFeatures
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+DisableSoftLanding
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+DisableCloudOptimizedContent
+DWORD:1
+
+; ── Clipboard Sync / Cross-device ────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+AllowClipboardHistory
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+AllowCrossDeviceClipboard
+DWORD:0
+
+; ── Error Reporting ──────────────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting
+Disabled
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting
+DoReport
+DWORD:0

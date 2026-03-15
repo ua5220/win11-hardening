@@ -1,0 +1,69 @@
+; GPO Edition 3.0 — Audit Policies (Process Creation, Command Line)
+; Формат: LGPO /t  (Machine policy)
+; Примітка: детальні Audit-підкатегорії (Success/Failure) налаштовуються через
+; auditpol.exe або Security Settings — цей файл покриває Administrative Templates
+
+; ── Audit Process Creation — включити CommandLine в журнал подій ─────────────
+Computer
+\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit
+ProcessCreationIncludeCmdLine_Enabled
+DWORD:1
+
+; ── Audit: Ввімкнути детальні події для SCM (Service Control Manager) ────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+AuditProcessCreation
+DWORD:1
+
+; ── PowerShell Logging ───────────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
+EnableScriptBlockLogging
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
+EnableScriptBlockInvocationLogging
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging
+EnableModuleLogging
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription
+EnableTranscripting
+DWORD:0
+
+; ── PowerShell Execution Policy ──────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell
+EnableScripts
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\PowerShell
+ExecutionPolicy
+SZ:RemoteSigned
+
+; ── Event Log Sizes ──────────────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application
+MaxSize
+DWORD:32768
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
+MaxSize
+DWORD:196608
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\EventLog\System
+MaxSize
+DWORD:32768
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
+Retention
+SZ:0
