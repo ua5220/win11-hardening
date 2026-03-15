@@ -1,0 +1,11 @@
+cd "C:\Users\RR\Documents\GitHub\win11-hardening"
+
+# Тимчасово, тільки в цьому процесі:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+
+# Тепер запускаємо GUI:
+.\Run-Hardening.ps1
+
+
+
+скрипти для захисту від 0day взаливостей Microsoft 11  latest продуктів Office, BitLocker, Windows Defender, Windows Firewall, Edge, etc
