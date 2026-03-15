@@ -133,27 +133,60 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Controlled Folder Access — захист від ransomware (ACSC 04)"
-    Desc  = "EnableControlledFolderAccess=1 через реєстр та Set-MpPreference. Revert видаляє GPO-ключ повністю — повертає контроль локальному адміністратору через UI та Set-MpPreference."
+    Desc  = @"
+Вмикає CFA виключно через Set-MpPreference — без запису в HKLM:\SOFTWARE\Policies\.
+Це критично: GPO-ключ у \Policies\ блокує UI "Allow an app through Controlled folder access"
+та показує "Your administrator has blocked this action" навіть на дозволених програмах.
+Додає до whitelist: powershell.exe та pwsh.exe (PowerShell 7, якщо встановлено).
+Revert: видаляє GPO-ключ (якщо лишився з попередніх запусків) та вимикає CFA.
+"@
     Apply = {
-        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        Set-Reg $p "EnableControlledFolderAccess" 1
-        try { Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Enable :: $($_.Exception.Message)" }
+        $gpoPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
+        # Видалити GPO-ключ якщо лишився з попередніх запусків — він блокує UI контроль
+        if (Test-Path $gpoPath) {
+            Remove-Item -Path $gpoPath -Recurse -Force -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "CFA: старий GPO-ключ видалено перед увімкненням."
+        }
+
+        # Вмикати лише через Set-MpPreference — UI "Allow an app" залишається доступним
+        try {
+            Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction Stop
+            Write-AppLog -Level 'INFO' -Message "CFA: увімкнено через Set-MpPreference."
+        } catch { Write-AppLog -Level 'WARN' -Message "CFA Enable :: $($_.Exception.Message)" }
+
+        # Дозволити PowerShell — системний інструмент, що легітимно пише у Documents
+        $ps1 = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $ps2 = "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+        $ps7 = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+        foreach ($exe in @($ps1, $ps2, $ps7)) {
+            if (Test-Path $exe) {
+                try {
+                    Add-MpPreference -ControlledFolderAccessAllowedApplications $exe -ErrorAction Stop
+                    Write-AppLog -Level 'INFO' -Message "CFA: allowed — $exe"
+                } catch { Write-AppLog -Level 'WARN' -Message "CFA AllowApp $exe :: $($_.Exception.Message)" }
+            }
+        }
     }
     Revert = {
-        # Видаляємо весь GPO-вузол CFA, а не просто встановлюємо 0.
-        # Якщо ключ існує в HKLM:\SOFTWARE\Policies\, Windows блокує локальний контроль
-        # навіть при значенні 0 — показує "Your administrator has blocked this action".
-        # Видалення вузла повертає повний контроль локальному адміністратору.
-        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        if (Test-Path $p) {
-            Remove-Item -Path $p -Recurse -Force -ErrorAction SilentlyContinue
-            Write-AppLog -Level 'INFO' -Message "CFA: GPO-ключ видалено, контроль повернуто локальному адміну"
+        # Видаляємо GPO-ключ якщо існує (на випадок старих запусків)
+        $gpoPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
+        if (Test-Path $gpoPath) {
+            Remove-Item -Path $gpoPath -Recurse -Force -ErrorAction SilentlyContinue
+            Write-AppLog -Level 'INFO' -Message "CFA: GPO-ключ видалено."
+        }
+        # Прибрати PowerShell з whitelist і вимкнути CFA
+        $ps1 = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $ps2 = "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+        $ps7 = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+        foreach ($exe in @($ps1, $ps2, $ps7)) {
+            try { Remove-MpPreference -ControlledFolderAccessAllowedApplications $exe -ErrorAction SilentlyContinue } catch {}
         }
         try { Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "CFA Disable :: $($_.Exception.Message)" }
+        Write-AppLog -Level 'INFO' -Message "CFA: вимкнено, PowerShell видалено з whitelist."
     }
     Check = {
-        $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
-        (Get-Reg $p "EnableControlledFolderAccess" 0) -eq 1
+        $pref = Get-MpPreference -ErrorAction SilentlyContinue
+        $pref -and ($pref.EnableControlledFolderAccess -eq 1)
     }
 },
 
