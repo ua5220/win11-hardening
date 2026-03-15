@@ -242,18 +242,18 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
 
 [PSCustomObject]@{
     Group = "SmartScreen / Recall / Телеметрія"
-    Name  = "Вимкнути телеметрію (DiagTrack + AllowTelemetry=0)"
-    Desc  = "AllowTelemetry=0, зупинити DiagTrack та dmwappushservice"
+    Name  = "Діагностичні дані — дозволити додаткові (AllowTelemetry=3)"
+    Desc  = "AllowTelemetry=3 (Optional/Full): дозволяє відправку додаткових діагностичних даних. Не блокує toggle «Send optional diagnostic data» у Settings → Privacy → Diagnostics & feedback. DiagTrack залишається у режимі Manual."
     Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
-        Set-ServiceDisabled "DiagTrack"
-        Set-ServiceDisabled "dmwappushservice"
+        # AllowTelemetry=3 = Optional (Full) — не блокує toggle у Settings
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 3
+        Set-ServiceManual "DiagTrack"
     }
     Revert = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 1
         Set-ServiceManual "DiagTrack"
     }
-    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" -1) -eq 0 }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" -1) -eq 3 }
 },
 
 [PSCustomObject]@{
