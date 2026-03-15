@@ -12,6 +12,11 @@ DELETE
 
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
+EncryptionMethodWithXtsRdv
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
 UseAdvancedStartup
 DELETE
 
@@ -22,10 +27,40 @@ DELETE
 
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
+UseEnhancedPin
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSEncryptionType
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSRecovery
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVRecovery
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVDenyWriteAccess
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
 RDVDenyWriteAccess
 DELETE
 
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 DisableExternalDMAUnderLock
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+MorBehavior
 DELETE

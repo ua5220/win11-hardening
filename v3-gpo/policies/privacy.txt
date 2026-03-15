@@ -1,7 +1,9 @@
-; GPO Edition 3.0 — Privacy / Telemetry / Data Collection
+; GPO Edition 3.0 — Privacy / Telemetry / Copilot / OneDrive / Cortana / Search / Sync
 ; Формат: LGPO /t  (Machine policy)
+; Джерела: ACSC, CIS Benchmark, private-secure-windows
 
-; ── Telemetry / Diagnostic Data ──────────────────────────────────────────────
+; ══ Telemetry / Diagnostic Data ════════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\DataCollection
 AllowTelemetry
@@ -32,13 +34,37 @@ Computer
 DisableDiagnosticDataViewer
 DWORD:1
 
-; ── CEIP / Customer Experience ───────────────────────────────────────────────
+; ── CEIP / Customer Experience ─────────────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\SQMClient\Windows
 CEIPEnable
 DWORD:0
 
-; ── Activity Feed ────────────────────────────────────────────────────────────
+; ── AppCompat Telemetry ────────────────────────────────────────────────────
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+AITEnable
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisableInventory
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisablePCA
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisableUAR
+DWORD:1
+
+; ══ Activity Feed ══════════════════════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\System
 EnableActivityFeed
@@ -54,7 +80,27 @@ Computer
 UploadUserActivities
 DWORD:0
 
-; ── Location / Advertising ───────────────────────────────────────────────────
+; ══ Copilot — вимкнути ═════════════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot
+TurnOffWindowsCopilot
+DWORD:1
+
+; ── Copilot в Edge ─────────────────────────────────────────────────────────
+
+Computer
+\SOFTWARE\Policies\Microsoft\Edge
+HubsSidebarEnabled
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Edge
+CopilotPageContext
+DWORD:0
+
+; ══ Location / Camera / Microphone / Advertising ═══════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
 LetAppsAccessLocation
@@ -70,13 +116,47 @@ Computer
 LetAppsAccessMicrophone
 DWORD:2
 
-; Advertising ID
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessContacts
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessCalendar
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessCallHistory
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessMessaging
+DWORD:2
+
+; ── Advertising ID ─────────────────────────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo
 DisabledByGroupPolicy
 DWORD:1
 
-; ── Cloud Content / Consumer Features ───────────────────────────────────────
+; ── Location Services — вимкнути ───────────────────────────────────────────
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
+DisableLocation
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors
+DisableLocationScripting
+DWORD:1
+
+; ══ Cloud Content / Consumer Features ══════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\CloudContent
 DisableWindowsConsumerFeatures
@@ -92,7 +172,8 @@ Computer
 DisableCloudOptimizedContent
 DWORD:1
 
-; ── Clipboard Sync / Cross-device ────────────────────────────────────────────
+; ══ Clipboard Sync / Cross-device ══════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\System
 AllowClipboardHistory
@@ -103,7 +184,20 @@ Computer
 AllowCrossDeviceClipboard
 DWORD:0
 
-; ── Error Reporting ──────────────────────────────────────────────────────────
+; ══ Connected Devices Platform ═════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+EnableCdp
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+LetAppsSyncWithDevices
+DWORD:2
+
+; ══ Error Reporting ════════════════════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting
 Disabled
@@ -113,3 +207,187 @@ Computer
 \SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting
 DoReport
 DWORD:0
+
+; ══ OneDrive — вимкнути синхронізацію ══════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\OneDrive
+DisableFileSyncNGSC
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\OneDrive
+DisableMeteredNetworkFileSync
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\OneDrive
+DisableLibrariesDefaultSaveToOneDrive
+DWORD:1
+
+; ══ Cortana / Search — вимкнути ════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowCortana
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+DisableWebSearch
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+ConnectedSearchUseWeb
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowSearchToUseLocation
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowCloudSearch
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowCortanaAboveLock
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowIndexingEncryptedStoresOrItems
+DWORD:0
+
+; ══ Input Personalization — вимкнути ═══════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\InputPersonalization
+AllowInputPersonalization
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\InputPersonalization
+RestrictImplicitInkCollection
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\InputPersonalization
+RestrictImplicitTextCollection
+DWORD:1
+
+; ══ SettingSync — вимкнути ═════════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+DisableSettingSync
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+DisableSettingSyncUserOverride
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+DisableApplicationSettingSync
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+DisableDesktopThemeSettingSync
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+DisableWebBrowserSettingSync
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\SettingSync
+DisablePasswordSettingSync
+DWORD:2
+
+; ══ News / Feeds / Widgets ═════════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Dsh
+AllowNewsAndInterests
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds
+EnableFeeds
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Widgets
+DisableWidgetsOnLockScreen
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Widgets
+DisableWidgetsBoard
+DWORD:1
+
+; ══ Game DVR — вимкнути ════════════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\GameDVR
+AllowGameDVR
+DWORD:0
+
+; ══ Sound Recorder — вимкнути (ACSC) ═══════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\SoundRecorder
+Soundrec
+DWORD:0
+
+; ══ Windows Store — вимкнути автооновлення ═════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\WindowsStore
+AutoDownload
+DWORD:4
+
+; ══ DRM / MRT — вимкнути онлайн-компоненти ═════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\WMDRM
+DisableOnline
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\MRT
+DontOfferThroughWUAU
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\MRT
+DontReportInfectionInformation
+DWORD:1
+
+; ══ Delivery Optimization — вимкнути P2P ═══════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization
+DODownloadMode
+DWORD:0
+
+; ══ Microsoft Accounts — необов'язкові ═════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\AppRuntime
+AllowMicrosoftAccountsToBeOptional
+DWORD:1
+
+; ══ HTTP Printing — вимкнути ═══════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+DisableHTTPPrinting
+DWORD:1

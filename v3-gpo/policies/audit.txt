@@ -1,21 +1,24 @@
-; GPO Edition 3.0 — Audit Policies (Process Creation, Command Line)
+; GPO Edition 3.0 — Audit Policies / PowerShell Logging / Event Log Sizes
 ; Формат: LGPO /t  (Machine policy)
 ; Примітка: детальні Audit-підкатегорії (Success/Failure) налаштовуються через
 ; auditpol.exe або Security Settings — цей файл покриває Administrative Templates
 
-; ── Audit Process Creation — включити CommandLine в журнал подій ─────────────
+; ══ Audit Process Creation — включити CommandLine в журнал подій ════════════
+
 Computer
 \SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit
 ProcessCreationIncludeCmdLine_Enabled
 DWORD:1
 
-; ── Audit: Ввімкнути детальні події для SCM (Service Control Manager) ────────
+; ── Audit: Ввімкнути детальні події для SCM (Service Control Manager) ──────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\System
 AuditProcessCreation
 DWORD:1
 
-; ── PowerShell Logging ───────────────────────────────────────────────────────
+; ══ PowerShell Logging ═════════════════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
 EnableScriptBlockLogging
@@ -31,12 +34,15 @@ Computer
 EnableModuleLogging
 DWORD:1
 
+; ── PowerShell Transcription ───────────────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription
 EnableTranscripting
-DWORD:0
+DWORD:1
 
-; ── PowerShell Execution Policy ──────────────────────────────────────────────
+; ── PowerShell Execution Policy ────────────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\PowerShell
 EnableScripts
@@ -47,23 +53,48 @@ Computer
 ExecutionPolicy
 SZ:RemoteSigned
 
-; ── Event Log Sizes ──────────────────────────────────────────────────────────
+; ══ Event Log Sizes ════════════════════════════════════════════════════════
+
+; Application — 50 MB
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\EventLog\Application
 MaxSize
-DWORD:32768
+DWORD:51200
 
+; Security — 200 MB
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
 MaxSize
-DWORD:196608
+DWORD:204800
 
+; System — 50 MB
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\EventLog\System
 MaxSize
-DWORD:32768
+DWORD:51200
 
+; Setup — 50 MB
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\EventLog\Setup
+MaxSize
+DWORD:51200
+
+; Security retention — overwrite as needed
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
 Retention
 SZ:0
+
+; ══ Legacy Audit Policy — вимкнути на користь Advanced Audit ═══════════════
+
+Computer
+\SYSTEM\CurrentControlSet\Control\Lsa
+SCENoApplyLegacyAuditPolicy
+DWORD:1
+
+; ══ ClfsMachineSigning — підпис CLFS ═══════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\FileSystem
+ClfsMachineSigning
+DWORD:1
