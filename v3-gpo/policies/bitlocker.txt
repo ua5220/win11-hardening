@@ -7,185 +7,185 @@
 
 ; OS Drive — AES-256 XTS
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EncryptionMethodWithXtsOs
 DWORD:7
 
 ; Fixed Data Drive — AES-256 XTS
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EncryptionMethodWithXtsFdv
 DWORD:7
 
 ; Removable Drive — AES-128 CBC (сумісність)
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EncryptionMethodWithXtsRdv
 DWORD:4
 
 ; ══ OS Drive — Вимагати TPM + PIN ══════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 UseAdvancedStartup
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EnableTPM
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EnableTPMPIN
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EnableTPMKey
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 EnableTPMKeyPIN
 DWORD:2
 
 ; ── OS Drive — Мінімальна довжина PIN ──────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 MinimumPIN
 DWORD:8
 
 ; ── OS Drive — Enhanced PIN (не-ASCII символи) ─────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 UseEnhancedPin
 DWORD:1
 
 ; ── OS Drive — Full Disk Encryption ────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSEncryptionType
 DWORD:1
 
 ; ── OS Drive — Secure Boot Integrity ───────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSAllowSecureBootForIntegrity
 DWORD:1
 
 ; ══ OS Drive Recovery ══════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSRecovery
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSManageDRA
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSRecoveryPassword
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSRecoveryKey
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSHideRecoveryPage
 DWORD:0
 
 ; ── OS Drive — AD Backup (якщо в домені) ───────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSActiveDirectoryBackup
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 OSRequireActiveDirectoryBackup
 DWORD:0
 
 ; ══ Fixed Data Drives ══════════════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVRecovery
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVManageDRA
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVRecoveryPassword
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVRecoveryKey
 DWORD:2
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVHideRecoveryPage
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVEncryptionType
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVDenyWriteAccess
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 FDVActiveDirectoryBackup
 DWORD:1
 
 ; ══ Removable Drives — Заборона запису без шифрування ═══════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 RDVDenyWriteAccess
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 RDVRecovery
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 RDVEncryptionType
 DWORD:1
 
 ; ══ Disable new DMA devices when locked ════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 DisableExternalDMAUnderLock
 DWORD:1
 
 ; ── MOR Behavior (Memory Overwrite Request) ────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\FVE
+SOFTWARE\Policies\Microsoft\FVE
 MorBehavior
 DWORD:0

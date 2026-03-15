@@ -1,76 +1,76 @@
 ; GPO Edition 3.0 — REVERT: Network
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation
+SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation
 AllowInsecureGuestAuth
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
 EnableMulticast
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
 EnableMDNS
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
 QueryNetBTForFQDN
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\LLTD
+SOFTWARE\Policies\Microsoft\Windows\LLTD
 EnableLLTDIO
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\LLTD
+SOFTWARE\Policies\Microsoft\Windows\LLTD
 EnableRspndr
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
+SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
 EnableRegistrars
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
+SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
 fMinimizeConnections
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
+SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
 fBlockNonDomain
 DELETE
 
 Computer
-\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
 DisableIPSourceRouting
 DELETE
 
 Computer
-\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
 EnableICMPRedirect
 DELETE
 
 Computer
-\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
 ArpRetryCount
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Edge
+SOFTWARE\Policies\Microsoft\Edge
 DnsOverHttpsMode
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Edge
+SOFTWARE\Policies\Microsoft\Edge
 DnsOverHttpsTemplates
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Edge
+SOFTWARE\Policies\Microsoft\Edge
 DoNotTrack
 DELETE

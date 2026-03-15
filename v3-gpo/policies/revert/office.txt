@@ -1,66 +1,66 @@
 ; GPO Edition 3.0 — REVERT: Office / IE / Printers
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
 blockcontentexecutionfrominternet
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
 VBAWarnings
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
 blockcontentexecutionfrominternet
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
 VBAWarnings
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
 blockcontentexecutionfrominternet
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
 VBAWarnings
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
 EnableEnhancedProtectedMode
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 RequireIPPS
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 IPPTLSPolicy
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 RedirectionGuardPolicy
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 CopyFilesPolicy
 DELETE
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 RestrictDriverInstallationToAdministrators
 DELETE
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Print
+SYSTEM\CurrentControlSet\Control\Print
 RpcAuthnLevelPrivacyEnabled
 DELETE

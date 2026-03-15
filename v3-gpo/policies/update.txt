@@ -5,88 +5,88 @@
 ; ══ Windows Update — автоматичні оновлення (ACSC 10) ═══════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoUpdate
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AUOptions
 DWORD:4
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 ScheduledInstallDay
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AllowMUUpdateService
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoRebootWithLoggedOnUsers
 DWORD:1
 
 ; ── Відстрочити Feature/Quality Updates ────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferFeatureUpdates
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferFeatureUpdatesPeriodInDays
 DWORD:365
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferQualityUpdates
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferQualityUpdatesPeriodInDays
 DWORD:30
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 ExcludeWUDriversInQualityUpdate
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 SetDisablePauseUXAccess
 DWORD:1
 
 ; ══ Autoplay / AutoRun — повністю вимкнути (ACSC 25) ═══════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Explorer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
 NoAutoplayfornonVolume
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 NoAutorun
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 NoDriveTypeAutoRun
 DWORD:255
 
 ; ── Legacy Run List — вимкнути (ACSC) ──────────────────────────────────────
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 DisableLocalMachineRun
 DWORD:1
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 DisableLocalMachineRunOnce
 DWORD:1
 
@@ -94,23 +94,23 @@ DWORD:1
 
 ; Registry policy processing
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
 NoBackgroundPolicy
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
 NoGPOListChanges
 DWORD:0
 
 ; Security policy processing
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
 NoBackgroundPolicy
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
 NoGPOListChanges
 DWORD:0
 
@@ -118,59 +118,59 @@ DWORD:0
 
 ; Allow standby states (S1-S3) = Disabled
 Computer
-\SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
 DCSettingIndex
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
 ACSettingIndex
 DWORD:0
 
 ; Require password on wake
 Computer
-\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
 DCSettingIndex
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
 ACSettingIndex
 DWORD:1
 
 ; Hide hibernate/sleep options
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Explorer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
 ShowHibernateOption
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\Explorer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
 ShowSleepOption
 DWORD:0
 
 ; ══ OOBE — дозволити оновлення ═════════════════════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows\OOBE
+SOFTWARE\Policies\Microsoft\Windows\OOBE
 AllowUpdatesInOOBE
 DWORD:1
 
 ; ══ WSL — вимкнути Developer Mode ══════════════════════════════════════════
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
 AllowDevelopmentWithoutDevLicense
 DWORD:0
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
 AllowAllTrustedApps
 DWORD:0
 
 ; ══ Windows Sudo — вимкнути (24H2+) ═══════════════════════════════════════
 
 Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo
+SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo
 Enabled
 DWORD:0

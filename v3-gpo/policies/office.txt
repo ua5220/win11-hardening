@@ -6,178 +6,178 @@
 
 ; Word
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
 blockcontentexecutionfrominternet
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security
 VBAWarnings
 DWORD:4
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security\ProtectedView
 DisableAttachmentsInPV
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security\ProtectedView
 DisableInternetFilesInPV
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\Word\Security\ProtectedView
 DisableUnsafeLocationsInPV
 DWORD:0
 
 ; Excel
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
 blockcontentexecutionfrominternet
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security
 VBAWarnings
 DWORD:4
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security\ProtectedView
 DisableAttachmentsInPV
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security\ProtectedView
 DisableInternetFilesInPV
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\Excel\Security\ProtectedView
 DisableUnsafeLocationsInPV
 DWORD:0
 
 ; PowerPoint
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
 blockcontentexecutionfrominternet
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security
 VBAWarnings
 DWORD:4
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security\ProtectedView
 DisableAttachmentsInPV
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security\ProtectedView
 DisableInternetFilesInPV
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security\ProtectedView
+SOFTWARE\Policies\Microsoft\Office\16.0\PowerPoint\Security\ProtectedView
 DisableUnsafeLocationsInPV
 DWORD:0
 
 ; ══ ActiveX — обмеження для MSHTML/IE (CVE-2025-30397) ═════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL
 explorer.exe
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL
 iexplore.exe
 DWORD:1
 
 ; ── IE Enhanced Protected Mode ─────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
 EnableEnhancedProtectedMode
 DWORD:1
 
 ; ── IE Flash Block ─────────────────────────────────────────────────────────
 
 Computer
-\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BLOCK_SHOCKWAVE_FLASH
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BLOCK_SHOCKWAVE_FLASH
 iexplore.exe
 DWORD:1
 
 ; ══ Printers — RPC/IPPS/TLS Hardening (ACSC) ══════════════════════════════
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
 RpcUseNamedPipeProtocol
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
 RpcAuthentication
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
 RpcProtocol
 DWORD:6
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
 RpcListenerProtocol
 DWORD:6
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
 RpcListenerAuth
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
 RpcTcpPort
 DWORD:0
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 RequireIPPS
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 IPPTLSPolicy
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 RedirectionGuardPolicy
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 PrintDriverSignatureValidation
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 CopyFilesPolicy
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 DisableHTTPPrinting
 DWORD:1
 
 Computer
-\SOFTWARE\Policies\Microsoft\Windows NT\Printers
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
 RestrictDriverInstallationToAdministrators
 DWORD:1
 
 ; ── Print Spooler RPC encryption ───────────────────────────────────────────
 
 Computer
-\SYSTEM\CurrentControlSet\Control\Print
+SYSTEM\CurrentControlSet\Control\Print
 RpcAuthnLevelPrivacyEnabled
 DWORD:1
