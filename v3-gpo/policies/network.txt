@@ -1,39 +1,44 @@
-; GPO Edition 3.0 — Network: SMB / LLMNR / WPAD / LLTD / mDNS / NetBIOS
+; GPO Edition 3.0 — Network: SMB / LLMNR / WPAD / LLTD / mDNS / NTLM / MSS / RDP / DoH
 ; Формат: LGPO /t  (Machine policy)
+; Джерела: ACSC, CIS Benchmark, Microsoft Security Baselines
 
-; ── SMB: Вимкнути гостьовий доступ (CVE-захист) ──────────────────────────────
+; ══ SMB: Вимкнути гостьовий доступ (CVE-захист) ════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation
 AllowInsecureGuestAuth
 DWORD:0
 
-; ── LLMNR — Вимкнути (Link-Local Multicast Name Resolution) ─────────────────
+; ══ LLMNR — Вимкнути (Link-Local Multicast Name Resolution) ════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
 EnableMulticast
 DWORD:0
 
-; ── mDNS — Вимкнути Multicast DNS ───────────────────────────────────────────
+; ── mDNS — Вимкнути Multicast DNS ─────────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
 EnableMDNS
 DWORD:0
 
-; ── NetBIOS — Вимкнути через DHCP (встановити через regedit: 2=вимкнути) ────
-; Примітка: NetBIOS вимикається через WINS/NIC-налаштування, не через LGPO безпосередньо
-; Нижче — вимкнення NetBT-запитів для FQDN
+; ── NetBIOS — Вимкнути запити для FQDN ─────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
 QueryNetBTForFQDN
 DWORD:0
 
-; ── WPAD — Вимкнути Web Proxy Auto-Discovery ─────────────────────────────────
+; ══ WPAD — Вимкнути Web Proxy Auto-Discovery ═══════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings
 WPADOverride
 DWORD:1
 
-; ── LLTD (Link Layer Topology Discovery) — Вимкнути ─────────────────────────
+; ══ LLTD (Link Layer Topology Discovery) — Вимкнути ═══════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\LLTD
 AllowLLTDIOOnDomain
@@ -64,7 +69,8 @@ Computer
 EnableRspndr
 DWORD:0
 
-; ── WCN (Windows Connect Now) — Вимкнути ─────────────────────────────────────
+; ══ WCN (Windows Connect Now) — Вимкнути ═══════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\WCN\Registrars
 DisableWPDRegistrar
@@ -90,14 +96,73 @@ Computer
 EnableRegistrars
 DWORD:0
 
-; ── Мінімізувати кількість одночасних підключень до Інтернету ────────────────
+; ══ Мінімізувати кількість одночасних підключень до Інтернету ══════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
 fMinimizeConnections
 DWORD:3
 
-; ── Заблокувати підключення до не-доменних мереж при наявності доменної ──────
+; ── Заблокувати підключення до не-доменних мереж при наявності доменної ────
+
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
 fBlockNonDomain
+DWORD:1
+
+; ══ MSS Legacy — IP Source Routing (ACSC) ══════════════════════════════════
+
+Computer
+\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+DisableIPSourceRouting
+DWORD:2
+
+Computer
+\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters
+DisableIPSourceRouting
+DWORD:2
+
+; ── ICMP Redirects — заборонити ────────────────────────────────────────────
+
+Computer
+\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+EnableICMPRedirect
+DWORD:0
+
+; ── ARP Retry Count (захист від ARP flood) ─────────────────────────────────
+
+Computer
+\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+ArpRetryCount
+DWORD:1
+
+; ══ Edge — DNS-over-HTTPS (DoH) ════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Edge
+DnsOverHttpsMode
+SZ:automatic
+
+Computer
+\SOFTWARE\Policies\Microsoft\Edge
+DnsOverHttpsTemplates
+SZ:https://cloudflare-dns.com/dns-query{?dns}
+
+; ══ Edge — Do Not Track / Privacy ══════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Edge
+DoNotTrack
+DWORD:1
+
+; ══ IE / Legacy — RSS / ActiveX ════════════════════════════════════════════
+
+Computer
+\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableEnclosureDownload
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+Isolation64Bit
 DWORD:1

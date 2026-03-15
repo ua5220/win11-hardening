@@ -1,24 +1,30 @@
 ; GPO Edition 3.0 — BitLocker Drive Encryption
 ; Формат: LGPO /t  (Machine policy)
 ; Документація: \Windows Components\BitLocker Drive Encryption
+; Джерела: ACSC, CIS Benchmark
 
-; ── Cipher Strength — AES-256 (Windows 10/11 1511+) ─────────────────────────
+; ══ Cipher Strength — AES-256 XTS (Windows 10/11 1511+) ═══════════════════
+
+; OS Drive — AES-256 XTS
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 EncryptionMethodWithXtsOs
 DWORD:7
 
+; Fixed Data Drive — AES-256 XTS
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 EncryptionMethodWithXtsFdv
 DWORD:7
 
+; Removable Drive — AES-128 CBC (сумісність)
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 EncryptionMethodWithXtsRdv
 DWORD:4
 
-; ── OS Drive — Вимагати TPM + PIN ───────────────────────────────────────────
+; ══ OS Drive — Вимагати TPM + PIN ══════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 UseAdvancedStartup
@@ -44,19 +50,36 @@ Computer
 EnableTPMKeyPIN
 DWORD:2
 
-; ── OS Drive — Мінімальна довжина PIN ───────────────────────────────────────
+; ── OS Drive — Мінімальна довжина PIN ──────────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 MinimumPIN
 DWORD:8
 
-; ── OS Drive — Enhanced PIN (підтримка не-ASCII символів) ───────────────────
+; ── OS Drive — Enhanced PIN (не-ASCII символи) ─────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 UseEnhancedPin
 DWORD:1
 
-; ── OS Drive Recovery ────────────────────────────────────────────────────────
+; ── OS Drive — Full Disk Encryption ────────────────────────────────────────
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSEncryptionType
+DWORD:1
+
+; ── OS Drive — Secure Boot Integrity ───────────────────────────────────────
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSAllowSecureBootForIntegrity
+DWORD:1
+
+; ══ OS Drive Recovery ══════════════════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 OSRecovery
@@ -82,7 +105,20 @@ Computer
 OSHideRecoveryPage
 DWORD:0
 
-; ── Fixed Data Drives ────────────────────────────────────────────────────────
+; ── OS Drive — AD Backup (якщо в домені) ───────────────────────────────────
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSActiveDirectoryBackup
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSRequireActiveDirectoryBackup
+DWORD:0
+
+; ══ Fixed Data Drives ══════════════════════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 FDVRecovery
@@ -108,20 +144,48 @@ Computer
 FDVHideRecoveryPage
 DWORD:0
 
-; ── Removable Drives — Заборона запису без шифрування ───────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVEncryptionType
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVDenyWriteAccess
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVActiveDirectoryBackup
+DWORD:1
+
+; ══ Removable Drives — Заборона запису без шифрування ═══════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 RDVDenyWriteAccess
 DWORD:1
 
-; ── Disable new DMA devices when locked ─────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+RDVRecovery
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+RDVEncryptionType
+DWORD:1
+
+; ══ Disable new DMA devices when locked ════════════════════════════════════
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
 DisableExternalDMAUnderLock
 DWORD:1
 
-; ── OS Drive Encryption Type — Full Disk ─────────────────────────────────────
+; ── MOR Behavior (Memory Overwrite Request) ────────────────────────────────
+
 Computer
 \SOFTWARE\Policies\Microsoft\FVE
-OSEncryptionType
-DWORD:1
+MorBehavior
+DWORD:0

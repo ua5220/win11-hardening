@@ -1,9 +1,4 @@
-; GPO Edition 3.0 — REVERT: Security / UAC / LSA
-
-Computer
-\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
-EnableLUA
-DELETE
+; GPO Edition 3.0 — REVERT: Security / UAC / LSA / VBS
 
 Computer
 \SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
@@ -11,8 +6,23 @@ ConsentPromptBehaviorAdmin
 DELETE
 
 Computer
+\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+FilterAdministratorToken
+DELETE
+
+Computer
+\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+SafeModeBlockNonAdmins
+DELETE
+
+Computer
 \SOFTWARE\Policies\Microsoft\Windows\System
 RunAsPPL
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+AllowCustomSSPsAPs
 DELETE
 
 Computer
@@ -28,4 +38,44 @@ DELETE
 Computer
 \SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 LsaCfgFlags
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+ConfigureSystemGuardLaunch
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+ConfigureKernelShadowStacksLaunch
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fDenyTSConnections
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fAllowToGetHelp
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+RestrictRemoteClients
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Biometrics
+Enabled
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\PassportForWork
+Enabled
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Installer
+AlwaysInstallElevated
 DELETE

@@ -1,9 +1,24 @@
-; GPO Edition 3.0 — REVERT: Microsoft Defender
+; GPO Edition 3.0 — REVERT: Microsoft Defender + SmartScreen + Recall + DMA
 ; Скидає значення до стандартних (Not Configured)
 
 Computer
 \SOFTWARE\Policies\Microsoft\Windows Defender
 DisableAntiSpyware
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender
+PUAProtection
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender
+DisableLocalAdminMerge
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender
+HideExclusionsFromLocalAdmins
 DELETE
 
 Computer
@@ -17,8 +32,18 @@ DisableBehaviorMonitoring
 DELETE
 
 Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+DisableScriptScanning
+DELETE
+
+Computer
 \SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
 MpEnablePus
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
+MpCloudBlockLevel
 DELETE
 
 Computer
@@ -44,4 +69,39 @@ DELETE
 Computer
 \SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access
 EnableControlledFolderAccess
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection
+DisallowExploitProtectionOverride
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+EnableSmartScreen
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\System
+ShellSmartScreenLevel
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+DisableAIDataAnalysis
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+AllowRecallEnablement
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+EnableRecallOnDevice
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection
+DeviceEnumerationPolicy
 DELETE
