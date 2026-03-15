@@ -6,7 +6,8 @@
     Exports: Set-BusyState, Refresh-AllRows,
              Invoke-ApplyAllSettings, Invoke-ApplySelectedSettings,
              Invoke-RevertAllSettings, Connect-RowActions,
-             Connect-HardeningActions, Export-HardeningReport
+             Connect-HardeningActions, Export-HardeningReport,
+             Export-HardeningConfig, Import-HardeningConfig
 #>
 
 # ── MinBuild фільтрація (25H2/26H1) ──────────────────────────────────────
@@ -285,6 +286,135 @@ function Invoke-Filter {
     Connect-RowActions      -Context $Context
 }
 
+# ── Export / Import JSON config ───────────────────────────────────────────
+
+function Export-HardeningConfig {
+    param([Parameter(Mandatory)]$Context)
+
+    $dlg = [System.Windows.Forms.SaveFileDialog]::new()
+    $dlg.Title            = 'Зберегти конфігурацію hardening'
+    $dlg.Filter           = 'JSON конфігурація (*.json)|*.json|Усі файли (*.*)|*.*'
+    $dlg.FileName         = "hardening-config-$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+    $dlg.InitialDirectory = [System.Environment]::GetFolderPath('Desktop')
+
+    if ($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return $null }
+
+    $path = $dlg.FileName
+
+    $Context.Form.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+    try {
+        $states = foreach ($s in $Context.AllSettings) {
+            [PSCustomObject]@{
+                Group   = $s.Group
+                Name    = $s.Name
+                Applied = [bool](& $s.Check)
+            }
+        }
+
+        $appliedCount = ($states | Where-Object { $_.Applied }).Count
+        $profile = [PSCustomObject]@{
+            Version      = '1.0'
+            ExportDate   = (Get-Date -Format 'o')
+            Hostname     = $env:COMPUTERNAME
+            WindowsBuild = [System.Environment]::OSVersion.Version.Build
+            AppliedCount = $appliedCount
+            TotalCount   = $states.Count
+            Settings     = $states
+        }
+
+        $profile | ConvertTo-Json -Depth 4 | Out-File -FilePath $path -Encoding UTF8 -Force
+        Write-AppLog -Level 'INFO' -Message "Config exported: $path (Applied=$appliedCount/$($states.Count))"
+    } finally {
+        $Context.Form.Cursor = [System.Windows.Forms.Cursors]::Default
+    }
+
+    return $path
+}
+
+function Import-HardeningConfig {
+    param([Parameter(Mandatory)]$Context)
+
+    $dlg = [System.Windows.Forms.OpenFileDialog]::new()
+    $dlg.Title            = 'Відкрити конфігурацію hardening'
+    $dlg.Filter           = 'JSON конфігурація (*.json)|*.json|Усі файли (*.*)|*.*'
+    $dlg.InitialDirectory = [System.Environment]::GetFolderPath('Desktop')
+
+    if ($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
+
+    $path = $dlg.FileName
+
+    try {
+        $json = Get-Content -Path $path -Encoding UTF8 -Raw | ConvertFrom-Json
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Помилка читання файлу:`n$($_.Exception.Message)",
+            'Import — помилка',
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        ) | Out-Null
+        return
+    }
+
+    # Build key→Applied lookup from JSON
+    $lookup = @{}
+    foreach ($entry in $json.Settings) {
+        $lookup["$($entry.Group)|$($entry.Name)"] = [bool]$entry.Applied
+    }
+
+    # Determine delta: what needs to change
+    $toApply  = [System.Collections.Generic.List[object]]::new()
+    $toRevert = [System.Collections.Generic.List[object]]::new()
+
+    foreach ($s in $Context.AllSettings) {
+        $key = "$($s.Group)|$($s.Name)"
+        if (-not $lookup.ContainsKey($key)) { continue }
+
+        $want    = $lookup[$key]
+        $current = [bool](& $s.Check)
+
+        if ($want -and -not $current) { $toApply.Add($s)  }
+        elseif (-not $want -and $current) { $toRevert.Add($s) }
+    }
+
+    if ($toApply.Count -eq 0 -and $toRevert.Count -eq 0) {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Поточний стан вже відповідає конфігурації.`nЗмін не потрібно.",
+            'Import',
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        ) | Out-Null
+        return
+    }
+
+    $exportInfo = if ($json.ExportDate) { "`nФайл: $(Split-Path $path -Leaf)`nДата: $($json.ExportDate.Substring(0,10))  Хост: $($json.Hostname)" } else { '' }
+    $confirm = [System.Windows.Forms.MessageBox]::Show(
+        "Зміни для застосування:$exportInfo`n`n  Застосувати : $($toApply.Count) параметрів`n  Скасувати   : $($toRevert.Count) параметрів`n`nПродовжити?",
+        'Import — підтвердження',
+        [System.Windows.Forms.MessageBoxButtons]::YesNo,
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) { return }
+
+    $Context.Form.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+    $ok = 0; $fail = 0
+    try {
+        foreach ($s in $toApply) {
+            try   { & $s.Apply; $ok++ }
+            catch { $fail++; Write-AppLog -Level 'WARN' -Message "Import Apply [$($s.Name)]: $($_.Exception.Message)" }
+        }
+        foreach ($s in $toRevert) {
+            try   { & $s.Revert; $ok++ }
+            catch { $fail++; Write-AppLog -Level 'WARN' -Message "Import Revert [$($s.Name)]: $($_.Exception.Message)" }
+        }
+        Refresh-AllRows -Context $Context
+        Write-AppLog -Level 'INFO' -Message "Import complete: ok=$ok, err=$fail, file=$path"
+    } finally {
+        $Context.Form.Cursor = [System.Windows.Forms.Cursors]::Default
+    }
+
+    return @{ Ok = $ok; Err = $fail }
+}
+
 # ── Master wiring ─────────────────────────────────────────────────────────
 
 function Connect-HardeningActions {
@@ -330,6 +460,38 @@ function Connect-HardeningActions {
             [System.Diagnostics.Process]::Start($file) | Out-Null
         } catch {
             $Context.StatusBar.Text = "  [ПОМИЛКА] Звіт: $($_.Exception.Message)"
+        }
+    }.GetNewClosure())
+
+    # Export config (JSON)
+    $fnExportConfig = ${function:Export-HardeningConfig}
+    $Context.Buttons.ExportConfig.Add_Click({
+        $Context.StatusBar.Text = '  Збереження конфігурації...'
+        try {
+            $file = & $fnExportConfig -Context $Context
+            if ($file) {
+                $Context.StatusBar.Text = "  [OK] Конфігурацію збережено: $(Split-Path $file -Leaf)"
+            } else {
+                $Context.StatusBar.Text = '  Збереження скасовано.'
+            }
+        } catch {
+            $Context.StatusBar.Text = "  [ПОМИЛКА] Експорт конфігу: $($_.Exception.Message)"
+        }
+    }.GetNewClosure())
+
+    # Import config (JSON)
+    $fnImportConfig = ${function:Import-HardeningConfig}
+    $Context.Buttons.ImportConfig.Add_Click({
+        $Context.StatusBar.Text = '  Вибір файлу конфігурації...'
+        try {
+            $result = & $fnImportConfig -Context $Context
+            if ($result) {
+                $Context.StatusBar.Text = "  [OK] Імпорт завершено: застосовано=$($result.Ok), помилок=$($result.Err)"
+            } else {
+                $Context.StatusBar.Text = '  Імпорт скасовано.'
+            }
+        } catch {
+            $Context.StatusBar.Text = "  [ПОМИЛКА] Імпорт конфігу: $($_.Exception.Message)"
         }
     }.GetNewClosure())
 }

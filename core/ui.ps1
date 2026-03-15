@@ -117,8 +117,10 @@ function New-HardeningUi {
     $btnRevertAll     = New-AppButton 'Скасувати все'       $C::FromArgb(122, 32, 32)  'Повернути до стандарту Windows'
     $btnRefresh       = New-AppButton 'Оновити стани'       $C::FromArgb(26,  58, 107) 'Перечитати поточні значення'
     $btnExport        = New-AppButton 'HTML Звіт'           $C::FromArgb(80,  50, 120) 'Експорт HTML-звіту зі статусами'
+    $btnExportConfig  = New-AppButton '↑ Експорт конфігу'  $C::FromArgb(20,  95, 105) 'Зберегти поточні стани налаштувань у JSON-файл'
+    $btnImportConfig  = New-AppButton '↓ Імпорт конфігу'   $C::FromArgb(120, 75,  20) 'Завантажити JSON-конфігурацію та застосувати зміни'
 
-    $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh, $btnExport))
+    $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh, $btnExport, $btnExportConfig, $btnImportConfig))
     $form.Controls.Add($btnPanel)
 
     # ── Filter toolbar ──────────────────────────────────────────────────────
@@ -204,6 +206,8 @@ function New-HardeningUi {
             RevertAll     = $btnRevertAll
             Refresh       = $btnRefresh
             Export        = $btnExport
+            ExportConfig  = $btnExportConfig
+            ImportConfig  = $btnImportConfig
         }
     }
 }
