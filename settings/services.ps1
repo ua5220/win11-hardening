@@ -696,6 +696,59 @@ AuthenticodeEnabled=0 в Apply та Revert — SRP Authenticode НЕ вмика�
         $s = Get-Service -Name "SecurityHealthService" -ErrorAction SilentlyContinue
         $s -and $s.StartType -eq 'Automatic'
     }
+},
+
+[PSCustomObject]@{
+    Group = "Відновлення / Зручність"
+    Name  = "Відновити доступ до mmc.exe / gpedit.msc"
+    Desc  = @"
+Виправляє ситуацію: UAC-блок «This app has been blocked for your protection» для mmc.exe (Publisher: Unknown).
+Apply:
+  1. Додає дефолтні AppLocker allow-правила %WINDIR%\* та %PROGRAMFILES%\* (SrpV2\Exe).
+  2. Встановлює AuthenticodeEnabled=0 у SRP (Safer\CodeIdentifiers) — не блокувати unsigned apps.
+  3. Якщо AppLocker вимкнено (EnforcementMode=0) — allow-правила все одно додаються на майбутнє.
+Revert: видаляє ці три allow-правила (EnforcementMode не змінює — лише правила).
+"@
+    Apply = {
+        $base       = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe"
+        $guidWinDir = "{921CC481-6E17-4653-8F75-050B80ACCE54}"
+        $guidPF     = "{A9AD8E18-B4E0-4B85-B527-E94ABD10B9EB}"
+        $guidPFx86  = "{D02EA35B-C57C-4FC3-B8BC-D9B0B9A85F6B}"
+
+        $xmlWinDir = '<FilePathRule Id="{921CC481-6E17-4653-8F75-050B80ACCE54}" Name="Allow Windows folder" Description="Дозволити mmc.exe, gpedit.msc та все з %WINDIR%" UserOrGroupSid="S-1-1-0" Action="Allow"><Conditions><FilePathCondition Path="%WINDIR%\*"/></Conditions></FilePathRule>'
+        $xmlPF     = '<FilePathRule Id="{A9AD8E18-B4E0-4B85-B527-E94ABD10B9EB}" Name="Allow Program Files" Description="Дозволити .exe з %PROGRAMFILES%" UserOrGroupSid="S-1-1-0" Action="Allow"><Conditions><FilePathCondition Path="%PROGRAMFILES%\*"/></Conditions></FilePathRule>'
+        $xmlPFx86  = '<FilePathRule Id="{D02EA35B-C57C-4FC3-B8BC-D9B0B9A85F6B}" Name="Allow Program Files (x86)" Description="Дозволити .exe з %PROGRAMFILES(X86)%" UserOrGroupSid="S-1-1-0" Action="Allow"><Conditions><FilePathCondition Path="%PROGRAMFILES(X86)%\*"/></Conditions></FilePathRule>'
+
+        foreach ($pair in @(
+            @{ Key = "$base\$guidWinDir"; Val = $xmlWinDir },
+            @{ Key = "$base\$guidPF";     Val = $xmlPF },
+            @{ Key = "$base\$guidPFx86";  Val = $xmlPFx86 }
+        )) {
+            New-Item -Path $pair.Key -Force -ErrorAction SilentlyContinue | Out-Null
+            Set-ItemProperty -Path $pair.Key -Name "Value" -Value $pair.Val -ErrorAction SilentlyContinue
+        }
+
+        # SRP: не блокувати unsigned executables (Publisher: Unknown)
+        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers" "AuthenticodeEnabled" 0
+
+        Write-AppLog -Level 'INFO' -Message "mmc.exe fix: AppLocker allow-правила WINDIR/PF/PFx86 додано, AuthenticodeEnabled=0."
+    }
+    Revert = {
+        $base = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe"
+        foreach ($guid in @(
+            "{921CC481-6E17-4653-8F75-050B80ACCE54}",
+            "{A9AD8E18-B4E0-4B85-B527-E94ABD10B9EB}",
+            "{D02EA35B-C57C-4FC3-B8BC-D9B0B9A85F6B}"
+        )) {
+            Remove-Item -Path "$base\$guid" -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        Write-AppLog -Level 'INFO' -Message "mmc.exe fix: AppLocker allow-правила видалено."
+    }
+    Check = {
+        $base      = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe"
+        $guidWinDir = "{921CC481-6E17-4653-8F75-050B80ACCE54}"
+        Test-Path "$base\$guidWinDir"
+    }
 }
 
 )

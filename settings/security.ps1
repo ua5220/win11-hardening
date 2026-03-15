@@ -667,18 +667,44 @@ Revision=1
 [PSCustomObject]@{
     Group = "Application Control"
     Name  = "AppLocker — базові правила (блокувати виконання з %TEMP%/%APPDATA%)"
-    Desc  = "Правила AppLocker: заборонити .exe з тимчасових папок. Потребує Windows Pro/Enterprise та сервіс AppIDSvc."
+    Desc  = "Правила AppLocker: заборонити .exe з тимчасових папок. Потребує Windows Pro/Enterprise та сервіс AppIDSvc. Автоматично додає дефолтні allow-правила для %WINDIR%\* та %PROGRAMFILES%\*, щоб не блокувати mmc.exe / gpedit.msc."
     Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe" "EnforcementMode" 1
-        # Увімкнути сервіс AppIDSvc для AppLocker
+        $base        = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe"
+        $guidWinDir  = "{921CC481-6E17-4653-8F75-050B80ACCE54}"
+        $guidPF      = "{A9AD8E18-B4E0-4B85-B527-E94ABD10B9EB}"
+        $guidPFx86   = "{D02EA35B-C57C-4FC3-B8BC-D9B0B9A85F6B}"
+
+        # Дефолтні allow-правила: %WINDIR%\* та %PROGRAMFILES%\* для всіх (S-1-1-0)
+        $xmlWinDir = '<FilePathRule Id="{921CC481-6E17-4653-8F75-050B80ACCE54}" Name="Allow Windows folder" Description="Дозволити всі .exe з %WINDIR% (включно mmc.exe, gpedit.msc)" UserOrGroupSid="S-1-1-0" Action="Allow"><Conditions><FilePathCondition Path="%WINDIR%\*"/></Conditions></FilePathRule>'
+        $xmlPF     = '<FilePathRule Id="{A9AD8E18-B4E0-4B85-B527-E94ABD10B9EB}" Name="Allow Program Files" Description="Дозволити всі .exe з %PROGRAMFILES%" UserOrGroupSid="S-1-1-0" Action="Allow"><Conditions><FilePathCondition Path="%PROGRAMFILES%\*"/></Conditions></FilePathRule>'
+        $xmlPFx86  = '<FilePathRule Id="{D02EA35B-C57C-4FC3-B8BC-D9B0B9A85F6B}" Name="Allow Program Files (x86)" Description="Дозволити всі .exe з %PROGRAMFILES(X86)%" UserOrGroupSid="S-1-1-0" Action="Allow"><Conditions><FilePathCondition Path="%PROGRAMFILES(X86)%\*"/></Conditions></FilePathRule>'
+
+        foreach ($pair in @(
+            @{ Key = "$base\$guidWinDir"; Val = $xmlWinDir },
+            @{ Key = "$base\$guidPF";     Val = $xmlPF },
+            @{ Key = "$base\$guidPFx86";  Val = $xmlPFx86 }
+        )) {
+            New-Item -Path $pair.Key -Force -ErrorAction SilentlyContinue | Out-Null
+            Set-ItemProperty -Path $pair.Key -Name "Value" -Value $pair.Val -ErrorAction SilentlyContinue
+        }
+
+        Set-Reg $base "EnforcementMode" 1
         Set-Service AppIDSvc -StartupType Automatic -ErrorAction SilentlyContinue
         Start-Service AppIDSvc -ErrorAction SilentlyContinue
-        Write-AppLog -Level 'INFO' -Message "AppLocker EnforcementMode=1, AppIDSvc запущено."
+        Write-AppLog -Level 'INFO' -Message "AppLocker EnforcementMode=1, дефолтні allow-правила для WINDIR/PF створено, AppIDSvc запущено."
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe" "EnforcementMode" 0
+        $base       = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe"
+        Set-Reg $base "EnforcementMode" 0
+        foreach ($guid in @(
+            "{921CC481-6E17-4653-8F75-050B80ACCE54}",
+            "{A9AD8E18-B4E0-4B85-B527-E94ABD10B9EB}",
+            "{D02EA35B-C57C-4FC3-B8BC-D9B0B9A85F6B}"
+        )) {
+            Remove-Item -Path "$base\$guid" -Recurse -Force -ErrorAction SilentlyContinue
+        }
         Set-Service AppIDSvc -StartupType Manual -ErrorAction SilentlyContinue
-        Write-AppLog -Level 'INFO' -Message "AppLocker вимкнено."
+        Write-AppLog -Level 'INFO' -Message "AppLocker вимкнено, дефолтні allow-правила видалено."
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe" "EnforcementMode" 0) -eq 1 }
 },
