@@ -1,0 +1,127 @@
+; GPO Edition 3.0 — BitLocker Drive Encryption
+; Формат: LGPO /t  (Machine policy)
+; Документація: \Windows Components\BitLocker Drive Encryption
+
+; ── Cipher Strength — AES-256 (Windows 10/11 1511+) ─────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EncryptionMethodWithXtsOs
+DWORD:7
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EncryptionMethodWithXtsFdv
+DWORD:7
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EncryptionMethodWithXtsRdv
+DWORD:4
+
+; ── OS Drive — Вимагати TPM + PIN ───────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+UseAdvancedStartup
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EnableTPM
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EnableTPMPIN
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EnableTPMKey
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+EnableTPMKeyPIN
+DWORD:2
+
+; ── OS Drive — Мінімальна довжина PIN ───────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+MinimumPIN
+DWORD:8
+
+; ── OS Drive — Enhanced PIN (підтримка не-ASCII символів) ───────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+UseEnhancedPin
+DWORD:1
+
+; ── OS Drive Recovery ────────────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSRecovery
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSManageDRA
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSRecoveryPassword
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSRecoveryKey
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSHideRecoveryPage
+DWORD:0
+
+; ── Fixed Data Drives ────────────────────────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVRecovery
+DWORD:1
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVManageDRA
+DWORD:0
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVRecoveryPassword
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVRecoveryKey
+DWORD:2
+
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+FDVHideRecoveryPage
+DWORD:0
+
+; ── Removable Drives — Заборона запису без шифрування ───────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+RDVDenyWriteAccess
+DWORD:1
+
+; ── Disable new DMA devices when locked ─────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+DisableExternalDMAUnderLock
+DWORD:1
+
+; ── OS Drive Encryption Type — Full Disk ─────────────────────────────────────
+Computer
+\SOFTWARE\Policies\Microsoft\FVE
+OSEncryptionType
+DWORD:1

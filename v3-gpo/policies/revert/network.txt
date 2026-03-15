@@ -1,0 +1,26 @@
+; GPO Edition 3.0 — REVERT: Network
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation
+AllowInsecureGuestAuth
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+EnableMulticast
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient
+EnableMDNS
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+EnableLLTDIO
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows\LLTD
+EnableRspndr
+DELETE

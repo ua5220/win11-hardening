@@ -1,0 +1,47 @@
+; GPO Edition 3.0 — REVERT: Microsoft Defender
+; Скидає значення до стандартних (Not Configured)
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender
+DisableAntiSpyware
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+DisableRealtimeMonitoring
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+DisableBehaviorMonitoring
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine
+MpEnablePus
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet
+SpynetReporting
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet
+SubmitSamplesConsent
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection
+EnableNetworkProtection
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR
+ExploitGuard_ASR_Rules
+DELETE
+
+Computer
+\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access
+EnableControlledFolderAccess
+DELETE
