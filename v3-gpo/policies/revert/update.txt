@@ -299,3 +299,298 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\Installer
 DisableSharedComponent
 DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+LoggingEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+UseBandwidthOptimization
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+IgnoreDelegationFailure
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+EnableStateInformation
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{2698178D-FDAD-40AE-9D3C-1371703ADC5B}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{988D6A8C-6E1E-48a6-B932-7ECAF8BD3210}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{ACE1A4A4-730E-4718-AF2B-C8B3B9B4E065}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{0BCAA0AE-1580-46F7-B8D3-B8B5C0E780C0}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{6BCC7ACD-4E10-41a3-A52A-2A2CDDE4929E}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
+DisableQueryRemoteServer
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
+EnableQueryRemoteServer
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnostics
+EnableDiagnostics
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
+DownloadToolsEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{67144949-5132-4859-8036-a737b43825d8}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{eb73b633-3f4e-4ba0-8f60-8f3c6f53168f}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{3af8b24a-c441-4fa4-8c5c-bed591bfa867}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{86432a0b-3c7d-4ddf-a89c-172faa90485d}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{ffc42108-4920-4acf-a4fc-8abdcc68ada4}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{a7a5847a-7511-4e4e-90b1-45ad2a002f51}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\TroubleShooting\AllowRecommendations
+TroubleshootingAllowRecommendations
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
+TraceLevel
+DELETE
