@@ -1,3 +1,5 @@
+#Requires -Version 5.1
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Windows 11 Hardening Suite — єдина точка входу
@@ -16,19 +18,16 @@
         services.ps1, audit.ps1, policy.ps1, monitoring.ps1, wsl-sudo.ps1, doh.ps1
 #>
 
-#Requires -Version 5.1
-#Requires -RunAsAdministrator
-
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
 # Перевірка версії ОС та визначення треку Windows 11
 $build = [System.Environment]::OSVersion.Version.Build
 switch ($build) {
-    { $_ -ge 26300 } { $Global:Win11Track = "26H1";   Write-Host "Windows 11 26H1 (build $build)" -ForegroundColor Cyan }
-    { $_ -ge 26200 } { $Global:Win11Track = "25H2";   Write-Host "Windows 11 25H2 (build $build)" -ForegroundColor Cyan }
-    { $_ -ge 26100 } { $Global:Win11Track = "24H2";   Write-Host "Windows 11 24H2 (build $build)" -ForegroundColor Cyan }
-    { $_ -ge 22000 } { $Global:Win11Track = "Legacy"; Write-Warning "Windows 11 < 24H2 — деякі правила не підтримуються" }
+    { $_ -ge 26300 } { $Global:Win11Track = "26H1";   Write-Host "Windows 11 26H1 (build $build)" -ForegroundColor Cyan;  break }
+    { $_ -ge 26200 } { $Global:Win11Track = "25H2";   Write-Host "Windows 11 25H2 (build $build)" -ForegroundColor Cyan;  break }
+    { $_ -ge 26100 } { $Global:Win11Track = "24H2";   Write-Host "Windows 11 24H2 (build $build)" -ForegroundColor Cyan;  break }
+    { $_ -ge 22000 } { $Global:Win11Track = "Legacy"; Write-Warning "Windows 11 < 24H2 — деякі правила не підтримуються"; break }
     default           { Write-Error "Windows 11 не виявлено (build $build)"; exit 1 }
 }
 
