@@ -189,3 +189,10 @@ Computer
 SOFTWARE\Policies\Microsoft\FVE
 MorBehavior
 DWORD:0
+
+; ══ BitLocker — Prevent memory overwrite on restart ══════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\FVE
+MorBehavior
+DWORD:0

@@ -284,3 +284,73 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows NT\Printers
 DisableHTTPPrinting
 DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+CheckCertRevocation
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_ACTIVEX_FILTERING
+iexplore.exe
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Suggested Sites
+Enabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+EnableCompatibilityLogging
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+HideLocalHostIP
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+DoNotTrack
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+Cookies
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+ConfigureKioskMode
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AlwaysEnableBooksLibrary
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowExtendedBooksTelemetry
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+UseSharedFolderForBooks
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\ServiceUI
+ShowOneBox
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter
+EnabledV9
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy
+ClearBrowsingHistoryOnExit
+DELETE

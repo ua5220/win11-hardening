@@ -57,6 +57,8 @@ $PolicyFiles = @(
     'office.txt'
 )
 
+$SecurityTemplate = 'GptTmpl.inf'
+
 function Invoke-LGPO {
     param([string]$PolicyFile)
     $FullPath = Join-Path $PoliciesDir $PolicyFile
@@ -72,6 +74,39 @@ function Invoke-LGPO {
     } else {
         Write-Host "  [OK] $PolicyFile" -ForegroundColor Green
     }
+}
+
+function Invoke-SecurityTemplate {
+    $InfPath = Join-Path $PoliciesDir $SecurityTemplate
+    if (-not (Test-Path $InfPath)) {
+        Write-Warning "Security template не знайдено: $InfPath (пропускаємо)"
+        return
+    }
+    $SdbPath = Join-Path $env:TEMP 'gpo-secedit.sdb'
+    $LogPath = Join-Path $env:TEMP 'gpo-secedit.log'
+    Write-Host "  [SECEDIT] Застосовую: $SecurityTemplate" -ForegroundColor Cyan
+    $Result = & secedit /configure /db $SdbPath /cfg $InfPath /log $LogPath /overwrite /quiet 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "secedit повернув код $LASTEXITCODE для $SecurityTemplate"
+        if (Test-Path $LogPath) { Get-Content $LogPath | ForEach-Object { Write-Warning $_ } }
+    } else {
+        Write-Host "  [OK] $SecurityTemplate" -ForegroundColor Green
+    }
+    Remove-Item $SdbPath -ErrorAction SilentlyContinue
+    Remove-Item $LogPath -ErrorAction SilentlyContinue
+}
+
+function Invoke-SecurityTemplate-Revert {
+    Write-Host "  [SECEDIT] Відкочую Security Template (скидання до стандартних)..." -ForegroundColor Yellow
+    $DefaultInf = "$env:SystemRoot\inf\defltbase.inf"
+    if (-not (Test-Path $DefaultInf)) {
+        Write-Warning "Стандартний шаблон $DefaultInf не знайдено. Пропускаємо відкат Security Template."
+        return
+    }
+    $SdbPath = Join-Path $env:TEMP 'gpo-secedit-revert.sdb'
+    & secedit /configure /db $SdbPath /cfg $DefaultInf /overwrite /quiet 2>&1 | Out-Null
+    Write-Host "  [OK] Security Template відкочено до стандартних" -ForegroundColor Green
+    Remove-Item $SdbPath -ErrorAction SilentlyContinue
 }
 
 function Invoke-LGPO-Revert {
@@ -160,6 +195,14 @@ function Invoke-Check {
         # Installer
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer'; Name='AlwaysInstallElevated'; Expect=0; Label='Installer: No Elevation' }
         @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='InactivityTimeoutSecs'; Expect=900; Label='Inactivity Timeout: 15 min' }
+        # Security Template
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='ConsentPromptBehaviorEnhancedAdmin'; Expect=1; Label='UAC: Enhanced Admin Prompt = ON' }
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='TypeOfAdminApprovalMode'; Expect=1; Label='UAC: Admin Approval Mode v2' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy'; Name='Enabled'; Expect=1; Label='FIPS: ON' }
+        @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Cryptography'; Name='ForceKeyProtection'; Expect=2; Label='Crypto: Force Key Protection' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'; Name='ClearPageFileAtShutdown'; Expect=1; Label='Memory: Clear PageFile on Shutdown' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\LDAP'; Name='LDAPClientIntegrity'; Expect=1; Label='LDAP: Client Signing Required' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'; Name='RestrictRemoteSAM'; Expect='O:BAG:BAD:(A;;RC;;;BA)'; Label='LSA: Restrict Remote SAM' }
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions'; Name='DenyDeviceIDs'; Expect=1; Label='DMA: Device Install Restrict' }
         @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters'; Name='PeerToPeerTransferSupported'; Expect=0; Label='PCIe P2P DMA: OFF' }
 
@@ -244,6 +287,7 @@ switch ($Action) {
         Write-Host "`n=== GPO Edition 3.0 — Apply ===" -ForegroundColor Magenta
         Write-Host "Застосовую $($PolicyFiles.Count) файлів політик...`n"
         foreach ($f in $PolicyFiles) { Invoke-LGPO -PolicyFile $f }
+        Invoke-SecurityTemplate
         Write-Host "`n[DONE] Всі політики застосовано." -ForegroundColor Green
         Write-Host "Примусове оновлення локальних політик..." -ForegroundColor Cyan
         gpupdate /force | Out-Null
@@ -253,6 +297,7 @@ switch ($Action) {
         Write-Host "`n=== GPO Edition 3.0 — Revert ===" -ForegroundColor Magenta
         Write-Host "Відкочую $($PolicyFiles.Count) файлів політик...`n"
         foreach ($f in $PolicyFiles) { Invoke-LGPO-Revert -PolicyFile $f }
+        Invoke-SecurityTemplate-Revert
         Write-Host "`n[DONE] Політики відкочено." -ForegroundColor Yellow
         Write-Host "Примусове оновлення локальних політик..." -ForegroundColor Cyan
         gpupdate /force | Out-Null

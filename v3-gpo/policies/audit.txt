@@ -117,3 +117,24 @@ Computer
 SOFTWARE\Policies\Microsoft\EventViewer
 MicrosoftEventVwrDisableLinks
 DWORD:1
+
+; ══ Event Log Service — Setup log size ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Setup
+MaxSize
+DWORD:32768
+
+; ══ Event Log Service — Setup logging ════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Setup
+Enabled
+DWORD:1
+
+; ══ Event Log Service — Security log behavior ════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
+Retention
+SZ:0
