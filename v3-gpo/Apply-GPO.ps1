@@ -159,6 +159,9 @@ function Invoke-Check {
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Biometrics'; Name='Enabled'; Expect=0; Label='Biometrics: OFF' }
         # Installer
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer'; Name='AlwaysInstallElevated'; Expect=0; Label='Installer: No Elevation' }
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='InactivityTimeoutSecs'; Expect=900; Label='Inactivity Timeout: 15 min' }
+        @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions'; Name='DenyDeviceIDs'; Expect=1; Label='DMA: Device Install Restrict' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters'; Name='PeerToPeerTransferSupported'; Expect=0; Label='PCIe P2P DMA: OFF' }
 
         # ── Privacy / Telemetry ───────────────────────────────────────────
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection'; Name='AllowTelemetry'; Expect=0; Label='Telemetry: OFF' }
@@ -186,6 +189,13 @@ function Invoke-Check {
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\LLTD'; Name='EnableLLTDIO'; Expect=0; Label='LLTD: OFF' }
         @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'; Name='DisableIPSourceRouting'; Expect=2; Label='MSS: IP Source Routing OFF' }
         @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'; Name='EnableICMPRedirect'; Expect=0; Label='MSS: ICMP Redirect OFF' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters'; Name='RequireSecuritySignature'; Expect=1; Label='SMB Server: Signing Required' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters'; Name='RequireSecuritySignature'; Expect=1; Label='SMB Client: Signing Required' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'; Name='RequireSignOrSeal'; Expect=1; Label='Netlogon: Sign/Seal Required' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'; Name='PerformRouterDiscovery'; Expect=0; Label='TCP: Router Discovery OFF' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters'; Name='EnableAutoDoh'; Expect=2; Label='System DoH: Force' }
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters'; Name='SupportedEncryptionTypes'; Expect=2147483640; Label='Kerberos: Strong Enc Types' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10'; Name='Start'; Expect=4; Label='SMBv1 Client: Disabled' }
 
         # ── Audit ─────────────────────────────────────────────────────────
         @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit'; Name='ProcessCreationIncludeCmdLine_Enabled'; Expect=1; Label='Audit: CmdLine = ON' }

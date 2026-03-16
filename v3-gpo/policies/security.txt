@@ -288,3 +288,55 @@ Computer
 SYSTEM\CurrentControlSet\Control\Session Manager
 ProtectionMode
 DWORD:1
+
+; ══ Inactivity Timeout — блокування екрану (900 сек = 15 хв) ═════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+InactivityTimeoutSecs
+DWORD:900
+
+; ══ Secure UI Paths — захист UIAccess додатків ═══════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+EnableSecureUIAPaths
+DWORD:1
+
+; ══ DMA Protection — Device Installation Restrictions (CVE-2025-11901) ═══
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions
+DenyDeviceIDs
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions
+DenyDeviceIDsRetroactive
+DWORD:1
+
+; ── Thunderbolt / FireWire DMA-здатні PCI класи — заблокувати ────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions\DenyDeviceIDs
+1
+SZ:PCI\CC_0C0010
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions\DenyDeviceIDs
+2
+SZ:PCI\CC_0C0A
+
+; ── DMA Guard — автоматичне блокування зовнішніх DMA-пристроїв ───────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection
+DeviceEnumerationPolicy
+DWORD:0
+
+; ── PCIe Peer-to-Peer DMA — вимкнути ────────────────────────────────────
+
+Computer
+SYSTEM\CurrentControlSet\Services\pci\Parameters
+PeerToPeerTransferSupported
+DWORD:0

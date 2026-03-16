@@ -166,3 +166,156 @@ Computer
 SOFTWARE\Policies\Microsoft\Internet Explorer\Main
 Isolation64Bit
 DWORD:1
+
+; ══ IE — Enhanced Protected Mode ════════════════════════════════════════
+
+Computer
+Software\Policies\Microsoft\Internet Explorer\Main
+Isolation
+SZ:PMEM
+
+Computer
+Software\Policies\Microsoft\Internet Explorer\Main
+EnableEnhancedProtectedMode
+DWORD:1
+
+; ── IE — Flash Block ────────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BLOCK_SHOCKWAVE_FLASH
+iexplore.exe
+DWORD:1
+
+; ── IE ActiveX Zone 3 ───────────────────────────────────────────────────
+
+Computer
+Software\Policies\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\3
+270C
+DWORD:0
+
+; ══ SMB Signing — Server ═════════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+EnableSecuritySignature
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+RequireSecuritySignature
+DWORD:1
+
+; ── SMB Server — вимкнути автоматичні адміністративні share ──────────────
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+AutoShareWks
+DWORD:0
+
+; ── SMB Server — Null Session Pipes & Shares ─────────────────────────────
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+NullSessionPipes
+SZ:
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+NullSessionShares
+SZ:
+
+; ══ SMB Signing — Client (Workstation) ═══════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters
+EnableSecuritySignature
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters
+RequireSecuritySignature
+DWORD:1
+
+; ══ SMBv1 Client — вимкнути ══════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\mrxsmb10
+Start
+DWORD:4
+
+; ══ Netlogon Secure Channel ══════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+SealSecureChannel
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+SignSecureChannel
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+RequireStrongKey
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+RequireSignOrSeal
+DWORD:1
+
+; ══ TCP/IP Stack Hardening ═══════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+PerformRouterDiscovery
+DWORD:0
+
+Computer
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+DisableSavePassword
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+KeepAliveTime
+DWORD:300000
+
+Computer
+SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+TcpMaxDataRetransmissions
+DWORD:3
+
+; ── IPv6 — вимкнути 6to4 ─────────────────────────────────────────────────
+
+Computer
+SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters
+DisableComponents
+DWORD:32
+
+; ══ Kerberos — обмежити типи шифрування ══════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters
+SupportedEncryptionTypes
+DWORD:2147483640
+
+; ══ System DNS-over-HTTPS (DoH) — примусовий ════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\Dnscache\Parameters
+EnableAutoDoh
+DWORD:2
+
+; ══ UNC Hardened Paths (SYSVOL / NETLOGON) ═══════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths
+\\*\SYSVOL
+SZ:RequireMutualAuthentication=1, RequireIntegrity=1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths
+\\*\NETLOGON
+SZ:RequireMutualAuthentication=1, RequireIntegrity=1
