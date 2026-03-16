@@ -37,7 +37,7 @@ DWORD:1
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 ValidateAdminCodeSignatures
-DWORD:0
+DWORD:1
 
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
@@ -56,7 +56,7 @@ DWORD:1
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 MaxDevicePasswordFailedAttempts
-DWORD:10
+DWORD:5
 
 ; ══ LSASS Protection (PPL) ═════════════════════════════════════════════════
 
@@ -112,7 +112,7 @@ DWORD:1
 Computer
 SYSTEM\CurrentControlSet\Control\Lsa
 CachedLogonsCount
-SZ:3
+SZ:1
 
 ; ── Аудит NTLM (Security Advanced) ────────────────────────────────────────
 
@@ -148,7 +148,7 @@ DWORD:2
 Computer
 SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
 RestrictSendingNTLMTraffic
-DWORD:1
+DWORD:2
 
 ; ── SMB Server — Null Session ──────────────────────────────────────────────
 
@@ -294,7 +294,7 @@ DWORD:1
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 InactivityTimeoutSecs
-DWORD:900
+DWORD:600
 
 ; ══ Secure UI Paths — захист UIAccess додатків ═══════════════════════════
 
@@ -610,3 +610,117 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\Explorer
 EnableShellShortcutIconRemotePath
 DWORD:0
+
+; ══ Winlogon — додаткові обмеження ══════════════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+ForceUnlockLogon
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+PasswordExpiryWarning
+DWORD:14
+
+Computer
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+ScRemoveOption
+SZ:1
+
+; ══ UAC — додаткові ═════════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+DontDisplayLastUserName
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+EnableUIADesktopToggle
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+UndockWithoutLogon
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+LegalNoticeCaption
+SZ:Авторизований доступ
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+LegalNoticeText
+SZ:Цей комп'ютер є власністю організації. Несанкціонований доступ заборонений і переслідується відповідно до законодавства.
+
+; ══ Криптографія — захист ключів ════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Cryptography
+ForceKeyProtection
+DWORD:2
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers
+AuthenticodeEnabled
+DWORD:1
+
+; ══ LSA — додаткові налаштування ════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Control\Lsa
+AuditBaseObjects
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Control\Lsa
+CrashOnAuditFail
+DWORD:2
+
+Computer
+SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy
+Enabled
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Control\Lsa
+FullPrivilegeAuditing
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Control\Lsa\pku2u
+AllowOnlineID
+DWORD:0
+
+Computer
+SYSTEM\CurrentControlSet\Control\Lsa
+RestrictRemoteSAM
+SZ:O:BAG:BAD:(A;;RC;;;BA)
+
+; ══ Принтери — обмеження драйверів ══════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Control\Print\Providers\LanMan Print Services\Servers
+AddPrinterDrivers
+DWORD:1
+
+; ══ Session Manager — додаткові ═════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management
+ClearPageFileAtShutdown
+DWORD:1
+
+; ══ LDAP Client — підписання і шифрування ═══════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\LDAP
+LDAPClientConfidentiality
+DWORD:2
+
+Computer
+SYSTEM\CurrentControlSet\Services\LDAP
+LDAPClientIntegrity
+DWORD:1

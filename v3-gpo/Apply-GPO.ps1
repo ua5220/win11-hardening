@@ -194,7 +194,15 @@ function Invoke-Check {
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Biometrics'; Name='Enabled'; Expect=0; Label='Biometrics: OFF' }
         # Installer
         @{ Path='HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer'; Name='AlwaysInstallElevated'; Expect=0; Label='Installer: No Elevation' }
-        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='InactivityTimeoutSecs'; Expect=900; Label='Inactivity Timeout: 15 min' }
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='InactivityTimeoutSecs'; Expect=600; Label='Inactivity Timeout: 10 min' }
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='DontDisplayLastUserName'; Expect=1; Label='Logon: Hide Last Username' }
+        @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='ValidateAdminCodeSignatures'; Expect=1; Label='UAC: Validate Code Signatures' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'; Name='AuditBaseObjects'; Expect=1; Label='LSA: Audit Base Objects' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'; Name='CrashOnAuditFail'; Expect=2; Label='LSA: Crash On Audit Fail' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0'; Name='RestrictSendingNTLMTraffic'; Expect=2; Label='NTLM: Block Sending' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\pku2u'; Name='AllowOnlineID'; Expect=0; Label='PKU2U: Online ID OFF' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\LDAP'; Name='LDAPClientConfidentiality'; Expect=2; Label='LDAP: Client Confidentiality' }
+        @{ Path='HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'; Name='RestrictNTLMInDomain'; Expect=7; Label='Netlogon: Restrict NTLM' }
         # Security Template
         @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='ConsentPromptBehaviorEnhancedAdmin'; Expect=1; Label='UAC: Enhanced Admin Prompt = ON' }
         @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'; Name='TypeOfAdminApprovalMode'; Expect=1; Label='UAC: Admin Approval Mode v2' }
