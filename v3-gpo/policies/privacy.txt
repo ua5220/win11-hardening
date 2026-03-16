@@ -34,6 +34,43 @@ SOFTWARE\Policies\Microsoft\Windows\DataCollection
 DisableDiagnosticDataViewer
 DWORD:1
 
+; ── Desktop Analytics / WUfB Cloud ───────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+AllowCommercialDataPipeline
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+AllowDesktopAnalyticsProcessing
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+AllowDeviceNameInDiagnosticData
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+AllowWUfBCloudProcessing
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+EnableOneSettingsAuditing
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+LimitEnhancedDiagnosticDataWindowsAnalytics
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DataCollection
+MicrosoftEdgeDataOptIn
+DWORD:0
+
 ; ── CEIP / Customer Experience ─────────────────────────────────────────────
 
 Computer
@@ -78,6 +115,20 @@ DWORD:0
 Computer
 SOFTWARE\Policies\Microsoft\Windows\System
 UploadUserActivities
+DWORD:0
+
+; ── Online Tips — вимкнути ───────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+EnableOnlineTips
+DWORD:0
+
+; ── Font Providers — вимкнути ────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+EnableFontProviders
 DWORD:0
 
 ; ══ Copilot — вимкнути ═════════════════════════════════════════════════════
@@ -172,6 +223,11 @@ SOFTWARE\Policies\Microsoft\Windows\CloudContent
 DisableCloudOptimizedContent
 DWORD:1
 
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CloudContent
+DisableConsumerAccountStateContent
+DWORD:1
+
 ; ══ Clipboard Sync / Cross-device ══════════════════════════════════════════
 
 Computer
@@ -225,6 +281,11 @@ SOFTWARE\Policies\Microsoft\Windows\OneDrive
 DisableLibrariesDefaultSaveToOneDrive
 DWORD:1
 
+Computer
+SOFTWARE\Policies\Microsoft\OneDrive
+PreventNetworkTrafficPreUserSignIn
+DWORD:1
+
 ; ══ Cortana / Search — вимкнути ════════════════════════════════════════════
 
 Computer
@@ -260,6 +321,16 @@ DWORD:0
 Computer
 SOFTWARE\Policies\Microsoft\Windows\Windows Search
 AllowIndexingEncryptedStoresOrItems
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
+PreventIndexingPublicFolders
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowCortanaInAAD
 DWORD:0
 
 ; ══ Input Personalization — вимкнути ═══════════════════════════════════════
@@ -492,6 +563,92 @@ Computer
 SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy
 EnableEncryptedMediaExtensions
 DWORD:0
+
+; ── Speech — вимкнути автооновлення мовних даних ─────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Speech
+AllowSpeechModelUpdate
+DWORD:0
+
+; ── Message Service Cloud Sync — вимкнути ────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Messaging
+AllowMessageSync
+DWORD:0
+
+; ── Архівація додатків — вимкнути ────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Appx
+AllowAutomaticAppArchiving
+DWORD:0
+
+; ── OOBE — приховати налаштування конфіденційності ───────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\OOBE
+DisablePrivacyExperience
+DWORD:1
+
+; ══ Paint — вимкнути AI-функції ══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Paint
+DisableCocreator
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Paint
+DisableGenerativeFill
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Paint
+DisableImageCreator
+DWORD:1
+
+; ── Windows AI — додаткові обмеження ─────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+AllowRecallSecureExport
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+DisableClickToDo
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+DisableSettingsAgenticSearch
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+TurnOffWindowsCopilot
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsAI
+SetAgentPolicy
+DWORD:2
+
+; ══ UE-V — вимкнути ═════════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\UEV\Agent
+Enabled
+DWORD:0
+
+; ── Active Help — вимкнути ───────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Assistance\Client\1.0
+NoOnlineAssist
+DWORD:1
 
 ; ══════════════════════════════════════════════════════════════════════════
 ; ══ USER POLICY (HKCU) ═══════════════════════════════════════════════════

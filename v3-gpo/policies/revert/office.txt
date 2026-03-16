@@ -64,3 +64,223 @@ Computer
 SYSTEM\CurrentControlSet\Control\Print
 RpcAuthnLevelPrivacyEnabled
 DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL
+explorer.exe
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_RESTRICT_ACTIVEXINSTALL
+iexplore.exe
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BLOCK_SHOCKWAVE_FLASH
+iexplore.exe
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+RunOnceComplete
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+RunOnceHasShown
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+DEPOff
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Recovery
+AutoRecover
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Activities
+NoActivities
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Restrictions
+NoBrowserSaveWebComplete
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+DisableFirstRunCustomize
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ADDON_MANAGEMENT
+iexplore.exe
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\TabbedBrowsing
+QuickTabsThreshold
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Geolocation
+PolicyDisableGeolocation
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter
+EnabledV9
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Infodelivery\Restrictions
+NoUpdateCheck
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\SQM
+DisableCustomerImprovementProgram
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy
+EnableInPrivateFiltering
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy
+DisableToolbars
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Safety\PrivacIE
+DisableLogging
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_DISABLE_TELPHONENUM_DETECTION
+iexplore.exe
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowSavingHistory
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowSideloadedExtensions
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowWebContentOnNewTabPage
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+PreventFirstRunPage
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowPrelaunch
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowTabPreloading
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\ServiceUI
+ShowOneBox
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+Use FormSuggest
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowFlashClickToRun
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowFlash
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Accessibility
+UseWebRTCLocalhostIPAddress
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowDeletingBrowsingDataOnExit
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+DoNotTrack
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+DisableJobNameInEventLogs
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisableUAR
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\SecondaryAuthenticationFactor
+AllowSecondaryAuthenticationDevice
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+RpcUseNamedPipeProtocol
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+RpcAuthentication
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+RpcProtocol
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+RpcListenerProtocol
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+RpcListenerAuth
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers\RPC
+RpcTcpPort
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+PrintDriverSignatureValidation
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+DisableHTTPPrinting
+DELETE

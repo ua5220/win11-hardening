@@ -49,3 +49,13 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\FileSystem
 ClfsMachineSigning
 DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\EventLog
+RestrictGuestAccess
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\EventViewer
+MicrosoftEventVwrDisableLinks
+DELETE

@@ -319,3 +319,235 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths
 \\*\NETLOGON
 SZ:RequireMutualAuthentication=1, RequireIntegrity=1
+
+; ══ BITS Peercaching — вимкнути ══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\BITS
+EnablePeercaching
+DWORD:0
+
+; ── BITS — заборонити Windows BranchCache ────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\BITS
+DisableBranchCache
+DWORD:1
+
+; ══ BranchCache — вимкнути ═══════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\PeerDist\Service
+Enable
+DWORD:0
+
+; ══ Offline Files — вимкнути ═════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetCache
+Enabled
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetCache
+SyncEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetCache
+NoReminders
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetCache
+NoCacheViewer
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetCache
+NoMakeAvailableOffline
+DWORD:1
+
+; ══ WinRM Client — заборонити небезпечну автентифікацію ═══════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Client
+AllowBasic
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Client
+AllowUnencryptedTraffic
+DWORD:0
+
+; ══ WinRM Service — обмеження ════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Service
+AllowAutoConfig
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Service
+AllowBasic
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Service
+AllowUnencryptedTraffic
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Service
+HttpCompatibilityListener
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Service
+HttpsCompatibilityListener
+DWORD:0
+
+; ══ Windows Remote Shell — вимкнути ══════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\WinRS
+AllowRemoteShellAccess
+DWORD:0
+
+; ══ Internet Printing — вимкнути ═════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+DisableWebPnPDownload
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+DisableHTTPPrinting
+DWORD:1
+
+; ══ Printers — додаткове зміцнення ═══════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+KMPrintersAreBlocked
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+IsolateDrivers
+DWORD:2
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+ExecuteInIsolatedProcess
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+ConfigureWindowsProtectedPrint
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+RpcOverTcp
+DWORD:0
+
+; ══ Internet Communication — вимкнути онлайн-сервіси ═════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+ShutdownWithoutLogon
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings
+CertificateRevocation
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\EventViewer
+MicrosoftEventVwrDisableLinks
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Internet Connection Wizard
+ExitOnMSICW
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Registration Wizard Control
+NoRegistration
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\Software Protection Platform
+NoGenTicket
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Messenger\Client
+CEIP
+DWORD:2
+
+Computer
+SOFTWARE\Policies\Microsoft\PCHealth\HelpSvc
+MicrosoftKBSearch
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\PCHealth\HelpSvc
+Headlines
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\SearchCompanion
+DisableContentFileUpdates
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Internet Connection Wizard
+ExitOnMSICW
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoPublishingWizard
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoWebServices
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoOnlinePrintsWizard
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoInternetOpenWith
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NCSI
+NoActiveProbe
+DWORD:1
+
+; ══ Secure Boot Certificate Deployment ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\SecureBoot
+EnableSecureBootCertDeployment
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\SecureBoot
+AutomaticCertDeploymentViaUpdates
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\SecureBoot
+CertDeploymentViaCFR
+DWORD:1

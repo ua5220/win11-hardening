@@ -347,3 +347,207 @@ Computer
 SYSTEM\CurrentControlSet\Control\Session Manager\kernel
 DisableExceptionChainValidation
 DWORD:0
+
+; ══ Defender Features — додаткові ════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Features
+EnableECSIntegration
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Features
+MpPlatformKillbitsFromEngine
+DWORD:1
+
+; ── EDR in block mode ────────────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Features
+EnableEDRInBlockMode
+DWORD:1
+
+; ── Telemetry for Defender — вимкнути ────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Features
+EnableDiagnosticData
+DWORD:0
+
+; ══ Network Protection — додаткові ═══════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection
+EnableAsyncInspection
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection
+ConvertWarnToBlock
+DWORD:0
+
+; ══ Network Inspection System ════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\NIS
+DatagramProcessing
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\NIS
+DisableProtocolRecognition
+DWORD:0
+
+; ══ Scan — додаткові ════════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Scan
+DisableCatchupFullScan
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Scan
+DisableCatchupQuickScan
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Scan
+DisableScanningMappedNetworkDrivesForFullScan
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Scan
+DisableScanningNetworkFiles
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Scan
+DisableRestorePoint
+DWORD:1
+
+; ══ Reporting — вимкнути Watson та WPP ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Reporting
+DisableGenericRePorts
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Reporting
+WppTracingLevel
+DWORD:0
+
+; ══ Quarantine — вимкнути автоматичне видалення ══════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Quarantine
+LocalSettingOverridePurgeItemsAfterDelay
+DWORD:0
+
+; ══ Security Intelligence Updates ════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Signature Updates
+UpdateOnStartUp
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Signature Updates
+RealtimeSignatureDelivery
+DWORD:1
+
+; ══ Brute-Force Protection ═══════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\BruteForceProtection
+EnableLocalNetworkBlocking
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\BruteForceProtection
+BfpAggressiveness
+DWORD:2
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\BruteForceProtection
+BfpBlockingTime
+DWORD:1440
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\BruteForceProtection
+RemoteEncryptionProtectionMode
+DWORD:1
+
+; ══ Remote Encryption Protection ═════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\RemoteEncryptionProtection
+REPMode
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\RemoteEncryptionProtection
+REPAggressiveness
+DWORD:2
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Remediation\BehavioralNetworkBlocks\RemoteEncryptionProtection
+REPBlockingTime
+DWORD:1440
+
+; ══ Randomize scheduled task times ═══════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender
+RandomizeScheduleTaskTimes
+DWORD:1
+
+; ══ Platform / Engine / Intelligence Update Channels ═════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender
+EngineUpdatesChannel
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender
+PlatformUpdatesChannel
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender
+DefinitionUpdatesChannel
+DWORD:0
+
+; ══ Allow antimalware service to remain running always ═══════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender
+ServiceKeepAlive
+DWORD:1
+
+; ══ Real-Time Protection — raw volume write notifications ════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection
+DisableRawWriteNotification
+DWORD:0
+
+; ══ SmartScreen — Enhanced Phishing Protection ═══════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WTDS\Components
+ServiceEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WTDS\Components
+AutomaticDataCollection
+DWORD:0
+
+; ══ SmartScreen — Edge PhishingFilter ════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter
+EnabledV9
+DWORD:0

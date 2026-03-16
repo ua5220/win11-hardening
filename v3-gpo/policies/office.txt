@@ -181,3 +181,186 @@ Computer
 SYSTEM\CurrentControlSet\Control\Print
 RpcAuthnLevelPrivacyEnabled
 DWORD:1
+
+; ══ IE — додаткові обмеження ═════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+RunOnceComplete
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+RunOnceHasShown
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+DEPOff
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Recovery
+AutoRecover
+DWORD:2
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Activities
+NoActivities
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Restrictions
+NoBrowserSaveWebComplete
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+DisableFirstRunCustomize
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ADDON_MANAGEMENT
+iexplore.exe
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\TabbedBrowsing
+QuickTabsThreshold
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Geolocation
+PolicyDisableGeolocation
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter
+EnabledV9
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Infodelivery\Restrictions
+NoUpdateCheck
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\SQM
+DisableCustomerImprovementProgram
+DWORD:0
+
+; ══ IE — Privacy ─────────────────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy
+EnableInPrivateFiltering
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy
+DisableToolbars
+DWORD:1
+
+; ══ IE — Turn off collection of InPrivate Filtering data ─────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Safety\PrivacIE
+DisableLogging
+DWORD:1
+
+; ══ IE — Turn off phone number detection ─────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_DISABLE_TELPHONENUM_DETECTION
+iexplore.exe
+DWORD:1
+
+; ══ Microsoft Edge (Legacy) — додаткові обмеження ════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowSavingHistory
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowSideloadedExtensions
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowWebContentOnNewTabPage
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+PreventFirstRunPage
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowPrelaunch
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowTabPreloading
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\ServiceUI
+ShowOneBox
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+Use FormSuggest
+SZ:no
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowFlashClickToRun
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowFlash
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Accessibility
+UseWebRTCLocalhostIPAddress
+DWORD:1
+
+; ══ Microsoft Edge (Legacy) — Clear browsing data / Do Not Track ═════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowDeletingBrowsingDataOnExit
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+DoNotTrack
+DWORD:1
+
+; ══ Printers — додаткові ═════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Printers
+DisableJobNameInEventLogs
+DWORD:1
+
+; ══ Application Compatibility — вимкнути Steps Recorder ══════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisableUAR
+DWORD:1
+
+; ══ Microsoft Secondary Authentication Factor — вимкнути ═════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\SecondaryAuthenticationFactor
+AllowSecondaryAuthenticationDevice
+DWORD:0

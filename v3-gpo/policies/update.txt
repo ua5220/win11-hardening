@@ -174,3 +174,355 @@ Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo
 Enabled
 DWORD:0
+
+; ══ Maintenance Scheduler — вимкнути авто-пробудження ═════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Task Scheduler\Maintenance
+WakeUp
+DWORD:0
+
+; ══ MDM — вимкнути автоматичну реєстрацію ════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM
+AutoEnrollMDM
+DWORD:0
+
+; ══ MDM — вимкнути реєстрацію ════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM
+DisableRegistration
+DWORD:1
+
+; ══ Windows Update — Enable optional updates ═════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+AllowOptionalContent
+DWORD:1
+
+; ══ Remote Desktop — додаткове зміцнення ═════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fDisableClip
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fEnableSmartCard
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fEncryptRPCTraffic
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+AuthenticationLevel
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+EnableEntraIDAuth
+DWORD:1
+
+; ── Remote Desktop — UDP off ─────────────────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SelectTransport
+DWORD:1
+
+; ── Remote Desktop — Disable Cloud Clipboard for server-to-client ────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+DisableCloudClipboard
+DWORD:1
+
+; ══ Connect (Wireless Display) — обмеження ═══════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Connect
+AllowProjectionToPC
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Connect
+RequirePinForPairing
+DWORD:2
+
+; ══ Windows Presentation Settings — вимкнути ═════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\MobilityCenter
+NoMobilityCenter
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\PresentationSettings
+NoPresentationSettings
+DWORD:1
+
+; ══ Push To Install — вимкнути ═══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\PushToInstall
+DisablePushToInstall
+DWORD:1
+
+; ══ NetMeeting — вимкнути Remote Desktop Sharing ═════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Conferencing
+NoRDS
+DWORD:1
+
+; ══ Network Sharing — вимкнути ═══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetworkSharing
+DisableInlineCompose
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetworkSharing
+DisableShareAppPromotions
+DWORD:1
+
+; ══ File History — вимкнути ══════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\FileHistory
+Disabled
+DWORD:1
+
+; ══ HomeGroup — заборонити ═══════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\HomeGroup
+DisableHomeGroup
+DWORD:1
+
+; ══ Find My Device — вимкнути ════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\FindMyDevice
+AllowFindMyDevice
+DWORD:0
+
+; ══ Handwriting Panel — вимкнути Docked mode ═════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\HandwritingPanel
+DefaultMode
+DWORD:0
+
+; ══ Maps — вимкнути автозавантаження ═════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Maps
+AutoDownloadAndUpdateMapData
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Maps
+AllowUntriggeredNetworkTrafficOnSettingsPage
+DWORD:0
+
+; ══ Application Compatibility — вимкнути всі компоненти ══════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisableEngine
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisablePropPage
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+SbEnable
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+VDMDisallowed
+DWORD:1
+
+; ══ Windows Ink Workspace — вимкнути ═════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsInkWorkspace
+AllowSuggestedAppsInWindowsInkWorkspace
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsInkWorkspace
+AllowWindowsInkWorkspace
+DWORD:0
+
+; ══ Desktop Gadgets — вимкнути ═══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar
+TurnOffSidebar
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar
+TurnOffUnsignedGadgets
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar
+TurnOffUserInstalledGadgets
+DWORD:1
+
+; ══ Digital Locker — вимкнути ════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Digital Locker
+DoNotRunDigitalLocker
+DWORD:1
+
+; ══ Windows Media Player — обмеження ═════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\WMDRM
+DisableOnline
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
+PreventAutoUpdate
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
+GroupPrivacyAcceptance
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
+PreventLibrarySharing
+DWORD:1
+
+; ══ Windows Messenger — вимкнути ═════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Messenger\Client
+PreventRun
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Messenger\Client
+PreventAutoRun
+DWORD:1
+
+; ══ Windows Mobility Center — вимкнути ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\MobilityCenter
+NoMobilityCenter
+DWORD:1
+
+; ══ Reliability Analysis / WMI Providers — вимкнути ══════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{4F15BB26-0A78-4395-8848-F5EE2C498F60}
+ScenarioExecutionEnabled
+DWORD:0
+
+; ══ Windows Installer — додаткові обмеження ══════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+SafeForScripting
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableLUAPatching
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableLoggingFromPackage
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableFlyweightPatching
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableSRCheckPoints
+DWORD:1
+
+; ══ Windows Game Recording/Broadcasting — вимкнути ═══════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\GameDVR
+AllowGameDVR
+DWORD:0
+
+; ══ RSS Feeds — обмеження ════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+BackgroundSyncStatus
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableEnclosureDownload
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableFeedSubscription
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableFeedDiscovery
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableFeedList
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+AllowBasicAuthInClear
+DWORD:0
+
+; ══ IIS — заборонити встановлення ════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\IIS
+PreventIISInstall
+DWORD:1
+
+; ══ ActiveX Installer Service — вимкнути ═════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AxInstallService
+EnabledInTrustedZones
+DWORD:0
+
+; ══ Windows Logon Options — вимкнути Shared Components ═══════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableSharedComponent
+DWORD:1
