@@ -519,3 +519,94 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\ShadowCopies\Providers
 Encryption
 DWORD:1
+
+; ══ Desktop — заборонити теми з мережі ══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Personalization
+NoThemesTab
+DWORD:1
+
+; ══ Device Health Attestation — вимкнути ═════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\DeviceHealthAttestationService
+EnableDeviceHealthAttestationService
+DWORD:0
+
+; ══ Disk Quotas — вимкнути ══════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\DiskQuota
+Enable
+DWORD:0
+
+; ══ NTFS TXF — вимкнути deprecated функції ══════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\FileSystem
+NtfsEnableTxfDeprecatedFunctionality
+DWORD:0
+
+; ══ Dev Drive — вимкнути ════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\FileSystem
+EnableDevDrive
+DWORD:0
+
+; ══ Phone-PC Linking — вимкнути ═════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+EnableMmx
+DWORD:0
+
+; ══ Logon — Always Wait for Network ═════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\Winlogon
+SyncForegroundPolicy
+DWORD:0
+
+; ══ Netlogon Share Compatibility — вимкнути ══════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Netlogon\Parameters
+AllowNT4Crypto
+DWORD:0
+
+; ══ Recovery — вимкнути відновлення до стану за замовчуванням ═════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRE
+DisableSetup
+DWORD:1
+
+; ══ Shutdown — Fast Startup ═════════════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Control\Session Manager\Power
+HiberbootEnabled
+DWORD:0
+
+; ══ Verbose Status Messages ═════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+VerboseStatus
+DWORD:1
+
+; ══ User Profiles — Prevent Roaming Profile propagation ═════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+RoamingProfilesPreventPropagation
+DWORD:1
+
+; ══ File Explorer — заборонити remote paths in shortcuts ════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
+EnableShellShortcutIconRemotePath
+DWORD:0

@@ -848,3 +848,43 @@ User
 SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced
 HideFileExt
 DWORD:0
+
+; ══ Online Speech Recognition — вимкнути ════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\InputPersonalization
+AllowInputPersonalization
+DWORD:0
+
+; ══ Upload User Activities — вимкнути ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+UploadUserActivities
+DWORD:0
+
+; ══ Sound Recorder — вимкнути ═══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\SoundRecorder
+Soundrec
+DWORD:0
+
+; ══ Widgets — вимкнути ══════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Dsh
+AllowNewsAndInterests
+DWORD:0
+
+; ══ Widgets — вимкнути Board та Lock Screen ═════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Dsh
+DisableWidgetsBoard
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Dsh
+DisableWidgetsOnLockScreen
+DWORD:1

@@ -364,3 +364,101 @@ Computer
 SOFTWARE\Policies\Microsoft\SecondaryAuthenticationFactor
 AllowSecondaryAuthenticationDevice
 DWORD:0
+
+; ══ IE — Server Certificate Revocation ══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+CheckCertRevocation
+DWORD:1
+
+; ══ IE — Alternative Codecs ═════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_ACTIVEX_FILTERING
+iexplore.exe
+DWORD:1
+
+; ══ IE — Suggested Sites ════════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Suggested Sites
+Enabled
+DWORD:0
+
+; ══ IE — Compatibility Logging ══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+EnableCompatibilityLogging
+DWORD:0
+
+; ══ IE — WebRTC localhost IP ════════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Main
+HideLocalHostIP
+DWORD:1
+
+; ══ Edge Legacy — Configure Do Not Track ════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+DoNotTrack
+DWORD:1
+
+; ══ Edge Legacy — Configure Cookies ═════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+Cookies
+DWORD:1
+
+; ══ Edge Legacy — Configure kiosk mode ══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+ConfigureKioskMode
+DWORD:0
+
+; ══ Edge Legacy — Books Library ═════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AlwaysEnableBooksLibrary
+DWORD:0
+
+; ══ Edge Legacy — Extended telemetry for Books ══════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+AllowExtendedBooksTelemetry
+DWORD:0
+
+; ══ Edge Legacy — Shared Books folder ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main
+UseSharedFolderForBooks
+DWORD:0
+
+; ══ Edge Legacy — Address bar suggestions ═══════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\ServiceUI
+ShowOneBox
+DWORD:0
+
+; ══ Edge Legacy — SmartScreen ═══════════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter
+EnabledV9
+DWORD:1
+
+; ══ Edge Legacy — Clearing browsing data on exit ════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy
+ClearBrowsingHistoryOnExit
+DWORD:1

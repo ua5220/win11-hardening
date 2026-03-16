@@ -526,3 +526,27 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\Installer
 DisableSharedComponent
 DWORD:1
+
+; ══ Remote Assistance — session logging та bandwidth optimization ════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+LoggingEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+UseBandwidthOptimization
+DWORD:0
+
+; ══ RPC — Ignore Delegation Failure та State Information ════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+IgnoreDelegationFailure
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+EnableStateInformation
+DWORD:0
