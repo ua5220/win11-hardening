@@ -551,3 +551,10 @@ Computer
 SOFTWARE\Policies\Microsoft\SecureBoot
 CertDeploymentViaCFR
 DWORD:1
+
+; ══ Netlogon — обмеження NTLM у домені ═════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+RestrictNTLMInDomain
+DWORD:7
