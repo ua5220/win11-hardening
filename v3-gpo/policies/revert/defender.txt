@@ -455,3 +455,8 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR\Rules
 26190899-1602-49e8-8b27-eb1d0a1ce869
 DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows Defender\Quarantine
+PurgeItemsAfterDelay
+DELETE
