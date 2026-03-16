@@ -98,3 +98,22 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\FileSystem
 ClfsMachineSigning
 DWORD:1
+
+; ══ Event Log Service — додаткові обмеження ══════════════════════════════════
+
+; Limit remote access to the Event Log Service
+Computer
+SOFTWARE\Policies\Microsoft\Windows\EventLog
+RestrictGuestAccess
+DWORD:1
+
+; ══ Event Forwarding — не налаштовувати Subscription Manager ═════════════════
+
+; (залишено без змін — Disabled у GPO = не конфігурувати)
+
+; ══ Event Viewer — вимкнути Events.asp ═══════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\EventViewer
+MicrosoftEventVwrDisableLinks
+DWORD:1
