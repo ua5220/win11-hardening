@@ -571,6 +571,13 @@ SOFTWARE\Policies\Microsoft\Speech
 AllowSpeechModelUpdate
 DWORD:0
 
+; ── Speech — вимкнути онлайн-розпізнавання мовлення (Control Panel\Regional and Language Options) ──
+
+Computer
+SOFTWARE\Policies\Microsoft\Speech
+AllowOnlineSpeechRecognition
+DWORD:0
+
 ; ── Message Service Cloud Sync — вимкнути ────────────────────────────────────
 
 Computer
@@ -863,28 +870,71 @@ SOFTWARE\Policies\Microsoft\Windows\System
 UploadUserActivities
 DWORD:0
 
-; ══ Sound Recorder — вимкнути ═══════════════════════════════════════════════
+; ══ App Privacy — додаткові обмеження (Force Deny = 2) ═════════════════════
 
+; Let Windows apps access account information — Force Deny
 Computer
-SOFTWARE\Policies\Microsoft\SoundRecorder
-Soundrec
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessAccountInfo
+DWORD:2
+
+; Let Windows apps access email — Force Deny
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessEmail
+DWORD:2
+
+; Let Windows apps make phone calls — Force Deny
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessPhone
+DWORD:2
+
+; Let Windows apps access radios — Force Deny
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessRadios
+DWORD:2
+
+; Let Windows apps run in the background — Force Deny
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsRunInBackground
+DWORD:2
+
+; Let Windows apps access motion — Force Deny
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessMotion
+DWORD:2
+
+; Let Windows apps communicate with unpaired devices — Force Deny
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsCommunicateWithUnpairedDevices
+DWORD:2
+
+; Let Windows apps access notifications — User is in control (0)
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppPrivacy
+LetAppsAccessNotifications
 DWORD:0
 
-; ══ Widgets — вимкнути ══════════════════════════════════════════════════════
+; ══ Search — Set what information is shared (Anonymous) ═════════════════════
 
 Computer
-SOFTWARE\Policies\Microsoft\Dsh
-AllowNewsAndInterests
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
+ConnectedSearchPrivacy
+DWORD:3
+
+; ══ Data Collection — Disable pre-release features ══════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds
+AllowBuildPreview
 DWORD:0
 
-; ══ Widgets — вимкнути Board та Lock Screen ═════════════════════════════════
-
 Computer
-SOFTWARE\Policies\Microsoft\Dsh
-DisableWidgetsBoard
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Dsh
-DisableWidgetsOnLockScreen
-DWORD:1
+SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds
+EnableConfigFlighting
+DWORD:0
