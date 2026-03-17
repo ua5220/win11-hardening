@@ -176,6 +176,13 @@ SOFTWARE\Policies\Microsoft\FVE
 RDVEncryptionType
 DWORD:1
 
+; ── Removable Drives — Deny access from earlier Windows versions ─────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\FVE
+RDVDenyCrossOS
+DWORD:1
+
 ; ══ Disable new DMA devices when locked ════════════════════════════════════
 
 Computer

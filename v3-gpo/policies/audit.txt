@@ -55,23 +55,23 @@ SZ:RemoteSigned
 
 ; ══ Event Log Sizes ════════════════════════════════════════════════════════
 
-; Application — 50 MB
+; Application — 64 MB (65536 KB)
 Computer
 SOFTWARE\Policies\Microsoft\Windows\EventLog\Application
 MaxSize
-DWORD:51200
+DWORD:65536
 
-; Security — 200 MB
+; Security — 192 MB (196608 KB)
 Computer
 SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
 MaxSize
-DWORD:204800
+DWORD:196608
 
-; System — 50 MB
+; System — 64 MB (65536 KB)
 Computer
 SOFTWARE\Policies\Microsoft\Windows\EventLog\System
 MaxSize
-DWORD:51200
+DWORD:65536
 
 ; Setup — 50 MB
 Computer
@@ -84,6 +84,12 @@ Computer
 SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
 Retention
 SZ:0
+
+; Security — Backup log automatically when full
+Computer
+SOFTWARE\Policies\Microsoft\Windows\EventLog\Security
+AutoBackupLogFiles
+DWORD:1
 
 ; ══ Legacy Audit Policy — вимкнути на користь Advanced Audit ═══════════════
 

@@ -201,12 +201,45 @@ SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
 ConfigureKernelShadowStacksLaunch
 DWORD:1
 
+; ── Device Guard — Deploy App Control for Business (WDAC) ────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceGuard
+DeployConfigCIPolicy
+DWORD:1
+
 ; ══ Credential Delegation ══════════════════════════════════════════════════
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
 AllowProtectedCreds
 DWORD:1
+
+; ── Deny delegating default credentials ──────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
+DenyDefaultCredentials
+DWORD:1
+
+; ── Deny delegating saved credentials ────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
+DenySavedCredentials
+DWORD:1
+
+; ── Restrict delegation — Require Remote Credential Guard ────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
+RestrictedRemoteAdministration
+DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation
+RestrictedRemoteAdministrationType
+DWORD:2
 
 ; ── Encryption Oracle Remediation (CVE-2018-0886 / CredSSP) ───────────────
 
@@ -258,12 +291,28 @@ SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures
 EnhancedAntiSpoofing
 DWORD:1
 
-; ══ Windows Hello / Passport ═══════════════════════════════════════════════
+; ══ Windows Hello for Business — увімкнути (phishing-resistant auth) ═══════
 
 Computer
 SOFTWARE\Policies\Microsoft\PassportForWork
 Enabled
-DWORD:0
+DWORD:1
+
+; ── Windows Hello — Use certificate for on-premises authentication ───────
+
+Computer
+SOFTWARE\Policies\Microsoft\PassportForWork
+UseCertificateForOnPremAuth
+DWORD:1
+
+; ── Windows Hello — Require hardware security device (TPM) ───────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\PassportForWork
+RequireSecurityDevice
+DWORD:1
+
+; ── Convenience PIN — вимкнути ───────────────────────────────────────────
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\System
@@ -301,6 +350,20 @@ DWORD:600
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 EnableSecureUIAPaths
+DWORD:1
+
+; ══ Device Installation — Prevent removable devices ══════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions
+DenyRemovableDevices
+DWORD:1
+
+; ── Device Installation — Prevent devices not described by other policy ──
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions
+DenyUnspecified
 DWORD:1
 
 ; ══ DMA Protection — Device Installation Restrictions (CVE-2025-11901) ═══
@@ -380,6 +443,27 @@ SOFTWARE\Policies\Microsoft\Windows\System
 DisableLockScreenAppNotifications
 DWORD:1
 
+; ── Logon — Block user from showing account details on sign-in ───────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+BlockUserFromShowingAccountDetailsOnSignin
+DWORD:1
+
+; ── Logon — Turn off picture password sign-in ────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+BlockDomainPicturePassword
+DWORD:1
+
+; ── Logon — Disable select when password required on standby resume ──────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\System
+AllowDomainDelayLock
+DWORD:0
+
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 NoWelcomeScreen
@@ -433,12 +517,45 @@ SOFTWARE\Policies\Microsoft\Windows\System
 SlowLinkDetectEnabled
 DWORD:0
 
-; ══ LAPS — шифрування паролів ════════════════════════════════════════════════
+; ══ LAPS — повна конфігурація ═════════════════════════════════════════════════
+
+; ── LAPS — Configure password backup directory (Azure AD or AD) ──────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\LAPS
+BackupDirectory
+DWORD:1
+
+; ── LAPS — Do not allow password expiration time longer than required ─────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\LAPS
+PwdExpirationProtectionEnabled
+DWORD:1
+
+; ── LAPS — Enable password encryption ────────────────────────────────────────
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\LAPS
 PwdEncryptionEnabled
 DWORD:1
+
+; ── LAPS — Password Settings (Length=20, Complexity=4, Age=30 days) ───────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\LAPS
+PasswordLength
+DWORD:20
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\LAPS
+PasswordComplexity
+DWORD:4
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\LAPS
+PasswordAgeDays
+DWORD:30
 
 ; ══ Untrusted Font Blocking ══════════════════════════════════════════════════
 
@@ -723,4 +840,131 @@ DWORD:2
 Computer
 SYSTEM\CurrentControlSet\Services\LDAP
 LDAPClientIntegrity
+DWORD:1
+
+; ══ Kerberos — KDC support for claims, compound auth and armoring ════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters
+EnableCbacAndArmor
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters
+CbacAndArmorLevel
+DWORD:2
+
+; ── Kerberos — Fail authentication when armoring is not available ────────────
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters
+RequireFast
+DWORD:1
+
+; ── Kerberos — Client support for claims, compound auth and armoring ─────────
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters
+EnableCbacAndArmor
+DWORD:1
+
+; ══ Credential UI — Do not display password reveal button ════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CredUI
+DisablePasswordReveal
+DWORD:1
+
+; ── Credential UI — Do not enumerate administrator accounts on elevation ─────
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI
+EnumerateAdministrators
+DWORD:0
+
+; ── Credential UI — Require trusted path for credential entry ────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CredUI
+EnableSecureCredentialPrompting
+DWORD:1
+
+; ══ Removable Storage Access — повне блокування ══════════════════════════════
+
+; Removable Disks: Deny execute access
+Computer
+SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices\{53f5630d-b6bf-11d0-94f2-00a0c91efb8b}
+Deny_Execute
+DWORD:1
+
+; Removable Disks: Deny write access
+Computer
+SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices\{53f5630d-b6bf-11d0-94f2-00a0c91efb8b}
+Deny_Write
+DWORD:1
+
+; All Removable Storage classes: Deny all access
+Computer
+SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices
+Deny_All
+DWORD:1
+
+; CD and DVD: Deny execute access
+Computer
+SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices\{53f56308-b6bf-11d0-94f2-00a0c91efb8b}
+Deny_Execute
+DWORD:1
+
+; WPD Devices: Deny read access
+Computer
+SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices\{6AC27878-A6FA-4155-BA85-F98F491D4F33}
+Deny_Read
+DWORD:1
+
+; WPD Devices: Deny write access
+Computer
+SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices\{6AC27878-A6FA-4155-BA85-F98F491D4F33}
+Deny_Write
+DWORD:1
+
+; ══ NTFS — Enable pagefile encryption ════════════════════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Policies
+NtfsEnablePagefileEncryption
+DWORD:1
+
+; ── NTFS — Allow encryption on all NTFS volumes ─────────────────────────────
+
+Computer
+SYSTEM\CurrentControlSet\Policies
+NtfsDisableEncryption
+DWORD:0
+
+; ══ Restrict Internet communication ═════════════════════════════════════════
+
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoOnlinePrintsWizard
+DWORD:1
+
+; ══ Enable svchost.exe mitigation options (CFG/CET) ═════════════════════════
+
+Computer
+SYSTEM\CurrentControlSet\Control\SCMConfig
+EnableSvchostMitigationPolicy
+DWORD:1
+
+; ══ TPM — Configure blocked commands ════════════════════════════════════════
+
+Computer
+SOFTWARE\Policies\Microsoft\TPM\BlockedCommands
+Enabled
+DWORD:1
+
+; ── TPM — Clear TPM if not in ready state ───────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\TPM
+ClearIfNotReady
 DWORD:1

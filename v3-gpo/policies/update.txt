@@ -21,13 +21,35 @@ DWORD:0
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+ScheduledInstallTime
+DWORD:3
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AllowMUUpdateService
 DWORD:1
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoRebootWithLoggedOnUsers
+DWORD:0
+
+; ── Active Hours — no restart during 08:00-22:00 ────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+SetActiveHours
 DWORD:1
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+ActiveHoursStart
+DWORD:8
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+ActiveHoursEnd
+DWORD:22
 
 ; ── Відстрочити Feature/Quality Updates ────────────────────────────────────
 
@@ -149,6 +171,48 @@ SOFTWARE\Policies\Microsoft\Windows\Explorer
 ShowSleepOption
 DWORD:0
 
+; ── Turn off hybrid sleep (plugged in) ───────────────────────────────────────
+; GUID 94ac6d29-73ce-41a6-809f-6363ba21b47e = hybrid sleep
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
+ACSettingIndex
+DWORD:0
+
+; ── Turn off hybrid sleep (on battery) ───────────────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
+DCSettingIndex
+DWORD:0
+
+; ── System sleep timeout plugged in (900 sec = 15 min) ───────────────────────
+; GUID 29f6c1db-86da-48c5-9fdb-f2b67b1f44da = sleep timeout
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
+ACSettingIndex
+DWORD:900
+
+; ── System sleep timeout on battery (300 sec = 5 min) ────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
+DCSettingIndex
+DWORD:300
+
+; ── Turn off display plugged in (600 sec = 10 min) ───────────────────────────
+; GUID 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e = display timeout
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
+ACSettingIndex
+DWORD:600
+
+; ── Turn off display on battery (180 sec = 3 min) ────────────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
+DCSettingIndex
+DWORD:180
+
 ; ══ OOBE — дозволити оновлення ═════════════════════════════════════════════
 
 Computer
@@ -228,6 +292,55 @@ DWORD:1
 Computer
 SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
 EnableEntraIDAuth
+DWORD:1
+
+; ── Remote Desktop — Require specific security layer (SSL/TLS) ───────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SecurityLayer
+DWORD:2
+
+; ── Remote Desktop — Require Network Level Authentication ────────────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+UserAuthentication
+DWORD:1
+
+; ── Remote Desktop — Set client connection encryption level (High) ───────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+MinEncryptionLevel
+DWORD:3
+
+; ── Remote Desktop — Always prompt for password upon connection ──────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fPromptForPassword
+DWORD:1
+
+; ── Remote Desktop — Disconnect session timeout (15 min = 900000 ms) ─────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+MaxDisconnectionTime
+DWORD:900000
+
+; ── Remote Desktop — Idle session timeout (30 min = 1800000 ms) ──────────────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+MaxIdleTime
+DWORD:1800000
+
+; ── Remote Desktop — Disconnect on lock for Microsoft identity platform ──────
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+DisconnectOnLockMicrosoftIdentity
 DWORD:1
 
 ; ── Remote Desktop — UDP off ─────────────────────────────────────────────────
