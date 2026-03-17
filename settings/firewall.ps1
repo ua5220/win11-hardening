@@ -369,14 +369,9 @@
             New-NetFirewallRule -DisplayName $r.N -Direction Outbound -Protocol $r.P `
                 -RemotePort $r.R -Action Allow -Profile Domain,Private -Enabled True | Out-Null
         }
-        # Реєстровий ключ для підтвердження
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile"  "DefaultOutboundAction" 1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile" "DefaultOutboundAction" 1
     }
     Revert = {
         Set-NetFirewallProfile -Profile Domain,Private -DefaultOutboundAction Allow -ErrorAction SilentlyContinue
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile"  "DefaultOutboundAction"
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile" "DefaultOutboundAction"
         @('FW Allow DNS Out Domain','FW Allow HTTPS Out Domain','FW Allow HTTP Out Domain','FW Allow NTP Out Domain') |
             ForEach-Object { Remove-NetFirewallRule -DisplayName $_ -ErrorAction SilentlyContinue }
     }
@@ -399,13 +394,10 @@
     Apply = {
         Set-NetFirewallProfile -Profile Domain -Enabled True `
             -DefaultInboundAction Block -DefaultOutboundAction Block -ErrorAction SilentlyContinue
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile" "DefaultInboundAction"  1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile" "DefaultOutboundAction" 1
     }
     Revert = {
         Set-NetFirewallProfile -Profile Domain -DefaultInboundAction Block `
             -DefaultOutboundAction Allow -ErrorAction SilentlyContinue
-        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile" "DefaultOutboundAction"
     }
     Check = {
         $p = Get-NetFirewallProfile -Profile Domain -ErrorAction SilentlyContinue
