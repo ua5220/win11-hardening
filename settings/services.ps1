@@ -686,14 +686,6 @@ AuthenticodeEnabled=0 в Apply та Revert — SRP Authenticode НЕ вмика�
         Start-Service -Name "wscsvc"                                      -ErrorAction SilentlyContinue
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" `
             "SecurityHealth" "%windir%\system32\SecurityHealthSystray.exe" "ExpandString"
-        # Запустити іконку systray негайно (без перезавантаження)
-        $systrayExe = "$env:windir\System32\SecurityHealthSystray.exe"
-        if (Test-Path $systrayExe) {
-            $running = Get-Process -Name "SecurityHealthSystray" -ErrorAction SilentlyContinue
-            if (-not $running) {
-                Start-Process $systrayExe
-            }
-        }
     }
     Revert = {
         Stop-Service -Name "SecurityHealthService" -Force     -ErrorAction SilentlyContinue
