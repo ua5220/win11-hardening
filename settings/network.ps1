@@ -586,17 +586,21 @@ GPO: Computer Configuration > Administrative Templates > Network > DNS Client
     Name  = "Firewall Stealth Mode (IPsec)"
     Desc  = "EnableStealthModeForIPsec=True на всіх профілях: не відповідати на небажаний трафік"
     Apply = {
-        @("Domain","Private","Public") | ForEach-Object {
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\${_}Profile" "EnableStealthModeForIPsec" 1
-        }
+        # Stealth Mode через netsh (без GPO-ключів, щоб не блокувати GUI)
         netsh advfirewall set allprofiles firewallpolicy blockinbound,allowoutbound 2>$null | Out-Null
+        @("Domain","Private","Public") | ForEach-Object {
+            netsh advfirewall set "$($_)profile" settings stealthmode enable 2>$null | Out-Null
+        }
     }
     Revert = {
         @("Domain","Private","Public") | ForEach-Object {
-            Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\${_}Profile" "EnableStealthModeForIPsec"
+            netsh advfirewall set "$($_)profile" settings stealthmode disable 2>$null | Out-Null
         }
     }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile" "EnableStealthModeForIPsec" 0) -eq 1 }
+    Check = {
+        $out = netsh advfirewall show publicprofile settings 2>$null
+        $out -match 'StealthMode\s+Enable'
+    }
 },
 
 [PSCustomObject]@{

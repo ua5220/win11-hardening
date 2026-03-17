@@ -374,14 +374,8 @@ Windows Registry Editor Version 5.00
 "LetAppsAccessMessaging"=dword:00000002
 
 ; --- Firewall Stealth Mode ---
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile]
-"EnableStealthModeForIPsec"=dword:00000001
-
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile]
-"EnableStealthModeForIPsec"=dword:00000001
-
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile]
-"EnableStealthModeForIPsec"=dword:00000001
+; GPO-ключі WindowsFirewall прибрані — блокують GUI ("деякі параметри керуються адміністратором").
+; Stealth Mode застосовується через netsh advfirewall (settings/network.ps1).
 
 ; --- Microsoft Accounts Extended ---
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppRuntime]
