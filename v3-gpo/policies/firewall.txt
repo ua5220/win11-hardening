@@ -1,155 +1,289 @@
 ; GPO Edition 3.0 — Windows Defender Firewall
 ; Формат: LGPO /t  (Machine policy)
+;
+; Hardening через прямий реєстр FirewallPolicy (не через SOFTWARE\Policies),
+; щоб GUI Windows Security залишався доступним для користувача.
 
-; ── Domain Profile ───────────────────────────────────────────────────────────
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  КРОК 1: Видалити старі GPO-policy ключі (розблокувати GUI)            ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
+
+; -- Domain Profile (GPO cleanup) --
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 EnableFirewall
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 DefaultInboundAction
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 DefaultOutboundAction
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 DisableNotifications
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 AllowLocalPolicyMerge
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 AllowLocalIPsecPolicyMerge
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
 LogFilePath
-SZ:%systemroot%\system32\logfiles\firewall\domainfw.log
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
 LogFileSize
-DWORD:16384
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
 LogDroppedPackets
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+LogSuccessfulConnections
+DELETE
+
+; -- Private / Standard Profile (GPO cleanup) --
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+EnableFirewall
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+DefaultInboundAction
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+DefaultOutboundAction
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+DisableNotifications
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+AllowLocalPolicyMerge
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+AllowLocalIPsecPolicyMerge
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+LogFilePath
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+LogFileSize
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+LogDroppedPackets
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+LogSuccessfulConnections
+DELETE
+
+; -- Public Profile (GPO cleanup) --
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+EnableFirewall
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+DefaultInboundAction
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+DefaultOutboundAction
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+DisableNotifications
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+AllowLocalPolicyMerge
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+AllowLocalIPsecPolicyMerge
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+LogFilePath
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+LogFileSize
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+LogDroppedPackets
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+LogSuccessfulConnections
+DELETE
+
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  КРОК 2: Застосувати hardening через прямий реєстр FirewallPolicy      ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
+
+; ── Domain Profile ───────────────────────────────────────────────────────────
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+EnableFirewall
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+DefaultInboundAction
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+DefaultOutboundAction
+DWORD:0
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+DisableNotifications
+DWORD:0
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogFilePath
+SZ:%systemroot%\system32\logfiles\firewall\domainfw.log
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogFileSize
+DWORD:16384
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogDroppedPackets
+DWORD:1
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
 LogSuccessfulConnections
 DWORD:1
 
 ; ── Private (Standard) Profile ───────────────────────────────────────────────
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
 EnableFirewall
 DWORD:1
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
 DefaultInboundAction
 DWORD:1
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
 DefaultOutboundAction
 DWORD:0
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
 DisableNotifications
 DWORD:0
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
-AllowLocalPolicyMerge
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
-AllowLocalIPsecPolicyMerge
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
 LogFilePath
 SZ:%systemroot%\system32\logfiles\firewall\privatefw.log
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
 LogFileSize
 DWORD:16384
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
 LogDroppedPackets
 DWORD:1
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
 LogSuccessfulConnections
 DWORD:1
 
 ; ── Public Profile ───────────────────────────────────────────────────────────
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
 EnableFirewall
 DWORD:1
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
 DefaultInboundAction
 DWORD:1
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
 DefaultOutboundAction
 DWORD:0
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
 DisableNotifications
 DWORD:0
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
-AllowLocalPolicyMerge
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
-AllowLocalIPsecPolicyMerge
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
 LogFilePath
 SZ:%systemroot%\system32\logfiles\firewall\publicfw.log
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
 LogFileSize
 DWORD:16384
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
 LogDroppedPackets
 DWORD:1
 
 Computer
-SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
 LogSuccessfulConnections
 DWORD:1
