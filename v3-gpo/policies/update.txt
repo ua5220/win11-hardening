@@ -4,91 +4,1611 @@
 
 ; ══ Windows Update — автоматичні оновлення (ACSC 10) ═══════════════════════
 
+;
+; Hardening через прямий реєстр (не через SOFTWARE\Policies),
+; щоб GUI Windows Settings залишався доступним для користувача.
+
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  КРОК 1: Видалити старі GPO-policy ключі (розблокувати GUI)            ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
+
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoUpdate
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AUOptions
-DWORD:4
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 ScheduledInstallDay
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 ScheduledInstallTime
-DWORD:3
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AllowMUUpdateService
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoRebootWithLoggedOnUsers
-DWORD:0
-
-; ── Active Hours — no restart during 08:00-22:00 ────────────────────────────
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 SetActiveHours
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 ActiveHoursStart
-DWORD:8
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 ActiveHoursEnd
-DWORD:22
-
-; ── Відстрочити Feature/Quality Updates ────────────────────────────────────
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferFeatureUpdates
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferFeatureUpdatesPeriodInDays
-DWORD:365
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferQualityUpdates
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 DeferQualityUpdatesPeriodInDays
-DWORD:30
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 ExcludeWUDriversInQualityUpdate
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
 SetDisablePauseUXAccess
-DWORD:1
-
-; ══ Autoplay / AutoRun — повністю вимкнути (ACSC 25) ═══════════════════════
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\Explorer
 NoAutoplayfornonVolume
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+NoBackgroundPolicy
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+NoGPOListChanges
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+NoBackgroundPolicy
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+NoGPOListChanges
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
+DCSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
+ACSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
+DCSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
+ACSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
+ShowHibernateOption
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Explorer
+ShowSleepOption
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
+ACSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
+DCSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
+ACSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
+DCSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
+ACSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
+DCSettingIndex
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\OOBE
+AllowUpdatesInOOBE
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Task Scheduler\Maintenance
+WakeUp
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM
+AutoEnrollMDM
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM
+DisableRegistration
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+AllowOptionalContent
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fDisableClip
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fEnableSmartCard
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fEncryptRPCTraffic
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+AuthenticationLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+EnableEntraIDAuth
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SecurityLayer
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+UserAuthentication
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+MinEncryptionLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+fPromptForPassword
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+MaxDisconnectionTime
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+MaxIdleTime
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+DisconnectOnLockMicrosoftIdentity
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+SelectTransport
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+DisableCloudClipboard
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Connect
+AllowProjectionToPC
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Connect
+RequirePinForPairing
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\PushToInstall
+DisablePushToInstall
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Conferencing
+NoRDS
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetworkSharing
+DisableInlineCompose
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\NetworkSharing
+DisableShareAppPromotions
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\FileHistory
+Disabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\HomeGroup
+DisableHomeGroup
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\FindMyDevice
+AllowFindMyDevice
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\HandwritingPanel
+DefaultMode
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Maps
+AutoDownloadAndUpdateMapData
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Maps
+AllowUntriggeredNetworkTrafficOnSettingsPage
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisableEngine
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+DisablePropPage
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+SbEnable
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AppCompat
+VDMDisallowed
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsInkWorkspace
+AllowSuggestedAppsInWindowsInkWorkspace
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsInkWorkspace
+AllowWindowsInkWorkspace
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Digital Locker
+DoNotRunDigitalLocker
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WMDRM
+DisableOnline
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
+PreventAutoUpdate
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
+GroupPrivacyAcceptance
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
+PreventLibrarySharing
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Messenger\Client
+PreventRun
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Messenger\Client
+PreventAutoRun
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\MobilityCenter
+NoMobilityCenter
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{4F15BB26-0A78-4395-8848-F5EE2C498F60}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+SafeForScripting
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableLUAPatching
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableLoggingFromPackage
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableFlyweightPatching
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableSRCheckPoints
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\GameDVR
+AllowGameDVR
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+BackgroundSyncStatus
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableEnclosureDownload
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableFeedSubscription
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableFeedDiscovery
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+DisableFeedList
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
+AllowBasicAuthInClear
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\IIS
+PreventIISInstall
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\AxInstallService
+EnabledInTrustedZones
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Installer
+DisableSharedComponent
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+LoggingEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+UseBandwidthOptimization
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+IgnoreDelegationFailure
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows NT\Rpc
+EnableStateInformation
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{2698178D-FDAD-40AE-9D3C-1371703ADC5B}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{988D6A8C-6E1E-48a6-B932-7ECAF8BD3210}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{ACE1A4A4-730E-4718-AF2B-C8B3B9B4E065}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{0BCAA0AE-1580-46F7-B8D3-B8B5C0E780C0}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{6BCC7ACD-4E10-41a3-A52A-2A2CDDE4929E}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
+DisableQueryRemoteServer
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
+EnableQueryRemoteServer
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnostics
+EnableDiagnostics
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
+DownloadToolsEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{67144949-5132-4859-8036-a737b43825d8}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{eb73b633-3f4e-4ba0-8f60-8f3c6f53168f}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{3af8b24a-c441-4fa4-8c5c-bed591bfa867}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{86432a0b-3c7d-4ddf-a89c-172faa90485d}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{ffc42108-4920-4acf-a4fc-8abdcc68ada4}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WDI\{a7a5847a-7511-4e4e-90b1-45ad2a002f51}
+ScenarioExecutionEnabled
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\TroubleShooting\AllowRecommendations
+TroubleshootingAllowRecommendations
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
+TraceLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
+LogLevel
+DELETE
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
+TraceLevel
+DELETE
+
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  КРОК 2: Застосувати hardening через прямий реєстр                     ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate\AU
+NoAutoUpdate
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate\AU
+AUOptions
+DWORD:4
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate\AU
+ScheduledInstallDay
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate\AU
+ScheduledInstallTime
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate\AU
+AllowMUUpdateService
 DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate\AU
+NoAutoRebootWithLoggedOnUsers
+DWORD:0
+
+; ── Active Hours — no restart during 08:00-22:00 ────────────────────────────
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+SetActiveHours
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+ActiveHoursStart
+DWORD:8
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+ActiveHoursEnd
+DWORD:22
+
+; ── Відстрочити Feature/Quality Updates ────────────────────────────────────
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+DeferFeatureUpdates
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+DeferFeatureUpdatesPeriodInDays
+DWORD:365
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+DeferQualityUpdates
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+DeferQualityUpdatesPeriodInDays
+DWORD:30
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+ExcludeWUDriversInQualityUpdate
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+SetDisablePauseUXAccess
+DWORD:1
+
+; ══ Autoplay / AutoRun — повністю вимкнути (ACSC 25) ═══════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Explorer
+NoAutoplayfornonVolume
+DWORD:1
+
+; ══ Group Policy Processing — примусове оновлення (ACSC) ═══════════════════
+; Registry policy processing
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+NoBackgroundPolicy
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+NoGPOListChanges
+DWORD:0
+
+; Security policy processing
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+NoBackgroundPolicy
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
+NoGPOListChanges
+DWORD:0
+
+; ══ Power — вимкнути Sleep/Hibernate (ACSC 30) ═════════════════════════════
+; Allow standby states (S1-S3) = Disabled
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
+DCSettingIndex
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
+ACSettingIndex
+DWORD:0
+
+; Require password on wake
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
+DCSettingIndex
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
+ACSettingIndex
+DWORD:1
+
+; Hide hibernate/sleep options
+Computer
+SOFTWARE\Microsoft\Windows\Explorer
+ShowHibernateOption
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\Explorer
+ShowSleepOption
+DWORD:0
+
+; ── Turn off hybrid sleep (plugged in) ───────────────────────────────────────
+; GUID 94ac6d29-73ce-41a6-809f-6363ba21b47e = hybrid sleep
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
+ACSettingIndex
+DWORD:0
+
+; ── Turn off hybrid sleep (on battery) ───────────────────────────────────────
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
+DCSettingIndex
+DWORD:0
+
+; ── System sleep timeout plugged in (900 sec = 15 min) ───────────────────────
+; GUID 29f6c1db-86da-48c5-9fdb-f2b67b1f44da = sleep timeout
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
+ACSettingIndex
+DWORD:900
+
+; ── System sleep timeout on battery (300 sec = 5 min) ────────────────────────
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
+DCSettingIndex
+DWORD:300
+
+; ── Turn off display plugged in (600 sec = 10 min) ───────────────────────────
+; GUID 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e = display timeout
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
+ACSettingIndex
+DWORD:600
+
+; ── Turn off display on battery (180 sec = 3 min) ────────────────────────────
+Computer
+SOFTWARE\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
+DCSettingIndex
+DWORD:180
+
+; ══ OOBE — дозволити оновлення ═════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\OOBE
+AllowUpdatesInOOBE
+DWORD:1
+
+; ══ Maintenance Scheduler — вимкнути авто-пробудження ═════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Task Scheduler\Maintenance
+WakeUp
+DWORD:0
+
+; ══ MDM — вимкнути автоматичну реєстрацію ════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\MDM
+AutoEnrollMDM
+DWORD:0
+
+; ══ MDM — вимкнути реєстрацію ════════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\MDM
+DisableRegistration
+DWORD:1
+
+; ══ Windows Update — Enable optional updates ═════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\WindowsUpdate
+AllowOptionalContent
+DWORD:1
+
+; ══ Remote Desktop — додаткове зміцнення ═════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+fDisableClip
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+fEnableSmartCard
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+fEncryptRPCTraffic
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+AuthenticationLevel
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+EnableEntraIDAuth
+DWORD:1
+
+; ── Remote Desktop — Require specific security layer (SSL/TLS) ───────────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+SecurityLayer
+DWORD:2
+
+; ── Remote Desktop — Require Network Level Authentication ────────────────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+UserAuthentication
+DWORD:1
+
+; ── Remote Desktop — Set client connection encryption level (High) ───────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+MinEncryptionLevel
+DWORD:3
+
+; ── Remote Desktop — Always prompt for password upon connection ──────────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+fPromptForPassword
+DWORD:1
+
+; ── Remote Desktop — Disconnect session timeout (15 min = 900000 ms) ─────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+MaxDisconnectionTime
+DWORD:900000
+
+; ── Remote Desktop — Idle session timeout (30 min = 1800000 ms) ──────────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+MaxIdleTime
+DWORD:1800000
+
+; ── Remote Desktop — Disconnect on lock for Microsoft identity platform ──────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+DisconnectOnLockMicrosoftIdentity
+DWORD:1
+
+; ── Remote Desktop — UDP off ─────────────────────────────────────────────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+SelectTransport
+DWORD:1
+
+; ── Remote Desktop — Disable Cloud Clipboard for server-to-client ────────────
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+DisableCloudClipboard
+DWORD:1
+
+; ══ Connect (Wireless Display) — обмеження ═══════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Connect
+AllowProjectionToPC
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\Connect
+RequirePinForPairing
+DWORD:2
+
+; ══ Push To Install — вимкнути ═══════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\PushToInstall
+DisablePushToInstall
+DWORD:1
+
+; ══ NetMeeting — вимкнути Remote Desktop Sharing ═════════════════════════════
+Computer
+SOFTWARE\Microsoft\Conferencing
+NoRDS
+DWORD:1
+
+; ══ Network Sharing — вимкнути ═══════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\NetworkSharing
+DisableInlineCompose
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\NetworkSharing
+DisableShareAppPromotions
+DWORD:1
+
+; ══ File History — вимкнути ══════════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\FileHistory
+Disabled
+DWORD:1
+
+; ══ HomeGroup — заборонити ═══════════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\HomeGroup
+DisableHomeGroup
+DWORD:1
+
+; ══ Find My Device — вимкнути ════════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\FindMyDevice
+AllowFindMyDevice
+DWORD:0
+
+; ══ Handwriting Panel — вимкнути Docked mode ═════════════════════════════════
+Computer
+SOFTWARE\Microsoft\HandwritingPanel
+DefaultMode
+DWORD:0
+
+; ══ Maps — вимкнути автозавантаження ═════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Maps
+AutoDownloadAndUpdateMapData
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\Maps
+AllowUntriggeredNetworkTrafficOnSettingsPage
+DWORD:0
+
+; ══ Application Compatibility — вимкнути всі компоненти ══════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\AppCompat
+DisableEngine
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\AppCompat
+DisablePropPage
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\AppCompat
+SbEnable
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\AppCompat
+VDMDisallowed
+DWORD:1
+
+; ══ Windows Ink Workspace — вимкнути ═════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\WindowsInkWorkspace
+AllowSuggestedAppsInWindowsInkWorkspace
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\WindowsInkWorkspace
+AllowWindowsInkWorkspace
+DWORD:0
+
+; ══ Digital Locker — вимкнути ════════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Digital Locker
+DoNotRunDigitalLocker
+DWORD:1
+
+; ══ Windows Media Player — обмеження ═════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\WMDRM
+DisableOnline
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\WindowsMediaPlayer
+PreventAutoUpdate
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\WindowsMediaPlayer
+GroupPrivacyAcceptance
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\WindowsMediaPlayer
+PreventLibrarySharing
+DWORD:1
+
+; ══ Windows Messenger — вимкнути ═════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Messenger\Client
+PreventRun
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Messenger\Client
+PreventAutoRun
+DWORD:1
+
+; ══ Windows Mobility Center — вимкнути ═══════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\MobilityCenter
+NoMobilityCenter
+DWORD:1
+
+; ══ Reliability Analysis / WMI Providers — вимкнути ══════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{4F15BB26-0A78-4395-8848-F5EE2C498F60}
+ScenarioExecutionEnabled
+DWORD:0
+
+; ══ Windows Installer — додаткові обмеження ══════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Installer
+SafeForScripting
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\Installer
+DisableLUAPatching
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\Installer
+DisableLoggingFromPackage
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\Installer
+DisableFlyweightPatching
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Windows\Installer
+DisableSRCheckPoints
+DWORD:1
+
+; ══ Windows Game Recording/Broadcasting — вимкнути ═══════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\GameDVR
+AllowGameDVR
+DWORD:0
+
+; ══ RSS Feeds — обмеження ════════════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Internet Explorer\Feeds
+BackgroundSyncStatus
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Internet Explorer\Feeds
+DisableEnclosureDownload
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Internet Explorer\Feeds
+DisableFeedSubscription
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Internet Explorer\Feeds
+DisableFeedDiscovery
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Internet Explorer\Feeds
+DisableFeedList
+DWORD:1
+
+Computer
+SOFTWARE\Microsoft\Internet Explorer\Feeds
+AllowBasicAuthInClear
+DWORD:0
+
+; ══ IIS — заборонити встановлення ════════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows NT\IIS
+PreventIISInstall
+DWORD:1
+
+; ══ ActiveX Installer Service — вимкнути ═════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\AxInstallService
+EnabledInTrustedZones
+DWORD:0
+
+; ══ Windows Logon Options — вимкнути Shared Components ═══════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Installer
+DisableSharedComponent
+DWORD:1
+
+; ══ Remote Assistance — session logging та bandwidth optimization ════════════
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+LoggingEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows NT\Terminal Services
+UseBandwidthOptimization
+DWORD:0
+
+; ══ RPC — Ignore Delegation Failure та State Information ════════════════════
+Computer
+SOFTWARE\Microsoft\Windows NT\Rpc
+IgnoreDelegationFailure
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows NT\Rpc
+EnableStateInformation
+DWORD:0
+
+; ══ Troubleshooting and Diagnostics — вимкнути ══════════════════════════════
+; Application Compatibility Diagnostics
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
+ScenarioExecutionEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{2698178D-FDAD-40AE-9D3C-1371703ADC5B}
+ScenarioExecutionEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{988D6A8C-6E1E-48a6-B932-7ECAF8BD3210}
+ScenarioExecutionEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{ACE1A4A4-730E-4718-AF2B-C8B3B9B4E065}
+ScenarioExecutionEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{0BCAA0AE-1580-46F7-B8D3-B8B5C0E780C0}
+ScenarioExecutionEnabled
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{6BCC7ACD-4E10-41a3-A52A-2A2CDDE4929E}
+ScenarioExecutionEnabled
+DWORD:0
+
+; ── MSDT — вимкнути ────────────────────────────────────────────────────────
+Computer
+SOFTWARE\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
+DisableQueryRemoteServer
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
+EnableQueryRemoteServer
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\ScriptedDiagnostics
+EnableDiagnostics
+DWORD:0
+
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
+DownloadToolsEnabled
+DWORD:0
+
+; ── Scenario Execution Level — вимкнути для різних категорій ─────────────────
+; Boot Performance Diagnostics
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{67144949-5132-4859-8036-a737b43825d8}
+ScenarioExecutionEnabled
+DWORD:0
+
+; Memory Leak Diagnosis
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{eb73b633-3f4e-4ba0-8f60-8f3c6f53168f}
+ScenarioExecutionEnabled
+DWORD:0
+
+; Resource Exhaustion
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{3af8b24a-c441-4fa4-8c5c-bed591bfa867}
+ScenarioExecutionEnabled
+DWORD:0
+
+; Shutdown Performance Diagnostics
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{86432a0b-3c7d-4ddf-a89c-172faa90485d}
+ScenarioExecutionEnabled
+DWORD:0
+
+; Standby/Resume Performance Diagnostics
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{ffc42108-4920-4acf-a4fc-8abdcc68ada4}
+ScenarioExecutionEnabled
+DWORD:0
+
+; System Responsiveness Diagnostics
+Computer
+SOFTWARE\Microsoft\Windows\WDI\{a7a5847a-7511-4e4e-90b1-45ad2a002f51}
+ScenarioExecutionEnabled
+DWORD:0
+
+; ══ Troubleshooting — recommended troubleshooting ═══════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\TroubleShooting\AllowRecommendations
+TroubleshootingAllowRecommendations
+DWORD:0
+
+; ══ Group Policy Logging and Tracing ════════════════════════════════════════
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
+TraceLevel
+DWORD:2
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
+LogLevel
+DWORD:3
+
+Computer
+SOFTWARE\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
+TraceLevel
+DWORD:2
+
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  Прямі реєстрові ключі (вже без GPO, залишаються без змін)             ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
 
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
@@ -101,7 +1621,6 @@ NoDriveTypeAutoRun
 DWORD:255
 
 ; ── Legacy Run List — вимкнути (ACSC) ──────────────────────────────────────
-
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 DisableLocalMachineRun
@@ -112,116 +1631,7 @@ SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
 DisableLocalMachineRunOnce
 DWORD:1
 
-; ══ Group Policy Processing — примусове оновлення (ACSC) ═══════════════════
-
-; Registry policy processing
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
-NoBackgroundPolicy
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
-NoGPOListChanges
-DWORD:0
-
-; Security policy processing
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
-NoBackgroundPolicy
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{827D319E-6EAC-11D2-A4EA-00C04F79F83A}
-NoGPOListChanges
-DWORD:0
-
-; ══ Power — вимкнути Sleep/Hibernate (ACSC 30) ═════════════════════════════
-
-; Allow standby states (S1-S3) = Disabled
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
-DCSettingIndex
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\abfc2519-3608-4c2a-94ea-171b0ed546ab
-ACSettingIndex
-DWORD:0
-
-; Require password on wake
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
-DCSettingIndex
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51
-ACSettingIndex
-DWORD:1
-
-; Hide hibernate/sleep options
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Explorer
-ShowHibernateOption
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Explorer
-ShowSleepOption
-DWORD:0
-
-; ── Turn off hybrid sleep (plugged in) ───────────────────────────────────────
-; GUID 94ac6d29-73ce-41a6-809f-6363ba21b47e = hybrid sleep
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
-ACSettingIndex
-DWORD:0
-
-; ── Turn off hybrid sleep (on battery) ───────────────────────────────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\94ac6d29-73ce-41a6-809f-6363ba21b47e
-DCSettingIndex
-DWORD:0
-
-; ── System sleep timeout plugged in (900 sec = 15 min) ───────────────────────
-; GUID 29f6c1db-86da-48c5-9fdb-f2b67b1f44da = sleep timeout
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
-ACSettingIndex
-DWORD:900
-
-; ── System sleep timeout on battery (300 sec = 5 min) ────────────────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\29f6c1db-86da-48c5-9fdb-f2b67b1f44da
-DCSettingIndex
-DWORD:300
-
-; ── Turn off display plugged in (600 sec = 10 min) ───────────────────────────
-; GUID 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e = display timeout
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
-ACSettingIndex
-DWORD:600
-
-; ── Turn off display on battery (180 sec = 3 min) ────────────────────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Power\PowerSettings\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e
-DCSettingIndex
-DWORD:180
-
-; ══ OOBE — дозволити оновлення ═════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\OOBE
-AllowUpdatesInOOBE
-DWORD:1
-
 ; ══ WSL — вимкнути Developer Mode ══════════════════════════════════════════
-
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
 AllowDevelopmentWithoutDevLicense
@@ -233,144 +1643,12 @@ AllowAllTrustedApps
 DWORD:0
 
 ; ══ Windows Sudo — вимкнути (24H2+) ═══════════════════════════════════════
-
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo
 Enabled
 DWORD:0
 
-; ══ Maintenance Scheduler — вимкнути авто-пробудження ═════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Task Scheduler\Maintenance
-WakeUp
-DWORD:0
-
-; ══ MDM — вимкнути автоматичну реєстрацію ════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM
-AutoEnrollMDM
-DWORD:0
-
-; ══ MDM — вимкнути реєстрацію ════════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM
-DisableRegistration
-DWORD:1
-
-; ══ Windows Update — Enable optional updates ═════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
-AllowOptionalContent
-DWORD:1
-
-; ══ Remote Desktop — додаткове зміцнення ═════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-fDisableClip
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-fEnableSmartCard
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-fEncryptRPCTraffic
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-AuthenticationLevel
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-EnableEntraIDAuth
-DWORD:1
-
-; ── Remote Desktop — Require specific security layer (SSL/TLS) ───────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-SecurityLayer
-DWORD:2
-
-; ── Remote Desktop — Require Network Level Authentication ────────────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-UserAuthentication
-DWORD:1
-
-; ── Remote Desktop — Set client connection encryption level (High) ───────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-MinEncryptionLevel
-DWORD:3
-
-; ── Remote Desktop — Always prompt for password upon connection ──────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-fPromptForPassword
-DWORD:1
-
-; ── Remote Desktop — Disconnect session timeout (15 min = 900000 ms) ─────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-MaxDisconnectionTime
-DWORD:900000
-
-; ── Remote Desktop — Idle session timeout (30 min = 1800000 ms) ──────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-MaxIdleTime
-DWORD:1800000
-
-; ── Remote Desktop — Disconnect on lock for Microsoft identity platform ──────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-DisconnectOnLockMicrosoftIdentity
-DWORD:1
-
-; ── Remote Desktop — UDP off ─────────────────────────────────────────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-SelectTransport
-DWORD:1
-
-; ── Remote Desktop — Disable Cloud Clipboard for server-to-client ────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-DisableCloudClipboard
-DWORD:1
-
-; ══ Connect (Wireless Display) — обмеження ═══════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Connect
-AllowProjectionToPC
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Connect
-RequirePinForPairing
-DWORD:2
-
 ; ══ Windows Presentation Settings — вимкнути ═════════════════════════════════
-
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\MobilityCenter
 NoMobilityCenter
@@ -381,108 +1659,7 @@ SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\PresentationSettings
 NoPresentationSettings
 DWORD:1
 
-; ══ Push To Install — вимкнути ═══════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\PushToInstall
-DisablePushToInstall
-DWORD:1
-
-; ══ NetMeeting — вимкнути Remote Desktop Sharing ═════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Conferencing
-NoRDS
-DWORD:1
-
-; ══ Network Sharing — вимкнути ═══════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\NetworkSharing
-DisableInlineCompose
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\NetworkSharing
-DisableShareAppPromotions
-DWORD:1
-
-; ══ File History — вимкнути ══════════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\FileHistory
-Disabled
-DWORD:1
-
-; ══ HomeGroup — заборонити ═══════════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\HomeGroup
-DisableHomeGroup
-DWORD:1
-
-; ══ Find My Device — вимкнути ════════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\FindMyDevice
-AllowFindMyDevice
-DWORD:0
-
-; ══ Handwriting Panel — вимкнути Docked mode ═════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\HandwritingPanel
-DefaultMode
-DWORD:0
-
-; ══ Maps — вимкнути автозавантаження ═════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Maps
-AutoDownloadAndUpdateMapData
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Maps
-AllowUntriggeredNetworkTrafficOnSettingsPage
-DWORD:0
-
-; ══ Application Compatibility — вимкнути всі компоненти ══════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\AppCompat
-DisableEngine
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\AppCompat
-DisablePropPage
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\AppCompat
-SbEnable
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\AppCompat
-VDMDisallowed
-DWORD:1
-
-; ══ Windows Ink Workspace — вимкнути ═════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsInkWorkspace
-AllowSuggestedAppsInWindowsInkWorkspace
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsInkWorkspace
-AllowWindowsInkWorkspace
-DWORD:0
-
 ; ══ Desktop Gadgets — вимкнути ═══════════════════════════════════════════════
-
 Computer
 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar
 TurnOffSidebar
@@ -498,460 +1675,3 @@ SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar
 TurnOffUserInstalledGadgets
 DWORD:1
 
-; ══ Digital Locker — вимкнути ════════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Digital Locker
-DoNotRunDigitalLocker
-DWORD:1
-
-; ══ Windows Media Player — обмеження ═════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\WMDRM
-DisableOnline
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
-PreventAutoUpdate
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
-GroupPrivacyAcceptance
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\WindowsMediaPlayer
-PreventLibrarySharing
-DWORD:1
-
-; ══ Windows Messenger — вимкнути ═════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Messenger\Client
-PreventRun
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Messenger\Client
-PreventAutoRun
-DWORD:1
-
-; ══ Windows Mobility Center — вимкнути ═══════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\MobilityCenter
-NoMobilityCenter
-DWORD:1
-
-; ══ Reliability Analysis / WMI Providers — вимкнути ══════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{4F15BB26-0A78-4395-8848-F5EE2C498F60}
-ScenarioExecutionEnabled
-DWORD:0
-
-; ══ Windows Installer — додаткові обмеження ══════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Installer
-SafeForScripting
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Installer
-DisableLUAPatching
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Installer
-DisableLoggingFromPackage
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Installer
-DisableFlyweightPatching
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Installer
-DisableSRCheckPoints
-DWORD:1
-
-; ══ Windows Game Recording/Broadcasting — вимкнути ═══════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\GameDVR
-AllowGameDVR
-DWORD:0
-
-; ══ RSS Feeds — обмеження ════════════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
-BackgroundSyncStatus
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
-DisableEnclosureDownload
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
-DisableFeedSubscription
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
-DisableFeedDiscovery
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
-DisableFeedList
-DWORD:1
-
-Computer
-SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds
-AllowBasicAuthInClear
-DWORD:0
-
-; ══ IIS — заборонити встановлення ════════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\IIS
-PreventIISInstall
-DWORD:1
-
-; ══ ActiveX Installer Service — вимкнути ═════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\AxInstallService
-EnabledInTrustedZones
-DWORD:0
-
-; ══ Windows Logon Options — вимкнути Shared Components ═══════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Installer
-DisableSharedComponent
-DWORD:1
-
-; ══ Remote Assistance — session logging та bandwidth optimization ════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-LoggingEnabled
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-UseBandwidthOptimization
-DWORD:0
-
-; ══ RPC — Ignore Delegation Failure та State Information ════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Rpc
-IgnoreDelegationFailure
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows NT\Rpc
-EnableStateInformation
-DWORD:0
-
-; ══ Troubleshooting and Diagnostics — вимкнути ══════════════════════════════
-
-; Application Compatibility Diagnostics
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
-ScenarioExecutionEnabled
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{2698178D-FDAD-40AE-9D3C-1371703ADC5B}
-ScenarioExecutionEnabled
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{988D6A8C-6E1E-48a6-B932-7ECAF8BD3210}
-ScenarioExecutionEnabled
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{ACE1A4A4-730E-4718-AF2B-C8B3B9B4E065}
-ScenarioExecutionEnabled
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{0BCAA0AE-1580-46F7-B8D3-B8B5C0E780C0}
-ScenarioExecutionEnabled
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{6BCC7ACD-4E10-41a3-A52A-2A2CDDE4929E}
-ScenarioExecutionEnabled
-DWORD:0
-
-; ── MSDT — вимкнути ────────────────────────────────────────────────────────
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
-DisableQueryRemoteServer
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnosticsProvider\Policy
-EnableQueryRemoteServer
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\ScriptedDiagnostics
-EnableDiagnostics
-DWORD:0
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{C295FBBA-FD47-46ac-8BEE-B1715EC634E0}
-DownloadToolsEnabled
-DWORD:0
-
-; ── Scenario Execution Level — вимкнути для різних категорій ─────────────────
-
-; Boot Performance Diagnostics
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{67144949-5132-4859-8036-a737b43825d8}
-ScenarioExecutionEnabled
-DWORD:0
-
-; Memory Leak Diagnosis
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{eb73b633-3f4e-4ba0-8f60-8f3c6f53168f}
-ScenarioExecutionEnabled
-DWORD:0
-
-; Resource Exhaustion
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{3af8b24a-c441-4fa4-8c5c-bed591bfa867}
-ScenarioExecutionEnabled
-DWORD:0
-
-; Shutdown Performance Diagnostics
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{86432a0b-3c7d-4ddf-a89c-172faa90485d}
-ScenarioExecutionEnabled
-DWORD:0
-
-; Standby/Resume Performance Diagnostics
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{ffc42108-4920-4acf-a4fc-8abdcc68ada4}
-ScenarioExecutionEnabled
-DWORD:0
-
-; System Responsiveness Diagnostics
-Computer
-SOFTWARE\Policies\Microsoft\Windows\WDI\{a7a5847a-7511-4e4e-90b1-45ad2a002f51}
-ScenarioExecutionEnabled
-DWORD:0
-
-; ══ Troubleshooting — recommended troubleshooting ═══════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\TroubleShooting\AllowRecommendations
-TroubleshootingAllowRecommendations
-DWORD:0
-
-; ══ Group Policy Logging and Tracing ════════════════════════════════════════
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{0E28E245-9368-4853-AD84-6DA3BA35BB75}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{728EE579-943C-4519-9EF7-AB56765798ED}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6232C319-91AC-4931-9385-E70C2B099F0E}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{5794DAFD-BE60-433f-88A2-1A31939AC01F}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B087BE9D-ED37-454f-AF9C-04291E351182}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{A3F3E39B-5D83-4940-B954-28315B82F0A8}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{AADCED64-29D2-4E9F-9311-B5F68BF97A11}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{6A4C88C6-C502-4f74-8F60-2CB23EDC24E2}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{CC5746A9-9B74-4be5-AE2E-64379C86E0E4}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{B1BE8D72-6EAC-11D2-A4EA-00C04F79F83A}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{C631DF4C-088F-4156-B058-4375F0853CD8}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E47248BA-94CC-49c4-BBB5-9EB7F05183D0}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BC75B1ED-5833-4858-9BB8-CBF0B166DF9D}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{BACF5C8A-A3C7-11D1-A760-00C04FB9603F}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{17D89FEC-5C44-4972-B12D-241CAEF74509}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{E62688F0-25FD-4c90-BFF5-F508B9D2E31F}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{3A0DBA37-F8B2-4356-83DE-3E90BD5C261F}
-TraceLevel
-DWORD:2
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
-LogLevel
-DWORD:3
-
-Computer
-SOFTWARE\Policies\Microsoft\Windows\Group Policy\{F312195E-3D9D-447A-A3F5-08DFFA24735E}
-TraceLevel
-DWORD:2
