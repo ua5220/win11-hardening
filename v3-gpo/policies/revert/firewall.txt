@@ -1,7 +1,13 @@
 ; GPO Edition 3.0 — REVERT: Windows Firewall
-; Видаляємо ВСІ ключі політик, щоб розблокувати налаштування параметрів
+; Видаляємо ключі з обох шляхів:
+;   1) SOFTWARE\Policies\... (GPO-policy, для очищення)
+;   2) SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\... (прямий реєстр)
 
-; ── Domain Profile ───────────────────────────────────────────────────────────
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  GPO-policy ключі (очищення старих залишків)                           ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
+
+; -- Domain Profile (GPO) --
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
 EnableFirewall
@@ -52,7 +58,7 @@ SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
 LogSuccessfulConnections
 DELETE
 
-; ── Private (Standard) Profile ───────────────────────────────────────────────
+; -- Private / Standard Profile (GPO) --
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile
 EnableFirewall
@@ -103,7 +109,7 @@ SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Logging
 LogSuccessfulConnections
 DELETE
 
-; ── Public Profile ───────────────────────────────────────────────────────────
+; -- Public Profile (GPO) --
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
 EnableFirewall
@@ -151,5 +157,132 @@ DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+LogSuccessfulConnections
+DELETE
+
+; ╔══════════════════════════════════════════════════════════════════════════╗
+; ║  Прямий реєстр FirewallPolicy (скидання hardening)                     ║
+; ╚══════════════════════════════════════════════════════════════════════════╝
+
+; -- Domain Profile (direct) --
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+EnableFirewall
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+DefaultInboundAction
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+DefaultOutboundAction
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile
+DisableNotifications
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogFilePath
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogFileSize
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogDroppedPackets
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile\Logging
+LogSuccessfulConnections
+DELETE
+
+; -- Private / Standard Profile (direct) --
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
+EnableFirewall
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
+DefaultInboundAction
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
+DefaultOutboundAction
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile
+DisableNotifications
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
+LogFilePath
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
+LogFileSize
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
+LogDroppedPackets
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\Logging
+LogSuccessfulConnections
+DELETE
+
+; -- Public Profile (direct) --
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
+EnableFirewall
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
+DefaultInboundAction
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
+DefaultOutboundAction
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile
+DisableNotifications
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
+LogFilePath
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
+LogFileSize
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
+LogDroppedPackets
+DELETE
+
+Computer
+SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging
 LogSuccessfulConnections
 DELETE
