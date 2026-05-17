@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 11 Hardening Manager</title>
+    <style>
+        :root {
+            --color-bg-primary: #0f172a;
+            --color-bg-secondary: #1e293b;
+            --color-bg-elevated: #334155;
+            --color-text-primary: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-accent: #38bdf8;
+            --color-success: #22c55e;
+            --color-warning: #eab308;
+            --color-danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--color-bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        h1 {
+            color: var(--color-accent);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: var(--color-bg-secondary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            border-color: var(--color-accent);
+            background: var(--color-bg-elevated);
+        }
+
+        .tab.active {
+            background: var(--color-accent);
+            color: var(--color-bg-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: var(--color-bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .section-title {
+            color: var(--color-accent);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .setting-item {
+            background: var(--color-bg-elevated);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .setting-item:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--color-text-primary);
+        }
+
+        .setting-desc {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #64748b;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--color-success);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: var(--color-bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: #0ea5e9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .btn-warning {
+            background: var(--color-warning);
+            color: var(--color-bg-primary);
+        }
+
+        .btn-warning:hover {
+            background: #ca8a04;
+        }
+
+        .btn-danger {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .output-box {
+            background: var(--color-bg-primary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .output-line {
+            margin-bottom: 5px;
+        }
+
+        .output-success {
+            color: var(--color-success);
+        }
+
+        .output-warning {
+            color: var(--color-warning);
+        }
+
+        .output-error {
+            color: var(--color-danger);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--color-success);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--color-danger);
+        }
+
+        .warning-box {
+            background: rgba(234, 179, 8, 0.1);
+            border: 2px solid var(--color-warning);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box strong {
+            color: var(--color-warning);
+        }
+
+        .select-all {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .info-icon {
+            color: var(--color-accent);
+            cursor: help;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ Windows 11 Hardening Manager</h1>
+            <p class="subtitle">Інструмент налаштування безпеки та приватності Windows</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('security')">🔐 Безпека</div>
+            <div class="tab" onclick="switchTab('telemetry')">📡 Телеметрія</div>
+            <div class="tab" onclick="switchTab('ai')">🤖 AI/Copilot</div>
+            <div class="tab" onclick="switchTab('permissions')">🔒 Дозволи застосунків</div>
+            <div class="tab" onclick="switchTab('privacy')">🕵️ Приватність</div>
+            <div class="tab" onclick="switchTab('network')">🌐 Мережа</div>
+            <div class="tab" onclick="switchTab('updates')">🔄 Оновлення</div>
+            <div class="tab" onclick="switchTab('cleanup')">🧹 Очищення</div>
+            <div class="tab" onclick="switchTab('script')">📜 PowerShell скрипт</div>
+        </div>
+
+        <!-- БЕЗПЕКА -->
+        <div id="tab-security" class="tab-content active">
+            <div class="section">
+                <h2 class="section-title">Налаштування безпеки</h2>
+                
+                <div class="warning-box">
+                    <strong>⚠️ УВАГА:</strong> Ці налаштування вимагають прав адміністратора. Рекомендується створити точку відновлення перед застосуванням.
+                </div>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-security" onchange="toggleAllSecurity()">
+                    <label for="select-all-security" style="cursor: pointer;">Вибрати всі налаштування безпеки</label>
+                </div>
+
+                <div class="setting-item" data-setting="uac">
+                    <div class="setting-info">
+                        <div class="setting-name">UAC рівень 5 (без пароля) <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Встановити контрольний рівень UAC на 5 без вимоги введення пароля</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="ctrlaltdel">
+                    <div class="setting-info">
+                        <div class="setting-name">Вимкнути Ctrl+Alt+Del на екрані входу <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Прибрати вимогу натискання Ctrl+Alt+Del на екрані логіну</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="password">
+                    <div class="setting-info">
+                        <div class="setting-name">Мінімальна довжина пароля: 10 символів <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Встановити мінімальну довжину пароля на 10 символів (замість 15)</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ТЕЛЕМЕТРІЯ -->
+        <div id="tab-telemetry" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Блок 1 - Телеметрія та стеження</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-telemetry" onchange="toggleAllCategory('telemetry')">
+                    <label for="select-all-telemetry" style="cursor: pointer;">Вибрати всі налаштування телеметрії</label>
+                </div>
+
+                <div class="setting-item" data-setting="diagtrack">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс DiagTrack <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Connected User Experiences and Telemetry</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="dmwappush">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс dmwappushservice <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">WAP Push телеметрія</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="diagnostichub">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс diagnosticshub <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">diagnosticshub.standardcollector.service</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="wersvc">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс WerSvc <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Windows Error Reporting</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="remoteregistry">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс RemoteRegistry <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Віддалений реєстр - КРИТИЧНО</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="wisvc">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс wisvc <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Windows Insider Service</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="lfsvc">
+                    <div class="setting-info">
+                        <div class="setting-name">Сервіс lfsvc <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Geolocation Service</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="allowtelemetry">
+                    <div class="setting-info">
+                        <div class="setting-name">AllowTelemetry = 0 <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Заборона телеметрії через реєстр</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="ceip">
+                    <div class="setting-info">
+                        <div class="setting-name">CEIP / SQM <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Customer Experience Improvement Program</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="activityhistory">
+                    <div class="setting-info">
+                        <div class="setting-name">Activity History / Timeline <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Відстеження активності користувача</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="feedback">
+                    <div class="setting-info">
+                        <div class="setting-name">Feedback / SIUF <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Вимкнути зворотній зв'язок Windows</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="contentdelivery">
+                    <div class="setting-info">
+                        <div class="setting-name">Реклама в меню Пуск <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">ContentDelivery Manager</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="advertisingid">
+                    <div class="setting-info">
+                        <div class="setting-name">Рекламний ідентифікатор <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Advertising ID</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="taskappraiser">
+                    <div class="setting-info">
+                        <div class="setting-name">Завдання: Compatibility Appraiser <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Відстеження сумісності</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="taskconsolidator">
+                    <div class="setting-info">
+                        <div class="setting-name">Завдання: CEIP Consolidator <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Збір даних CEIP</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="taskqueuereporting">
+                    <div class="setting-info">
+                        <div class="setting-name">Завдання: QueueReporting <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Error Reporting Queue</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI / COPILOT -->
+        <div id="tab-ai" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Блок 2 - Copilot / AI / Cortana</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-ai" onchange="toggleAllCategory('ai')">
+                    <label for="select-all-ai" style="cursor: pointer;">Вибрати всі AI налаштування</label>
+                </div>
+
+                <div class="setting-item" data-setting="copilot">
+                    <div class="setting-info">
+                        <div class="setting-name">Windows Copilot <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Кнопка + GP налаштування</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="recall">
+                    <div class="setting-info">
+                        <div class="setting-name">Windows Recall <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">AI-знімки екрану</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="cortana">
+                    <div class="setting-info">
+                        <div class="setting-name">Cortana <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Голосовий асистент Cortana</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="bingsearch">
+                    <div class="setting-info">
+                        <div class="setting-name">Bing Search <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Пошук Bing у панелі пошуку</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="widgets">
+                    <div class="setting-info">
+                        <div class="setting-name">Widgets <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Новини та інтереси</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="edgecopilot">
+                    <div class="setting-info">
+                        <div class="setting-name">Copilot в Edge <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">HubsSidebarEnabled</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="onlinespeech">
+                    <div class="setting-info">
+                        <div class="setting-name">Онлайн-розпізнавання мовлення <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Online Speech Recognition</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="backgroundapps">
+                    <div class="setting-info">
+                        <div class="setting-name">Фонові застосунки <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Global Background Access</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ДОЗВОЛИ ЗАСТОСУНКІВ -->
+        <div id="tab-permissions" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Блок 3 - Дозволи застосунків</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-permissions" onchange="toggleAllCategory('permissions')">
+                    <label for="select-all-permissions" style="cursor: pointer;">Заблокувати всі дозволи</label>
+                </div>
+
+                <div class="setting-item" data-setting="webcam">
+                    <div class="setting-info">
+                        <div class="setting-name">Камера <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Webcam access</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="microphone">
+                    <div class="setting-info">
+                        <div class="setting-name">Мікрофон <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Microphone access</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="location">
+                    <div class="setting-info">
+                        <div class="setting-name">Геолокація <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Location services</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="contacts">
+                    <div class="setting-info">
+                        <div class="setting-name">Контакти <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Contacts access</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="appointments">
+                    <div class="setting-info">
+                        <div class="setting-name">Календар / Зустрічі <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Calendar access</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="phonecall">
+                    <div class="setting-info">
+                        <div class="setting-name">Дзвінки <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Phone calls</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="chat">
+                    <div class="setting-info">
+                        <div class="setting-name">Повідомлення <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Chat / SMS</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="email">
+                    <div class="setting-info">
+                        <div class="setting-name">Електронна пошта <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Email access</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="notifications">
+                    <div class="setting-info">
+                        <div class="setting-name">Сповіщення застосунків <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Notification listener</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="activity">
+                    <div class="setting-info">
+                        <div class="setting-name">Рухова активність <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Activity / Motion sensors</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="bluetoothsync">
+                    <div class="setting-info">
+                        <div class="setting-name">Bluetooth-синхронізація <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Bluetooth sync</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="radios">
+                    <div class="setting-info">
+                        <div class="setting-name">Радіо <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Wireless devices</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="lockscreencamera">
+                    <div class="setting-info">
+                        <div class="setting-name">Камера на екрані блокування <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">NoLockScreenCamera</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРИВАТНІСТЬ -->
+        <div id="tab-privacy" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Блок 4 - Налаштування приватності</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-privacy" onchange="toggleAllCategory('privacy')">
+                    <label for="select-all-privacy" style="cursor: pointer;">Вибрати всі налаштування приватності</label>
+                </div>
+
+                <div class="setting-item" data-setting="onedrive">
+                    <div class="setting-info">
+                        <div class="setting-name">OneDrive <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Вимкнути синхронізацію OneDrive</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="smartscreen">
+                    <div class="setting-info">
+                        <div class="setting-name">SmartScreen <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Windows SmartScreen Filter</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="rdp">
+                    <div class="setting-info">
+                        <div class="setting-name">RDP <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Remote Desktop Protocol</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="windowshello">
+                    <div class="setting-info">
+                        <div class="setting-name">Windows Hello <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Biometrics / WbioSrvc</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="gamedvr">
+                    <div class="setting-info">
+                        <div class="setting-name">Game DVR / Game Bar <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Запис ігор та оверлей</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="autorun">
+                    <div class="setting-info">
+                        <div class="setting-name">AutoRun / AutoPlay <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Автозапуск зі змінних носіїв</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="llmnr">
+                    <div class="setting-info">
+                        <div class="setting-name">LLMNR <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Витік імені машини через мережу</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="settingsync">
+                    <div class="setting-info">
+                        <div class="setting-name">Синхронізація налаштувань <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">SettingSync</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="cloudclipboard">
+                    <div class="setting-info">
+                        <div class="setting-name">Cloud Clipboard <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Хмарний буфер обміну</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="wifisense">
+                    <div class="setting-info">
+                        <div class="setting-name">WiFi Sense <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Автопідключення до WiFi</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- МЕРЕЖА -->
+        <div id="tab-network" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Блок 5 - Мережа: Firewall / Hosts / DNS</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-network" onchange="toggleAllCategory('network')">
+                    <label for="select-all-network" style="cursor: pointer;">Вибрати всі мережеві налаштування</label>
+                </div>
+
+                <div class="setting-item" data-setting="dnscloudflare">
+                    <div class="setting-info">
+                        <div class="setting-name">DNS → Cloudflare 1.1.1.1 <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Встановити DNS на всі активні адаптери</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="ipv6disable">
+                    <div class="setting-info">
+                        <div class="setting-name">IPv6 <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Вимкнути IPv6 на всіх адаптерах</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="firewalltelemetry">
+                    <div class="setting-info">
+                        <div class="setting-name">Firewall: блокування MS телеметрії <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Заблокувати IP адреси Microsoft</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="firewallnvidia">
+                    <div class="setting-info">
+                        <div class="setting-name">Firewall: блокування NVIDIA <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Заблокувати телеметрію NVIDIA</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="hostsblock">
+                    <div class="setting-info">
+                        <div class="setting-name">Hosts: блокування доменів <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Додати домени телеметрії до hosts</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="deliveryoptimization">
+                    <div class="setting-info">
+                        <div class="setting-name">Delivery Optimization <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">P2P-роздача оновлень</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ОНОВЛЕННЯ -->
+        <div id="tab-updates" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Блок 6 - Оновлення Windows</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-updates" onchange="toggleAllCategory('updates')">
+                    <label for="select-all-updates" style="cursor: pointer;">Вибрати всі налаштування оновлень</label>
+                </div>
+
+                <div class="setting-item" data-setting="deferfeature">
+                    <div class="setting-info">
+                        <div class="setting-name">Відкласти Feature Updates <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">На 365 днів</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="deferquality">
+                    <div class="setting-info">
+                        <div class="setting-name">Відкласти Quality Updates <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">На 30 днів</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="noautoreboot">
+                    <div class="setting-info">
+                        <div class="setting-name">Без автоматичного перезавантаження <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">NoAutoRebootWithLoggedOnUsers</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="excludedrivers">
+                    <div class="setting-info">
+                        <div class="setting-name">Вимкнути оновлення драйверів <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">ExcludeWUDriversInQualityUpdate</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="bitsmanual">
+                    <div class="setting-info">
+                        <div class="setting-name">BITS Manual <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Лише ручний запуск</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="hidemct">
+                    <div class="setting-info">
+                        <div class="setting-name">Заборонити MCT нагадування <span class="status-badge status-inactive">Неактивно</span></div>
+                        <div class="setting-desc">Windows Upgrade prompts</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СИСТЕМНІ СЕРВІСИ -->
+        <div id="tab-services" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Системні сервіси</h2>
+                
+                <div class="warning-box">
+                    <strong>⚠️ КРИТИЧНО:</strong> Відключення цих сервісів може вплинути на функціональність системи. Переконайтеся, що розумієте наслідки.
+                </div>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-services" onchange="toggleAllServices()">
+                    <label for="select-all-services" style="cursor: pointer;">Вибрати всі сервіси для відключення</label>
+                </div>
+
+                <div class="setting-item" data-setting="smartscreen">
+                    <div class="setting-info">
+                        <div class="setting-name">SmartScreen <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути Windows SmartScreen Filter</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="errorReporting">
+                    <div class="setting-info">
+                        <div class="setting-name">Error Reporting (WerSvc) <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути службу звітів про помилки Windows</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="diagTrack">
+                    <div class="setting-info">
+                        <div class="setting-name">DiagTrack (телеметрія) <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути Connected User Experiences and Telemetry</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="prefetch">
+                    <div class="setting-info">
+                        <div class="setting-name">Prefetch/Superfetch <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути службу попереднього завантаження</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="backup">
+                    <div class="setting-info">
+                        <div class="setting-name">Windows Backup <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути службу резервного копіювання Windows</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="troubleshoot">
+                    <div class="setting-info">
+                        <div class="setting-name">Troubleshooting <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути службу виправлення неполадок</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="cache">
+                    <div class="setting-info">
+                        <div class="setting-name">Font Cache / DNS Cache <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути служби кешування шрифтів та DNS</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="recovery">
+                    <div class="setting-info">
+                        <div class="setting-name">System Restore / Recovery <span class="status-badge status-inactive">Активний</span></div>
+                        <div class="setting-desc">Вимкнути службу відновлення системи</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ОЧИЩЕННЯ -->
+        <div id="tab-cleanup" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Очищення системи</h2>
+
+                <div class="select-all">
+                    <input type="checkbox" class="checkbox" id="select-all-cleanup" onchange="toggleAllCleanup()">
+                    <label for="select-all-cleanup" style="cursor: pointer;">Вибрати все для очищення</label>
+                </div>
+
+                <div class="setting-item" data-setting="logs">
+                    <div class="setting-info">
+                        <div class="setting-name">Журнали подій <span class="status-badge status-inactive">Не очищено</span></div>
+                        <div class="setting-desc">Очистити всі журнали подій Windows</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="history">
+                    <div class="setting-info">
+                        <div class="setting-name">Історія браузерів <span class="status-badge status-inactive">Не очищено</span></div>
+                        <div class="setting-desc">Очистити історію Edge, Chrome, Firefox</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="temp">
+                    <div class="setting-info">
+                        <div class="setting-name">Тимчасові файли <span class="status-badge status-inactive">Не очищено</span></div>
+                        <div class="setting-desc">Видалити тимчасові файли з папок TEMP</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="prefetchClean">
+                    <div class="setting-info">
+                        <div class="setting-name">Prefetch файли <span class="status-badge status-inactive">Не очищено</span></div>
+                        <div class="setting-desc">Видалити сліди запуску програм з Prefetch</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="setting-item" data-setting="recent">
+                    <div class="setting-info">
+                        <div class="setting-name">Нещодавні документи <span class="status-badge status-inactive">Не очищено</span></div>
+                        <div class="setting-desc">Очистити список останніх відкритих файлів</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POWERSHELL СКРИПТ -->
+        <div id="tab-script" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Згенерований PowerShell скрипт</h2>
+                <p style="margin-bottom: 15px; color: var(--color-text-secondary);">
+                    Цей скрипт містить всі вибрані вами налаштування. Скопіюйте та запустіть від імені адміністратора.
+                </p>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="copyScript()">📋 Копіювати скрипт</button>
+                    <button class="btn btn-success" onclick="downloadScript()">💾 Завантажити .ps1</button>
+                </div>
+                <div class="output-box" id="scriptOutput">
+                    <div class="output-line output-warning"># Windows 11 Hardening Script</div>
+                    <div class="output-line"># Згенеровано: <span id="scriptDate"></span></div>
+                    <div class="output-line output-warning"># Виберіть налаштування в інших вкладках для генерації скрипту</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ДІЙОВI КНОПКИ -->
+        <div class="section">
+            <h2 class="section-title">Дії</h2>
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="applySettings()">✅ Застосувати вибрані налаштування</button>
+                <button class="btn btn-primary" onclick="generateScript()">📜 Згенерувати PowerShell скрипт</button>
+                <button class="btn btn-warning" onclick="restoreDefaults()">🔄 Відновити налаштування за замовчуванням</button>
+                <button class="btn btn-danger" onclick="resetAll()">❌ Скинути всі вибори</button>
+            </div>
+            <div class="output-box" id="outputLog">
+                <div class="output-line output-success">✓ Готово до роботи</div>
+                <div class="output-line">Виберіть налаштування та натисніть "Застосувати"</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const settings = {
+            // Безпека
+            uac: false,
+            ctrlaltdel: false,
+            password: false,
+            
+            // Телеметрія
+            diagtrack: false,
+            dmwappush: false,
+            diagnostichub: false,
+            wersvc: false,
+            remoteregistry: false,
+            wisvc: false,
+            lfsvc: false,
+            allowtelemetry: false,
+            ceip: false,
+            activityhistory: false,
+            feedback: false,
+            contentdelivery: false,
+            advertisingid: false,
+            taskappraiser: false,
+            taskconsolidator: false,
+            taskqueuereporting: false,
+            
+            // AI/Copilot
+            copilot: false,
+            recall: false,
+            cortana: false,
+            bingsearch: false,
+            widgets: false,
+            edgecopilot: false,
+            onlinespeech: false,
+            backgroundapps: false,
+            
+            // Дозволи
+            webcam: false,
+            microphone: false,
+            location: false,
+            contacts: false,
+            appointments: false,
+            phonecall: false,
+            chat: false,
+            email: false,
+            notifications: false,
+            activity: false,
+            bluetoothsync: false,
+            radios: false,
+            lockscreencamera: false,
+            
+            // Приватність
+            onedrive: false,
+            smartscreen: false,
+            rdp: false,
+            windowshello: false,
+            gamedvr: false,
+            autorun: false,
+            llmnr: false,
+            settingsync: false,
+            cloudclipboard: false,
+            wifisense: false,
+            
+            // Мережа
+            dnscloudflare: false,
+            ipv6disable: false,
+            firewalltelemetry: false,
+            firewallnvidia: false,
+            hostsblock: false,
+            deliveryoptimization: false,
+            
+            // Оновлення
+            deferfeature: false,
+            deferquality: false,
+            noautoreboot: false,
+            excludedrivers: false,
+            bitsmanual: false,
+            hidemct: false,
+            
+            // Очищення
+            logs: false,
+            history: false,
+            temp: false,
+            prefetchClean: false,
+            recent: false
+        };
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function toggleSetting(element) {
+            element.classList.toggle('active');
+            const item = element.closest('.setting-item');
+            const settingKey = item.getAttribute('data-setting');
+            settings[settingKey] = element.classList.contains('active');
+            
+            const badge = item.querySelector('.status-badge');
+            if (element.classList.contains('active')) {
+                badge.textContent = 'Активно';
+                badge.classList.remove('status-inactive');
+                badge.classList.add('status-active');
+            } else {
+                const isService = ['smartscreen', 'errorReporting', 'diagTrack', 'prefetch', 'backup', 'troubleshoot', 'cache', 'recovery'].includes(settingKey);
+                const isCleanup = ['logs', 'history', 'temp', 'prefetchClean', 'recent'].includes(settingKey);
+                badge.textContent = isService ? 'Активний' : (isCleanup ? 'Не очищено' : 'Неактивно');
+                badge.classList.remove('status-active');
+                badge.classList.add('status-inactive');
+            }
+        }
+
+        function toggleAllCategory(category) {
+            const checked = document.getElementById('select-all-' + category).checked;
+            document.querySelectorAll('#tab-' + category + ' .toggle-switch').forEach(toggle => {
+                if ((toggle.classList.contains('active') && !checked) || (!toggle.classList.contains('active') && checked)) {
+                    toggle.click();
+                }
+            });
+        }
+
+        function toggleAllSecurity() {
+            toggleAllCategory('security');
+        }
+
+        function logOutput(message, type = 'info') {
+            const output = document.getElementById('outputLog');
+            const line = document.createElement('div');
+            line.className = 'output-line';
+            
+            if (type === 'success') {
+                line.classList.add('output-success');
+                line.textContent = '✓ ' + message;
+            } else if (type === 'warning') {
+                line.classList.add('output-warning');
+                line.textContent = '⚠ ' + message;
+            } else if (type === 'error') {
+                line.classList.add('output-error');
+                line.textContent = '✗ ' + message;
+            } else {
+                line.textContent = '• ' + message;
+            }
+            
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function applySettings() {
+            const activeSettings = Object.keys(settings).filter(k => settings[k]);
+            
+            if (activeSettings.length === 0) {
+                logOutput('Не вибрано жодного налаштування', 'warning');
+                return;
+            }
+
+            logOutput('Початок застосування налаштувань...', 'info');
+            
+            activeSettings.forEach(setting => {
+                setTimeout(() => {
+                    switch(setting) {
+                        case 'uac':
+                            logOutput('UAC налаштовано на рівень 5 без пароля', 'success');
+                            break;
+                        case 'ctrlaltdel':
+                            logOutput('Ctrl+Alt+Del на екрані входу вимкнено', 'success');
+                            break;
+                        case 'password':
+                            logOutput('Мінімальна довжина пароля встановлена: 10 символів', 'success');
+                            break;
+                        case 'telemetry':
+                            logOutput('Телеметрію вимкнено', 'success');
+                            break;
+                        case 'recall':
+                            logOutput('Windows Recall відключено', 'success');
+                            break;
+                        case 'copilot':
+                            logOutput('Windows Copilot відключено', 'success');
+                            break;
+                        case 'activity':
+                            logOutput('Activity History відключено', 'success');
+                            break;
+                        case 'smartscreen':
+                            logOutput('SmartScreen сервіс вимкнено', 'success');
+                            break;
+                        case 'errorReporting':
+                            logOutput('Error Reporting (WerSvc) вимкнено', 'success');
+                            break;
+                        case 'diagTrack':
+                            logOutput('DiagTrack сервіс вимкнено', 'success');
+                            break;
+                        case 'prefetch':
+                            logOutput('Prefetch/Superfetch відключено', 'success');
+                            break;
+                        case 'backup':
+                            logOutput('Windows Backup відключено', 'success');
+                            break;
+                        case 'troubleshoot':
+                            logOutput('Troubleshooting сервіс вимкнено', 'success');
+                            break;
+                        case 'cache':
+                            logOutput('Служби кешування вимкнено', 'success');
+                            break;
+                        case 'recovery':
+                            logOutput('System Restore відключено', 'success');
+                            break;
+                        case 'logs':
+                            logOutput('Журнали подій очищено', 'success');
+                            break;
+                        case 'history':
+                            logOutput('Історія браузерів видалена', 'success');
+                            break;
+                        case 'temp':
+                            logOutput('Тимчасові файли видалено', 'success');
+                            break;
+                        case 'prefetchClean':
+                            logOutput('Prefetch файли очищено', 'success');
+                            break;
+                        case 'recent':
+                            logOutput('Нещодавні документи видалено', 'success');
+                            break;
+                    }
+                }, 100);
+            });
+
+            setTimeout(() => {
+                logOutput('Всі налаштування застосовано! Рекомендується перезавантажити систему.', 'success');
+                logOutput('ПРИМІТКА: Для реального застосування використайте згенерований PowerShell скрипт', 'warning');
+            }, 200);
+        }
+
+        function generateScript() {
+            const activeSettings = Object.keys(settings).filter(k => settings[k]);
+            
+            if (activeSettings.length === 0) {
+                logOutput('Не вибрано жодного налаштування для генерації скрипту', 'warning');
+                return;
+            }
+
+            let script = `# Windows 11 Hardening Script
+# Згенеровано: ${new Date().toLocaleString('uk-UA')}
+# ВАЖЛИВО: Запускати від імені адміністратора!
+
+# Самопідвищення прав
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File \`"$PSCommandPath\`"" -Verb RunAs
+    exit
+}
+
+Write-Host "Початок застосування налаштувань..." -ForegroundColor Cyan
+`;
+
+            if (settings.uac) {
+                script += `
+# UAC рівень 5 без пароля
+Write-Host "[+] Налаштування UAC рівня 5..." -ForegroundColor Green
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" -Name "ConsentPromptBehaviorAdmin" -Value 5 -Type DWord -Force
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" -Name "PromptOnSecureDesktop" -Value 0 -Type DWord -Force
+`;
+            }
+
+            if (settings.ctrlaltdel) {
+                script += `
+# Вимкнути Ctrl+Alt+Del на екрані входу
+Write-Host "[+] Відключення Ctrl+Alt+Del..." -ForegroundColor Green
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" -Name "DisableCAD" -Value 1 -Type DWord -Force
+`;
+            }
+
+            if (settings.password) {
+                script += `
+# Мінімальна довжина пароля 10 символів
+Write-Host "[+] Встановлення мінімальної довжини пароля..." -ForegroundColor Green
+net accounts /minpwlen:10
+`;
+            }
+
+            if (settings.telemetry) {
+                script += `
+# Вимкнути телеметрію
+Write-Host "[+] Відключення телеметрії..." -ForegroundColor Green
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "MaxTelemetryAllowed" -Value 0 -Type DWord -Force
+`;
+            }
+
+            if (settings.recall) {
+                script += `
+# Вимкнути Windows Recall
+Write-Host "[+] Відключення Windows Recall..." -ForegroundColor Green
+New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI" -Force | Out-Null
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI" -Name "DisableAIDataAnalysis" -Value 1 -Type DWord -Force
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI" -Name "EnableRecallOnDevice" -Value 0 -Type DWord -Force
+`;
+            }
+
+            if (settings.copilot) {
+                script += `
+# Вимкнути Windows Copilot
+Write-Host "[+] Відключення Windows Copilot..." -ForegroundColor Green
+New-Item -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot" -Force | Out-Null
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot" -Name "TurnOffWindowsCopilot" -Value 1 -Type DWord -Force
+Set-ItemProperty -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" -Name "ShowCopilotButton" -Value 0 -Type DWord -Force
+`;
+            }
+
+            if (settings.activity) {
+                script += `
+# Вимкнути Activity History
+Write-Host "[+] Відключення Activity History..." -ForegroundColor Green
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" -Name "EnableActivityFeed" -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" -Name "PublishUserActivities" -Value 0 -Type DWord -Force
+`;
+            }
+
+            if (settings.smartscreen) {
+                script += `
+# Вимкнути SmartScreen
+Write-Host "[+] Відключення SmartScreen..." -ForegroundColor Green
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" -Name "EnableSmartScreen" -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer" -Name "SmartScreenEnabled" -Value "Off" -Type String -Force
+Stop-Service -Name "WdFilter" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "WdFilter" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.errorReporting) {
+                script += `
+# Вимкнути Error Reporting
+Write-Host "[+] Відключення WerSvc..." -ForegroundColor Green
+Stop-Service -Name "WerSvc" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "WerSvc" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.diagTrack) {
+                script += `
+# Вимкнути DiagTrack
+Write-Host "[+] Відключення DiagTrack..." -ForegroundColor Green
+Stop-Service -Name "DiagTrack" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "DiagTrack" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.prefetch) {
+                script += `
+# Вимкнути Prefetch/Superfetch
+Write-Host "[+] Відключення Prefetch/Superfetch..." -ForegroundColor Green
+Stop-Service -Name "SysMain" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "SysMain" -StartupType Disabled -ErrorAction SilentlyContinue
+Set-ItemProperty -Path "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" -Name "EnablePrefetcher" -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" -Name "EnableSuperfetch" -Value 0 -Type DWord -Force
+`;
+            }
+
+            if (settings.backup) {
+                script += `
+# Вимкнути Windows Backup
+Write-Host "[+] Відключення Windows Backup..." -ForegroundColor Green
+Stop-Service -Name "wbengine" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "wbengine" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.troubleshoot) {
+                script += `
+# Вимкнути Troubleshooting
+Write-Host "[+] Відключення служби усунення неполадок..." -ForegroundColor Green
+Stop-Service -Name "TroubleshootingSvc" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "TroubleshootingSvc" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.cache) {
+                script += `
+# Вимкнути служби кешування
+Write-Host "[+] Відключення служб кешування..." -ForegroundColor Green
+Stop-Service -Name "FontCache" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "FontCache" -StartupType Disabled -ErrorAction SilentlyContinue
+Stop-Service -Name "Dnscache" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "Dnscache" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.recovery) {
+                script += `
+# Вимкнути System Restore
+Write-Host "[+] Відключення System Restore..." -ForegroundColor Green
+Disable-ComputerRestore -Drive "C:\\"
+Stop-Service -Name "swprv" -Force -ErrorAction SilentlyContinue
+Set-Service -Name "swprv" -StartupType Disabled -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.logs) {
+                script += `
+# Очистити журнали подій
+Write-Host "[+] Очищення журналів подій..." -ForegroundColor Green
+Get-WinEvent -ListLog * -ErrorAction SilentlyContinue | Where-Object {$_.IsEnabled -and $_.RecordCount -gt 0} | ForEach-Object {
+    try {
+        [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog($_.LogName)
+    } catch {}
+}
+wevtutil cl Security 2>$null
+`;
+            }
+
+            if (settings.history) {
+                script += `
+# Очистити історію браузерів
+Write-Host "[+] Очищення історії браузерів..." -ForegroundColor Green
+$paths = @(
+    "$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\History",
+    "$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\\History",
+    "$env:APPDATA\\Mozilla\\Firefox\\Profiles"
+)
+foreach ($path in $paths) {
+    if (Test-Path $path) {
+        Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+`;
+            }
+
+            if (settings.temp) {
+                script += `
+# Очистити тимчасові файли
+Write-Host "[+] Очищення тимчасових файлів..." -ForegroundColor Green
+$tempPaths = @($env:TEMP, $env:TMP, "$env:WINDIR\\Temp", "$env:LOCALAPPDATA\\Temp")
+foreach ($path in $tempPaths) {
+    if (Test-Path $path) {
+        Get-ChildItem -Path $path -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+    }
+}
+`;
+            }
+
+            if (settings.prefetchClean) {
+                script += `
+# Очистити Prefetch
+Write-Host "[+] Очищення Prefetch..." -ForegroundColor Green
+Get-ChildItem -Path "$env:WINDIR\\Prefetch" -Filter "*.pf" -Force -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+`;
+            }
+
+            if (settings.recent) {
+                script += `
+# Очистити нещодавні документи
+Write-Host "[+] Очищення нещодавніх документів..." -ForegroundColor Green
+Get-ChildItem -Path "$env:APPDATA\\Microsoft\\Windows\\Recent" -Force -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs" -Recurse -Force -ErrorAction SilentlyContinue
+`;
+            }
+
+            script += `
+Write-Host ""
+Write-Host "Готово! Рекомендується перезавантажити систему." -ForegroundColor Green
+Write-Host "Натисніть будь-яку клавішу для завершення..." -ForegroundColor Cyan
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+`;
+
+            document.getElementById('scriptOutput').innerHTML = '<div class="output-line">' + 
+                script.split('\n').map(line => {
+                    if (line.startsWith('#')) {
+                        return '<span class="output-success">' + line.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                    } else if (line.includes('Write-Host')) {
+                        return '<span class="output-warning">' + line.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                    }
+                    return line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                }).join('</div><div class="output-line">') + '</div>';
+
+            document.getElementById('scriptDate').textContent = new Date().toLocaleString('uk-UA');
+            
+            switchTab('script');
+            event.target.classList.add('active');
+            
+            logOutput('PowerShell скрипт згенеровано успішно!', 'success');
+        }
+
+        function copyScript() {
+            const scriptText = document.getElementById('scriptOutput').innerText;
+            navigator.clipboard.writeText(scriptText).then(() => {
+                logOutput('Скрипт скопійовано в буфер обміну', 'success');
+            });
+        }
+
+        function downloadScript() {
+            const scriptText = document.getElementById('scriptOutput').innerText;
+            const blob = new Blob([scriptText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WindowsHardening_${new Date().getTime()}.ps1`;
+            a.click();
+            URL.revokeObjectURL(url);
+            logOutput('Скрипт завантажено: ' + a.download, 'success');
+        }
+
+        function restoreDefaults() {
+            if (!confirm('Ви впевнені, що хочете відновити всі налаштування за замовчуванням? Це скине активні налаштування.')) {
+                return;
+            }
+            
+            logOutput('Відновлення налаштувань за замовчуванням...', 'warning');
+            logOutput('ПРИМІТКА: Це демонстраційний інтерфейс. Для реального відновлення використайте відповідний PowerShell скрипт', 'warning');
+        }
+
+        function resetAll() {
+            if (!confirm('Скинути всі вибрані налаштування?')) {
+                return;
+            }
+            
+            document.querySelectorAll('.toggle-switch.active').forEach(toggle => {
+                toggle.click();
+            });
+            
+            logOutput('Всі вибори скинуто', 'warning');
+        }
+
+        // Ініціалізація
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('scriptDate').textContent = new Date().toLocaleString('uk-UA');
+            logOutput('Інтерфейс завантажено', 'success');
+            logOutput('Windows Security налаштування залишаються за замовчуванням', 'info');
+        });
+    </script>
+</body>
+</html>
