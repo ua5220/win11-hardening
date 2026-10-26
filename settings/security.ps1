@@ -253,7 +253,7 @@
     Name  = "Logon cache — 1 попередній вхід (ACSC, тільки для домену)"
     Desc  = "CachedLogonsCount=1: кешувати лише 1 останній вхід. Застосовується тільки на доменних машинах."
     Apply  = {
-        if ((Get-WmiObject Win32_ComputerSystem).PartOfDomain) {
+        if ((Get-CimInstance Win32_ComputerSystem).PartOfDomain) {
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "CachedLogonsCount" "1" "String"
             Write-AppLog -Level 'INFO' -Message "CachedLogonsCount=1 (доменна машина)."
         } else {

@@ -789,13 +789,13 @@ Wifi Pineapple — пристрій для атак MitM через Wi-Fi (уп�
         Remove-NetFirewallRule -DisplayName 'Block RTP Inbound'  -ErrorAction SilentlyContinue
         Remove-NetFirewallRule -DisplayName 'Block RTP Outbound' -ErrorAction SilentlyContinue
         New-NetFirewallRule -DisplayName 'Block RTP Inbound' -Direction Inbound `
-            -Protocol UDP -LocalPort '5004-5005,16384-32767' -Action Block -Profile Any -Enabled True | Out-Null
+            -Protocol UDP -LocalPort '5004-5005','16384-32767' -Action Block -Profile Any -Enabled True | Out-Null
         New-NetFirewallRule -DisplayName 'Block RTP Outbound' -Direction Outbound `
-            -Protocol UDP -RemotePort '5004-5005,16384-32767' -Action Block -Profile Any -Enabled True | Out-Null
+            -Protocol UDP -RemotePort '5004-5005','16384-32767' -Action Block -Profile Any -Enabled True | Out-Null
         # RTSP port
         Remove-NetFirewallRule -DisplayName 'Block RTSP Inbound' -ErrorAction SilentlyContinue
         New-NetFirewallRule -DisplayName 'Block RTSP Inbound' -Direction Inbound `
-            -Protocol TCP -LocalPort '554,8554' -Action Block -Profile Any -Enabled True | Out-Null
+            -Protocol TCP -LocalPort '554','8554' -Action Block -Profile Any -Enabled True | Out-Null
     }
     Revert = {
         @('Block RTP Inbound','Block RTP Outbound','Block RTSP Inbound') |
@@ -922,8 +922,10 @@ Wifi Pineapple — пристрій для атак MitM через Wi-Fi (уп�
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance"       "fAllowToGetHelp"   0
         # Брандмауер
         Remove-NetFirewallRule -DisplayName 'Block Remote Assistance All' -ErrorAction SilentlyContinue
+        # Лише програма Remote Assistance: блок портів 3389/49152-65535 перекривав би RDP і всі
+        # дозволені вхідні з'єднання на динамічних портах (block має пріоритет над allow)
         New-NetFirewallRule -DisplayName 'Block Remote Assistance All' -Direction Inbound `
-            -Protocol TCP -LocalPort '3389,49152-65535' -Action Block -Profile Any -Enabled True | Out-Null
+            -Program "$env:SystemRoot\System32\msra.exe" -Action Block -Profile Any -Enabled True | Out-Null
     }
     Revert = {
         Enable-Task '\Microsoft\Windows\RemoteAssistance\' 'RemoteAssistanceTask'

@@ -540,6 +540,12 @@ Revert: повертає у режим AuditMode (2) — не блокує, ал
 Revert: повертає до значень за замовчуванням через Set-MpPreference.
 "@
     Apply = {
+        # Групова політика має пріоритет над Set-MpPreference — інакше Apply «успішний», а Check червоний
+        $scanPolicy = Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" "DisableRestorePoint" $null
+        if ($scanPolicy -eq 1) {
+            throw "DisableRestorePoint=1 задано груповою політикою (Policies\...\Windows Defender\Scan) — Set-MpPreference не діє. Змініть політику (gpedit або policies\defender.txt)."
+        }
+
         # Точки відновлення перед лікуванням
         try { Set-MpPreference -DisableRestorePoint $false -ErrorAction Stop
               Write-AppLog -Level 'INFO' -Message "DisableRestorePoint=false — точки відновлення увімкнено." }
@@ -551,7 +557,7 @@ Revert: повертає до значень за замовчуванням ч�
         catch { Write-AppLog -Level 'WARN' -Message "BruteForceProtection: $_" }
 
         # Intel TDT — лише якщо Intel CPU
-        $cpu = (Get-WmiObject Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1).Name
+        $cpu = (Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1).Name
         if ($cpu -match 'Intel') {
             try { Set-MpPreference -IntelTDTEnabled $true -ErrorAction Stop
                   Write-AppLog -Level 'INFO' -Message "IntelTDTEnabled=true ($cpu)." }

@@ -423,7 +423,7 @@ DWORD:0
 Computer
 SOFTWARE\Policies\Microsoft\Windows Defender\Scan
 DisableRestorePoint
-DWORD:1
+DWORD:0
 
 ; ══ Reporting — вимкнути Watson та WPP ═══════════════════════════════════════
 

@@ -273,10 +273,10 @@ svchost.exe (мережеві служби). Будь-який інший про
 
         # Отримати всі процеси від SYSTEM через WMI одним запитом
         try {
-            $wmiProcs = Get-WmiObject Win32_Process -ErrorAction Stop
+            $wmiProcs = Get-CimInstance Win32_Process -ErrorAction Stop
             foreach ($wmi in $wmiProcs) {
                 if ($knownSafe -contains $wmi.Name.ToLower() -replace '\.exe$','') { continue }
-                $owner = $wmi.GetOwner()
+                $owner = Invoke-CimMethod -InputObject $wmi -MethodName GetOwner
                 if ($owner.ReturnValue -eq 0 -and $owner.User -eq 'SYSTEM') {
                     $suspicious += [PSCustomObject]@{
                         PID  = $wmi.ProcessId

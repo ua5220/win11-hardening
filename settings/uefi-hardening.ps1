@@ -87,7 +87,7 @@
     Apply = {
         $vbs = Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard" -EA SilentlyContinue
         Write-AppLog -Level 'INFO' -Message "VBS: EnableVBS=$($vbs.EnableVirtualizationBasedSecurity)"
-        $wmiVBS = Get-WmiObject -Class "Win32_DeviceGuard" -Namespace "root\Microsoft\Windows\DeviceGuard" -EA SilentlyContinue
+        $wmiVBS = Get-CimInstance -ClassName "Win32_DeviceGuard" -Namespace "root\Microsoft\Windows\DeviceGuard" -EA SilentlyContinue
         if ($wmiVBS) {
             $kdpa = $wmiVBS.DmaProtectionStatus
             Write-AppLog -Level 'INFO' -Message "Kernel DMA Protection (WMI): $kdpa"

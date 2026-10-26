@@ -58,6 +58,8 @@ function Invoke-BulkAction {
         [Parameter(Mandatory)][string]$Label
     )
 
+    # Викликається з обробників кнопок (GetNewClosure) — 'Stop' задаємо явно, щоб збій пункту не рахувався як OK
+    $ErrorActionPreference = 'Stop'
     Write-AppLog -Level 'INFO' -Message "$Label :: start"
     Set-BusyState -Context $Context -Busy $true
     $ok  = 0
@@ -193,6 +195,9 @@ function Connect-RowActions {
         $capturedRec = $rc
 
         $capturedRec.BtnApply.Add_Click({
+            # Замикання GetNewClosure() живе в окремому модулі й не бачить 'Stop' з Run-Hardening.ps1 —
+            # без цього нефатальні помилки (New-NetFirewallRule, Set-Service) давали «Apply OK»
+            $ErrorActionPreference = 'Stop'
             try {
                 & $capturedRec.Setting.Apply
                 $capturedCtx.StatusBar.Text = "  [OK] Застосовано: $($capturedRec.Setting.Name)"
@@ -205,6 +210,7 @@ function Connect-RowActions {
         }.GetNewClosure())
 
         $capturedRec.BtnRevert.Add_Click({
+            $ErrorActionPreference = 'Stop'
             try {
                 & $capturedRec.Setting.Revert
                 $capturedCtx.StatusBar.Text = "  [OK] Скасовано: $($capturedRec.Setting.Name)"

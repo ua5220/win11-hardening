@@ -220,16 +220,17 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 
 [PSCustomObject]@{
     Group = "Сервіси: Backup / Cache / Recovery"
-    Name  = "Вимкнути Delivery Optimization (DoSvc)"
-    Desc  = "DoSvc=Вимкнено, DODownloadMode=0. DNS cache (dnscache) не вимикається — критичний для стабільного інтернету"
+    Name  = "Вимкнути Delivery Optimization P2P (DoSvc)"
+    Desc  = "DODownloadMode=0: лише HTTP, без обміну оновленнями з іншими ПК. Службу DoSvc не вимикаємо — WaaSMedicSvc повертає її, а без неї Windows Update не завантажує оновлення"
     Apply = {
-        Set-ServiceDisabled "DoSvc"
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0
-    }
-    Revert = {
+        # Попередні версії вимикали службу — повертаємо стандартний запуск
         Set-ServiceManual "DoSvc"
     }
-    Check  = { $s = Get-Service "DoSvc" -ErrorAction SilentlyContinue; $s -and $s.StartType -eq 'Disabled' }
+    Revert = {
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode"
+    }
+    Check  = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 99) -eq 0 }
 },
 
 # ════════════════════════════════════════════════════════════════════════
