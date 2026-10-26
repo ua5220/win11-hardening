@@ -537,6 +537,7 @@ Revision=1
 [PSCustomObject]@{
     Group = "System Cryptography"
     Name  = "Системна криптографія — FIPS + Примусовий захист ключів (ACSC)"
+    Risky = $true
     Desc  = "FIPSAlgorithmPolicy=1, ForceKeyProtection=2: УВАГА — може зламати Chrome, деякі .NET застосунки та VPN клієнти. Рекомендується лише для держустанов."
     Apply = {
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" "Enabled"          1
@@ -819,6 +820,7 @@ Revision=1
 [PSCustomObject]@{
     Group = "PowerShell Hardening"
     Name  = "PowerShell Constrained Language Mode"
+    Risky = $true
     Desc  = "__PSLockdownPolicy=4: обмежити PS до Safe Language Mode. УВАГА: блокує деякі PS-скрипти та модулі."
     Apply = {
         [Environment]::SetEnvironmentVariable("__PSLockdownPolicy", "4", "Machine")

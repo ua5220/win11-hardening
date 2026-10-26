@@ -535,6 +535,7 @@
 [PSCustomObject]@{
     Group = "Приватність — розширена (HKLM)"
     Name  = "Windows Hello / Biometrics — повністю вимкнути"
+    Risky = $true
     Desc  = "Biometrics Enabled=0, PassportForWork Enabled=0, AllowDomainPINLogon=0, WbioSrvc → Вимкнено"
     Apply = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics" "Enabled"           0

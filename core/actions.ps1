@@ -4,7 +4,7 @@
 .NOTES
     Dot-sourced by Run-Hardening.ps1 after ui.ps1.
     Exports: Set-BusyState, Refresh-AllRows,
-             Invoke-ApplyAllSettings, Invoke-ApplySelectedSettings,
+             Get-ApplyAllItems, Invoke-ApplyAllSettings, Invoke-ApplySelectedSettings,
              Invoke-RevertAllSettings, Connect-RowActions,
              Connect-HardeningActions, Export-HardeningReport,
              Export-HardeningConfig, Import-HardeningConfig
@@ -84,18 +84,55 @@ function Invoke-BulkAction {
 
 # ── Bulk commands ─────────────────────────────────────────────────────────
 
+function Get-SettingProperty {
+    param($Setting, [string]$Name)
+    $prop = $Setting.PSObject.Properties[$Name]
+    if ($prop) { return $prop.Value }
+    return $null
+}
+
+# «Застосувати все» пропускає пункти з Risky = $true (FIPS, CLM, SMBv2 off тощо) і з кожної
+# ExclusiveGroup бере лише останній пункт — взаємовиключні рівні не застосовуються поспіль.
+function Get-ApplyAllItems {
+    param([Parameter(Mandatory)]$Settings)
+
+    $lastInGroup = @{}
+    foreach ($item in $Settings) {
+        $setting = if ($item.PSObject.Properties['Setting']) { $item.Setting } else { $item }
+        $group = Get-SettingProperty -Setting $setting -Name 'ExclusiveGroup'
+        if ($group) { $lastInGroup[$group] = $setting }
+    }
+
+    $apply = @(); $skipped = @()
+    foreach ($item in $Settings) {
+        $setting = if ($item.PSObject.Properties['Setting']) { $item.Setting } else { $item }
+        $group = Get-SettingProperty -Setting $setting -Name 'ExclusiveGroup'
+        if ((Get-SettingProperty -Setting $setting -Name 'Risky') -eq $true) {
+            $skipped += $setting
+        } elseif ($group -and -not [object]::ReferenceEquals($lastInGroup[$group], $setting)) {
+            $skipped += $setting
+        } else {
+            $apply += $item
+        }
+    }
+    return [pscustomobject]@{ Apply = $apply; Skipped = $skipped }
+}
+
 function Invoke-ApplyAllSettings {
     param([Parameter(Mandatory)]$Context)
 
+    $plan = Get-ApplyAllItems -Settings $Context.AllSettings
+    $skippedNames = ($plan.Skipped | ForEach-Object { "  • $($_.Name)" }) -join "`n"
+
     $res = [System.Windows.Forms.MessageBox]::Show(
-        "Застосувати ВСІ $($Context.AllSettings.Count) параметрів?`nЦе змінить налаштування системи.",
+        "Застосувати $($plan.Apply.Count) з $($Context.AllSettings.Count) параметрів?`nЦе змінить налаштування системи.`n`nПропускаються (ризикові або взаємовиключні — лише через «Застосувати вибрані»):`n$skippedNames",
         'Підтвердження',
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
     if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
 
-    Invoke-BulkAction -Context $Context -Items $Context.AllSettings -ActionKey 'Apply' -Label 'Apply All'
+    Invoke-BulkAction -Context $Context -Items $plan.Apply -ActionKey 'Apply' -Label 'Apply All'
 }
 
 function Invoke-ApplySelectedSettings {

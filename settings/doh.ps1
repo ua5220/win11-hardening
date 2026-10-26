@@ -106,6 +106,7 @@
 [PSCustomObject]@{
     Group = "DNS-over-HTTPS"
     Name  = "ARP Spoofing Mitigation — статичні ARP-записи для шлюзу"
+    Risky = $true
     Desc  = @"
 Захист від ARP Spoofing (підміни ARP) шляхом встановлення статичних
 ARP-записів для мережевого шлюзу та DNS-серверів:

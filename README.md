@@ -7,8 +7,7 @@
 | **GUI** | `Run-Hardening.ps1` | WinForms-вікно, ~250 налаштувань у 12 модулях `settings/`, кожне вмикається поштучно (Apply / Revert / Check), HTML-звіт |
 | **GPO Edition** | `Apply-GPO.ps1` | увесь набір одразу через Microsoft `LGPO.exe` (`policies/*.txt`) і `secedit` (`policies/GptTmpl.inf`) — той самий механізм, що й у Microsoft Security Baselines |
 
-Ризикові значення приведено до **Microsoft Security Baseline для Windows 11 v25H2** (архів у корені репо);
-повного збігу з Baseline немає — див. «Відомі обмеження».
+Значення звірено з **Microsoft Security Baseline для Windows 11 v25H2** (архів у корені репо), з поправками Baseline для машин без домену; відхилення — у «Відомі обмеження».
 
 > ⚠️ Не запускайте GPO Edition на машині, яку вже захищено іншим набором (власні скрипти, Intune, CIS-шаблони):
 > `secedit /overwrite` перезапише локальну політику безпеки. Спершу — `-Action Check`, а `Apply` робить бекап автоматично.
@@ -40,12 +39,12 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 |------|--------|------|
 | `defender.txt` | Defender, ASR, CFA, SmartScreen, Recall, DMA, ELAM | 92 / 92 |
 | `firewall.txt` | Firewall: Domain / Private / Public, logging | 24 / 54 |
-| `security.txt` | UAC, LSA, LSASS PPL, VBS, HVCI, Credential Guard, RDP, RPC | 156 / 251 |
+| `security.txt` | UAC, LSA, LSASS PPL, VBS, HVCI, Credential Guard, RDP, RPC | 155 / 157 |
 | `privacy.txt` | Telemetry, Copilot, OneDrive, Search, SettingSync, Ads | 159 / 159 |
 | `network.txt` | SMB, LLMNR, mDNS, WPAD, LLTD, NTLM, MSS Legacy, DoH | 116 / 116 |
 | `audit.txt` | PowerShell Logging, Process CmdLine, Event Log | 21 / 21 |
 | `bitlocker.txt` | AES-256 XTS, TPM+PIN, DMA lock, Removable drives | 34 / 34 |
-| `update.txt` | Windows Update, AutoPlay, GP Processing, Power, WSL, Sudo | 164 / 316 |
+| `update.txt` | Windows Update, AutoPlay, GP Processing, Power, WSL, Sudo | 164 / 164 |
 | `office.txt` | Office Macros, IE/ActiveX, Printers RPC/IPPS | 80 / 80 |
 | `GptTmpl.inf` | паролі, блокування, UAC, LSA/NTLM, SMB signing, права користувачів | — |
 
@@ -58,28 +57,27 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
   Windows Hello (PIN/біометрія) не вимикається.
 - **DMA**: `DeviceEnumerationPolicy=0` (Baseline) — несумісні з Kernel DMA Protection Thunderbolt-пристрої
   не працюють, доки користувач не увійде.
-- Частина записів (`firewall`, `security`, `update`) пише не в `SOFTWARE\Policies`, а у звичайні
-  ключі, щоб налаштування Windows лишались доступними. Ці значення однаково потрапляють у
-  `Registry.pol` і **повертаються при кожному `gpupdate`**.
+- Політики пишуться в `SOFTWARE\Policies\…` — у Налаштуваннях Windows такі пункти позначені
+  «Деякими параметрами керує ваша організація». Виняток — firewall: він пише прямо у
+  `SharedAccess\Parameters\FirewallPolicy`, щоб брандмауер лишався керованим з GUI; ці значення
+  однаково в `Registry.pol` і **повертаються при кожному `gpupdate`**.
 - `Restore` спершу виконує Revert, а потім імпортує бекап (`LGPO /g` лише додає значення).
   Revert і Restore явно скидають Administrator protection (`defltbase.inf` його не чіпає).
 
 ### Відомі обмеження
 
-Звірка з Baseline 25H2 (DWORD-правила): 56 збігаються, 6 відрізняються, 46 видаляються кроком 1,
-171 відсутні (переважно зони IE).
+Звірка з Baseline 25H2 (DWORD-правила): 84 збігаються, 8 відрізняються, 16 Policies-ключів firewall
+видаляються (їх замінює `FirewallPolicy`), 171 відсутні (переважно зони IE).
 
-- **`security.txt` (93) і `update.txt` (152) переносять політики з `SOFTWARE\Policies\…` у
-  `SOFTWARE\Microsoft\…`**. Windows ці шляхи не читає (жоден ADMX на них не посилається), тож
-  VBS, HVCI, Credential Guard, політика LSA PPL, RDP-шифрування, Windows Update тощо фактично
-  **не застосовуються**, а `Check` показує PASS, бо значення в реєстрі є.
-  Firewall перенесено коректно — `SharedAccess\Parameters\FirewallPolicy` справжнє сховище.
 - Відрізняються від Baseline: розміри журналів Application/System (64 МБ замість 32),
-  `WTDS ServiceEnabled=0`, `EarlyLaunch DriverLoadPolicy=1` (Baseline 3), `CertificateRevocation=0`,
-  `DisableLocalAdminMerge=1`.
-- У `GptTmpl.inf` поза Baseline: `SeDenyNetworkLogonRight = *S-1-1-0` (Everyone — блокує будь-який
-  вхід по мережі; Baseline — `*S-1-5-113`), `ForceKeyProtection=2`, `MaximumPasswordAge=42`.
-
+  `WTDS ServiceEnabled=0`, `AllowWindowsInkWorkspace=0`, `EarlyLaunch DriverLoadPolicy=1` (Baseline 3),
+  `CertificateRevocation=0`, `DisableLocalAdminMerge=1`, `RequirePlatformSecurityFeatures=3`
+  (Secure Boot + DMA, суворіше за Baseline).
+- LAPS пишеться в `SOFTWARE\Policies\Microsoft\Windows\LAPS`, а Windows LAPS читає
+  `SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS` — записи не діють. На машині без домену/Entra
+  LAPS (`BackupDirectory=1` — Entra) однаково не працює, тому шлях не виправлено.
+- Машини, на які ставилась версія 3.2 (з перенесеними шляхами), мають у `Registry.pol` зайві значення
+  в `SOFTWARE\Microsoft\…` — Windows їх ігнорує; прибирає `-Action Revert`.
 ### Формат `policies/*.txt`
 
 Файли — UTF-8; `Apply-GPO.ps1` сам передає LGPO і secedit UTF-16LE-копію (вони не читають UTF-8).
@@ -99,8 +97,9 @@ DWORD:1                            ; DWORD:n | SZ:текст | DELETE
 
 Модулі `settings/`: `security`, `defender`, `network`, `firewall`, `privacy`, `services`, `audit`,
 `policy`, `monitoring`, `wsl-sudo`, `doh`, `uefi-hardening`. Ризикові пункти (FIPS, SMBv2 off,
-Constrained Language Mode, вимкнення біометрії тощо) мають «УВАГА» в описі.
-**«Застосувати все» вмикає і їх** — для робочої машини користуйтесь «Застосувати вибрані».
+Constrained Language Mode, вимкнення біометрії, Whitelist Outbound тощо) позначені `Risky = $true`:
+«Застосувати все» їх пропускає й показує список; з взаємовиключних груп (`ExclusiveGroup`, рівні UAC)
+застосовує лише останній пункт — Administrator Protection. Ризикові — лише через «Застосувати вибрані».
 
 ## Структура
 

@@ -753,6 +753,7 @@ GPO: Computer Configuration > Administrative Templates > Network > DNS Client
 [PSCustomObject]@{
     Group = "Мережеві протоколи — блокування"
     Name  = "SMBv2 протокол — вимкнути (НЕБЕЗПЕЧНО, тільки для ізольованих станцій)"
+    Risky = $true
     Desc  = "УВАГА: вимикає File Explorer мережу, Windows Update (частково), мережеві принтери. Тільки для повністю ізольованих машин без мережі."
     Apply = {
         Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force -ErrorAction SilentlyContinue

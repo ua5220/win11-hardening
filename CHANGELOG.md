@@ -1,5 +1,35 @@
 # Changelog
 
+## [3.4.0] - 2026-10-26
+
+### Fixed
+- **VBS, HVCI, Credential Guard, LSA PPL, RDP, Windows Update знову застосовуються**: `security.txt` і
+  `update.txt` повернуто до стану перед 56d666a (2026-03-17), де політики пишуться в `SOFTWARE\Policies\…`.
+  Перенесення в `SOFTWARE\Microsoft\…` робило 245 значень no-op (ці шляхи не читає жоден ADMX), а крок 1
+  видаляв справжні політики, зокрема виставлені іншими файлами (GameDVR, WMDRM, IE Feeds, DMA).
+  56d666a нових налаштувань не додавав — лише переносив. Firewall лишився на `FirewallPolicy` (коректно).
+  Ціна: ці пункти в Налаштуваннях Windows позначені «керується організацією»
+- **Revert**: у `revert/{audit,bitlocker,network,office,privacy}.txt` бракувало 124 DELETE — дописано
+- Звірка з Baseline 25H2 після змін: 84 збігаються (було 56), 8 відрізняються
+
+### Changed — GptTmpl.inf за Baseline (з дельтою для машин без домену)
+- `SeDenyNetworkLogonRight`: `Everyone, Guests, Console Logon` → **Guests** (Baseline для non-domain-joined
+  очищає це право; Everyone блокував будь-який мережевий вхід)
+- `ForceKeyProtection=2` прибрано; `security.txt` робить DELETE (раніше flip-flop LGPO DELETE ↔ secedit)
+- `MaximumPasswordAge` 42 → **-1** (без примусової зміни пароля)
+
+### GUI
+- `Risky = $true` у 7 пунктах (FIPS, Constrained Language Mode, SMBv2 off, біометрія off, Whitelist
+  Outbound, зміна часового поясу, статичний ARP) — «Застосувати все» їх пропускає й показує список
+- `ExclusiveGroup` (рівні UAC) — «Застосувати все» бере лише останній пункт (Administrator Protection);
+  раніше застосовувались усі три поспіль
+
+### Tests
+- `tests/ApplyAll.Tests.ps1` — відбір пунктів для «Застосувати все»
+- `Policies.Format.Tests.ps1`: revert покриває кожне значення; заборона шляхів
+  `SOFTWARE\Microsoft\Windows\{DeviceGuard,WindowsUpdate,System}`; нові перевірки GptTmpl.inf
+- Локально (Pester 6.2): 79/79 статичних тестів пройшли
+
 ## [3.3.0] - 2026-10-26
 
 ### Fixed

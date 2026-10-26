@@ -52,6 +52,28 @@ Describe 'Revert-покриття' {
     It 'для <Name> існує revert-файл' -ForEach $script:PolicyFiles {
         Join-Path (Join-Path $script:PoliciesDir 'revert') $Name | Should -Exist
     }
+
+    It 'revert\<Name> видаляє кожне значення з <Name>' -ForEach $script:PolicyFiles {
+        $ids = {
+            param($lines)
+            for ($i = 0; $i -lt $lines.Count; $i += 4) { "$($lines[$i])|$($lines[$i + 1])|$($lines[$i + 2])".Trim().ToLower() }
+        }
+        $reverted = @{}
+        & $ids (Get-RecordLines -Path (Join-Path (Join-Path $script:PoliciesDir 'revert') $Name)) | ForEach-Object { $reverted[$_] = $true }
+        $missing = @(& $ids (Get-RecordLines -Path $Path) | Where-Object { -not $reverted.ContainsKey($_) })
+        $missing | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Шляхи політик читаються Windows' {
+    # Перенесення SOFTWARE\Policies\Microsoft\X → SOFTWARE\Microsoft\X робило політики no-op (3.3.0)
+    It 'у <Name> немає записів у SOFTWARE\Microsoft\Windows\{DeviceGuard,WindowsUpdate,System}' -ForEach $script:PolicyFiles {
+        $lines = Get-RecordLines -Path $Path
+        $bad = for ($i = 1; $i -lt $lines.Count; $i += 4) {
+            if ($lines[$i].Trim() -match '^SOFTWARE\\Microsoft\\Windows\\(DeviceGuard|WindowsUpdate|System)(\\|$)') { $lines[$i].Trim() }
+        }
+        @($bad) | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'GptTmpl.inf — значення Microsoft Security Baseline' {
@@ -77,6 +99,18 @@ Describe 'GptTmpl.inf — значення Microsoft Security Baseline' {
 
     It 'складність пароля увімкнена' {
         Get-InfValue 'PasswordComplexity' | Should -Be '1'
+    }
+
+    It 'мережевий вхід не заборонено для Everyone/локальних облікових записів (машина без домену)' {
+        Get-InfValue 'SeDenyNetworkLogonRight' | Should -Not -Match '\*S-1-1-0|\*S-1-5-113'
+    }
+
+    It 'ForceKeyProtection не задається' {
+        $script:Inf | Where-Object { $_ -match 'ForceKeyProtection=' } | Should -BeNullOrEmpty
+    }
+
+    It 'пароль не має примусового терміну дії (MaximumPasswordAge = -1)' {
+        Get-InfValue 'MaximumPasswordAge' | Should -Be '-1'
     }
 
     It 'Administrator protection (TypeOfAdminApprovalMode=2)' {
