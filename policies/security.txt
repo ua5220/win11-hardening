@@ -183,11 +183,6 @@ SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Restrictions\DenyDeviceIDs
 DELETE
 
 Computer
-SOFTWARE\Policies\Microsoft\Windows\Kernel DMA Protection
-DeviceEnumerationPolicy
-DELETE
-
-Computer
 SOFTWARE\Policies\Microsoft\Windows\Personalization
 NoLockScreenCamera
 DELETE

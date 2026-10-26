@@ -550,4 +550,4 @@ DWORD:0
 Computer
 SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter
 EnabledV9
-DWORD:0
+DWORD:1

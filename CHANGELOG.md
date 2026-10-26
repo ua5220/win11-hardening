@@ -13,7 +13,14 @@
   передається тимчасова UTF-16LE-копія (кириличний `LegalNotice` більше не псується)
 - **Check** більше не хардкодить 112 значень, що розійшлися з політиками (Policies-ключі firewall,
   RunAsPPL, WindowsUpdate тепер видаляються) — очікування беруться з `policies/*.txt` і `GptTmpl.inf`
-  (1123 записи + System Access через `secedit /export`); exit 1 за наявності FAIL
+  (System Access — через `secedit /export`); exit 1 за наявності FAIL. Останній запис виграє
+  в межах усіх файлів у порядку Apply, а значення з `GptTmpl.inf` — після них (як при застосуванні);
+  REG_BINARY від secedit звіряється як число
+- **DMA (Baseline)**: `security.txt` видаляв `Kernel DMA Protection\DeviceEnumerationPolicy`, який
+  ставить `defender.txt`, — DELETE прибрано
+- `defender.txt`: `MicrosoftEdge\PhishingFilter\EnabledV9` 0 → 1 (суперечило `office.txt`)
+- Revert і Restore явно скидають `TypeOfAdminApprovalMode`/`ConsentPromptBehaviorEnhancedAdmin` —
+  `defltbase.inf` їх не містить, і Administrator protection лишався б увімкненим
 - Revert перевіряє код повернення LGPO і secedit
 
 ### Changed — значення за Microsoft Security Baseline Windows 11 v25H2

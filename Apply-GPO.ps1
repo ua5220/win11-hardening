@@ -152,6 +152,17 @@ function Invoke-SecurityTemplate-Revert {
         Write-Host "  [OK] Security Template відкочено до стандартних" -ForegroundColor Green
     }
     Remove-Item $SdbPath -ErrorAction SilentlyContinue
+    Reset-AdminProtection
+}
+
+# defltbase.inf не містить TypeOfAdminApprovalMode / ConsentPromptBehaviorEnhancedAdmin,
+# тому Administrator protection після Revert лишався б увімкненим — прибираємо явно.
+function Reset-AdminProtection {
+    $key = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+    foreach ($name in 'TypeOfAdminApprovalMode', 'ConsentPromptBehaviorEnhancedAdmin') {
+        Remove-ItemProperty -Path $key -Name $name -ErrorAction SilentlyContinue
+    }
+    Write-Host "  [OK] Administrator protection скинуто (діє після перезавантаження)" -ForegroundColor Green
 }
 
 function Invoke-LGPO-Revert {
@@ -204,6 +215,8 @@ function Invoke-Restore {
 
     Write-Host "Спершу Revert (LGPO /g лише додає значення, а не прибирає наші)...`n"
     foreach ($f in $PolicyFiles) { Invoke-LGPO-Revert -PolicyFile $f }
+    # Якщо в бекапі цих значень не було, імпорт їх не прибере
+    Reset-AdminProtection
     Write-Host "  [RESTORE] Імпорт $($gpo.FullName)" -ForegroundColor Cyan
     $Result = & $LGPOPath /g $gpo.FullName 2>&1
     if ($LASTEXITCODE -ne 0) {
@@ -243,6 +256,12 @@ function Get-RegValue {
 function Test-Expected {
     param($Actual, [string]$Type, [string]$Expected)
     if ($null -eq $Actual) { return $false }
+    # secedit пише частину значень як REG_BINARY (тип 3 у GptTmpl.inf)
+    if ($Actual -is [byte[]]) {
+        $n = [int64]0
+        for ($i = $Actual.Length - 1; $i -ge 0; $i--) { $n = $n * 256 + $Actual[$i] }
+        $Actual = $n
+    }
     if ($Type -eq 'DWORD') {
         # Значення не того типу (наприклад, REG_SZ замість DWORD) — це FAIL, а не виняток
         try { $a = [int64]$Actual } catch { return $false }
@@ -257,19 +276,36 @@ function Invoke-Check {
     if ($Detailed) { Write-Host "(User-записи звіряються з HKCU поточного, елевованого профілю)" -ForegroundColor DarkGray }
 
     $Ok = 0; $Fail = 0
+    $infPath = Join-Path $PoliciesDir $SecurityTemplate
 
+    # Значення з [Registry Values] GptTmpl.inf secedit пише після LGPO — їх звіряємо там
+    $templateKeys = @{}
+    if (Test-Path $infPath) {
+        foreach ($line in Get-Content -LiteralPath $infPath -Encoding UTF8) {
+            if ($line.Trim() -match '^MACHINE\\(.+)\\([^\\=]+)=\d+,') {
+                $templateKeys["computer|$($Matches[1])|$($Matches[2])".ToLower()] = $true
+            }
+        }
+    }
+
+    # Останній запис для того самого значення виграє в межах УСІХ файлів у порядку Apply —
+    # так само, як їх послідовно застосовує LGPO
+    $expect = [ordered]@{}
     foreach ($file in $PolicyFiles) {
         $path = Join-Path $PoliciesDir $file
         if (-not (Test-Path $path)) { continue }
-
-        # Останній запис для того самого значення виграє — так само, як у LGPO
-        $expect = [ordered]@{}
         foreach ($r in @(Get-PolicyRecords -Path $path)) {
-            $expect["$($r.Scope)|$($r.Key)|$($r.Name)"] = $r
+            $id = "$($r.Scope)|$($r.Key)|$($r.Name)".ToLower()
+            if ($templateKeys.ContainsKey($id)) { continue }
+            $r | Add-Member -NotePropertyName File -NotePropertyValue $file
+            $expect.Remove($id)
+            $expect[$id] = $r
         }
+    }
 
+    foreach ($file in $PolicyFiles) {
         $fOk = 0; $fFail = 0
-        foreach ($r in $expect.Values) {
+        foreach ($r in @($expect.Values | Where-Object { $_.File -eq $file })) {
             $hive = if ($r.Scope -eq 'User') { 'HKCU:\' } else { 'HKLM:\' }
             $actual = Get-RegValue -RegPath ($hive + $r.Key) -ValueName $r.Name
             $label = "$($r.Key)\$($r.Name)"
@@ -298,7 +334,6 @@ function Invoke-Check {
     }
 
     # ── GptTmpl.inf: [Registry Values] з реєстру, [System Access] через secedit /export ──
-    $infPath = Join-Path $PoliciesDir $SecurityTemplate
     if (Test-Path $infPath) {
         $tOk = 0; $tFail = 0
         $section = ''

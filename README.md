@@ -7,7 +7,8 @@
 | **GUI** | `Run-Hardening.ps1` | WinForms-вікно, ~250 налаштувань у 12 модулях `settings/`, кожне вмикається поштучно (Apply / Revert / Check), HTML-звіт |
 | **GPO Edition** | `Apply-GPO.ps1` | увесь набір одразу через Microsoft `LGPO.exe` (`policies/*.txt`) і `secedit` (`policies/GptTmpl.inf`) — той самий механізм, що й у Microsoft Security Baselines |
 
-Значення звірено з **Microsoft Security Baseline для Windows 11 v25H2** (архів у корені репо).
+Ризикові значення приведено до **Microsoft Security Baseline для Windows 11 v25H2** (архів у корені репо);
+повного збігу з Baseline немає — див. «Відомі обмеження».
 
 > ⚠️ Не запускайте GPO Edition на машині, яку вже захищено іншим набором (власні скрипти, Intune, CIS-шаблони):
 > `secedit /overwrite` перезапише локальну політику безпеки. Спершу — `-Action Check`, а `Apply` робить бекап автоматично.
@@ -61,6 +62,23 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
   ключі, щоб налаштування Windows лишались доступними. Ці значення однаково потрапляють у
   `Registry.pol` і **повертаються при кожному `gpupdate`**.
 - `Restore` спершу виконує Revert, а потім імпортує бекап (`LGPO /g` лише додає значення).
+  Revert і Restore явно скидають Administrator protection (`defltbase.inf` його не чіпає).
+
+### Відомі обмеження
+
+Звірка з Baseline 25H2 (DWORD-правила): 56 збігаються, 6 відрізняються, 46 видаляються кроком 1,
+171 відсутні (переважно зони IE).
+
+- **`security.txt` (93) і `update.txt` (152) переносять політики з `SOFTWARE\Policies\…` у
+  `SOFTWARE\Microsoft\…`**. Windows ці шляхи не читає (жоден ADMX на них не посилається), тож
+  VBS, HVCI, Credential Guard, політика LSA PPL, RDP-шифрування, Windows Update тощо фактично
+  **не застосовуються**, а `Check` показує PASS, бо значення в реєстрі є.
+  Firewall перенесено коректно — `SharedAccess\Parameters\FirewallPolicy` справжнє сховище.
+- Відрізняються від Baseline: розміри журналів Application/System (64 МБ замість 32),
+  `WTDS ServiceEnabled=0`, `EarlyLaunch DriverLoadPolicy=1` (Baseline 3), `CertificateRevocation=0`,
+  `DisableLocalAdminMerge=1`.
+- У `GptTmpl.inf` поза Baseline: `SeDenyNetworkLogonRight = *S-1-1-0` (Everyone — блокує будь-який
+  вхід по мережі; Baseline — `*S-1-5-113`), `ForceKeyProtection=2`, `MaximumPasswordAge=42`.
 
 ### Формат `policies/*.txt`
 
