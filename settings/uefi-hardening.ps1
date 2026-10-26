@@ -313,7 +313,10 @@
                 Date         = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
                 TpmReady     = $tpm.TpmReady
                 TpmPresent   = $tpm.TpmPresent
-                SpecVersion  = $tpm.ManufacturerVersionFull
+                # Get-Tpm має ManufacturerVersionFull20 (TPM 2.0) і ManufacturerVersion; ManufacturerVersionFull
+                # не існує — під StrictMode Apply падав. Читаємо лише наявні властивості.
+                FirmwareVer  = 'ManufacturerVersionFull20', 'ManufacturerVersion' | ForEach-Object { $tpm.PSObject.Properties[$_] } |
+                    Where-Object { $_ -and $_.Value } | ForEach-Object { $_.Value } | Select-Object -First 1
                 SecureBootOn = (Confirm-SecureBootUEFI -EA SilentlyContinue)
             }
             $logDir = "$env:ProgramData\win11-hardening\uefi-baseline"

@@ -752,7 +752,7 @@ Revision=1
         $sb = Confirm-SecureBootUEFI -EA SilentlyContinue
         if (-not $sb) { Write-AppLog -Level 'WARN' -Message "Secure Boot ВИМКНЕНО у UEFI!" }
         $tpm = Get-Tpm -EA SilentlyContinue
-        if (-not $tpm?.TpmReady) { Write-AppLog -Level 'WARN' -Message "TPM 2.0 не готовий!" }
+        if (-not ($tpm -and $tpm.TpmReady)) { Write-AppLog -Level 'WARN' -Message "TPM 2.0 не готовий!" }
         Write-AppLog -Level 'INFO' -Message "Hardware Security: test signing=off, nointegritychecks=off, recoveryenabled=no."
     }
     Revert = {
