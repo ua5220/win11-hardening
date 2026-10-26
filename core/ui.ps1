@@ -184,6 +184,10 @@ function New-HardeningUi {
     $scroll.AutoScroll = $true
     $scroll.BackColor  = $theme.FormBackground
     $form.Controls.Add($scroll)
+    # WinForms докує у зворотному z-порядку: доданий останнім Fill займав усю форму, і заголовок,
+    # фільтр, кнопки й статус перекривали перший і останній рядки. На передньому плані Fill
+    # докується останнім і займає лише залишок.
+    $scroll.BringToFront()
 
     return [PSCustomObject]@{
         Form             = $form
