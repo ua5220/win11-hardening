@@ -3,6 +3,9 @@
 ## [3.5.0] - 2026-10-26
 
 ### Added
+- Запуск одним кліком: `tools\New-HardeningShortcut.ps1` створює ярлик (робочий стіл + «Пуск») — від
+  адміністратора, без консолі (`conhost --headless`), PowerShell 7 з Program Files або 5.1; `tools\Start-HardeningGui.ps1`
+  показує помилку старту у вікні
 - GUI: кнопка «⚠ Звіт помилок» (`Export-ErrorReport`) — Markdown-звіт помилок сесії, пунктів «Apply OK,
   але Check = False» і пунктів з винятком у Check, з кодом Apply/Check, стеком, середовищем і хвостом логу;
   копіюється в буфер обміну, ім'я користувача/комп'ютера масковано

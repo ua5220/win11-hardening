@@ -95,6 +95,11 @@ DWORD:1                            ; DWORD:n | SZ:текст | DELETE
 .\Run-Hardening.ps1
 ```
 
+**Запуск одним кліком.** Один раз виконайте `.\tools\New-HardeningShortcut.ps1` (без прав адміністратора) —
+з'явиться ярлик «Windows 11 Hardening» на робочому столі та в меню «Пуск». Ярлик запускається від імені
+адміністратора й без консолі (`conhost.exe --headless`); помилку старту покаже у вікні повідомлення.
+Після перенесення репо в іншу теку — запустіть скрипт знову.
+
 Модулі `settings/`: `security`, `defender`, `network`, `firewall`, `privacy`, `services`, `audit`,
 `policy`, `monitoring`, `wsl-sudo`, `doh`, `uefi-hardening`. Ризикові пункти (FIPS, SMBv2 off,
 Constrained Language Mode, вимкнення біометрії, Whitelist Outbound тощо) позначені `Risky = $true`:
