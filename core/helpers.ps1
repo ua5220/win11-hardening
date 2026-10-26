@@ -114,17 +114,21 @@ function Get-AppLogPath {
 }
 
 function Write-AppLog {
+    # ValueFromPipeline: модулі пишуть `... | Out-String | Write-AppLog -Level X`. Без нього
+    # обов'язковий -Message лишався порожнім і PowerShell чекав введення в консолі — GUI «зависав».
     param(
         [Parameter(Mandatory)][string]$Level,
-        [Parameter(Mandatory)][string]$Message
+        [Parameter(Mandatory, ValueFromPipeline)][AllowEmptyString()][string]$Message
     )
 
-    $line = '[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message
-    try {
-        $writer = [System.IO.StreamWriter]::new((Get-AppLogPath), $true, [System.Text.Encoding]::UTF8)
-        try   { $writer.WriteLine($line) }
-        finally { $writer.Dispose() }
-    } catch {}
+    process {
+        $line = '[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message.TrimEnd()
+        try {
+            $writer = [System.IO.StreamWriter]::new((Get-AppLogPath), $true, [System.Text.Encoding]::UTF8)
+            try   { $writer.WriteLine($line) }
+            finally { $writer.Dispose() }
+        } catch {}
+    }
 }
 
 function Write-AppError {
