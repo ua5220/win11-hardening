@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для Check-блоків усіх settings-модулів
 .NOTES

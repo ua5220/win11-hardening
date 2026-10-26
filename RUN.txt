@@ -1,11 +1,14 @@
-cd "C:\Users\RR\Documents\GitHub\win11-hardening"
+# Запуск з кореня репо (PowerShell 5.1 або 7, від адміністратора)
+cd <шлях до репо>\win11-hardening
 
 # Тимчасово, тільки в цьому процесі:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 
-# Тепер запускаємо GUI:
+# GUI (поштучний вибір налаштувань):
 .\Run-Hardening.ps1
 
+# Або GPO Edition (увесь набір через LGPO.exe):
+.\Apply-GPO.ps1 -Action Check
+.\Apply-GPO.ps1 -Action Apply
 
-
-скрипти для захисту від 0day взаливостей Microsoft 11  latest продуктів Office, BitLocker, Windows Defender, Windows Firewall, Edge, etc
+Скрипти для захисту Windows 11 і продуктів Microsoft (Office, BitLocker, Defender, Firewall, Edge) від відомих і 0-day вразливостей.

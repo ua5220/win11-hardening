@@ -597,11 +597,12 @@ SOFTWARE\Microsoft\Windows NT\Rpc
 EnableAuthEpResolution
 DWORD:1
 
-; ══ Biometrics — вимкнути (ACSC) ═══════════════════════════════════════════
+; ══ Biometrics — Windows Hello лишається (Microsoft Baseline біометрію не вимикає) ══
+; DELETE прибирає Enabled=0, записане попередніми версіями
 Computer
 SOFTWARE\Microsoft\Biometrics
 Enabled
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Microsoft\Biometrics\FacialFeatures
@@ -1270,12 +1271,12 @@ DWORD:1
 Computer
 SYSTEM\CurrentControlSet\Control\Lsa
 CrashOnAuditFail
-DWORD:2
+DWORD:0
 
 Computer
 SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy
 Enabled
-DWORD:1
+DWORD:0
 
 Computer
 SYSTEM\CurrentControlSet\Control\Lsa

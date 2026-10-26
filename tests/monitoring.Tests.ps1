@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для monitoring.ps1 — моніторинг безпеки, Token Impersonation, SAM
 .NOTES

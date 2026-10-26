@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для privacy.ps1 — Copilot, AI, Widgets, OneDrive, приватність
 .NOTES

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для wsl-sudo.ps1 — WSL hardening та Sudo (Win 11 24H2+)
 .NOTES

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Bulk actions and event wiring for Windows 11 Hardening Suite
 .NOTES

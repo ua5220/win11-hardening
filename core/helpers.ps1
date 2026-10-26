@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Infrastructure helpers for Windows 11 Hardening Suite
 .NOTES

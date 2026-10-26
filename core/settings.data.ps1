@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Hardening settings data for Windows 11 Hardening Suite
 .NOTES

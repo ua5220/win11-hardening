@@ -1,0 +1,5 @@
+# Локальні бекапи GPO (Apply-GPO.ps1 -Action Backup/Apply)
+backups/
+# Результати тестів
+test-results.xml
+tests/TestResults.xml

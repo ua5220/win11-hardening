@@ -1,5 +1,39 @@
 # Changelog
 
+## [3.3.0] - 2026-10-26
+
+### Fixed
+- **GUI-редакція знову запускається**: `settings/*.ps1` повернуто з `settings.zip` (коміт `fg` 2026-05-17
+  запакував модулі, через що падали `Run-Hardening.ps1`, Pester-тести й lint у CI)
+- **Windows PowerShell 5.1**: усі `.ps1` переведено в UTF-8 з BOM — без нього 5.1 не розбирав
+  жодного скрипта з кирилицею; прибрано тернарний оператор з `Apply-GPO.ps1`
+- **`Apply-GPO.ps1` знаходить `tools\LGPO.exe`** (шукав у корені після перенесення з `v3-gpo/`);
+  `Get-LGPO.ps1` кладе exe у `tools\` і перевіряє Authenticode-підпис Microsoft
+- **Кодування для LGPO/secedit**: обидва читають лише ANSI або UTF-16LE з BOM — тепер їм
+  передається тимчасова UTF-16LE-копія (кириличний `LegalNotice` більше не псується)
+- **Check** більше не хардкодить 112 значень, що розійшлися з політиками (Policies-ключі firewall,
+  RunAsPPL, WindowsUpdate тепер видаляються) — очікування беруться з `policies/*.txt` і `GptTmpl.inf`
+  (1123 записи + System Access через `secedit /export`); exit 1 за наявності FAIL
+- Revert перевіряє код повернення LGPO і secedit
+
+### Changed — значення за Microsoft Security Baseline Windows 11 v25H2
+- `TypeOfAdminApprovalMode` 1 → **2** (Administrator protection)
+- `MinimumPasswordLength` 0 → **14**, `PasswordComplexity` 0 → **1**, `PasswordHistorySize` 0 → **24**
+- `FIPSAlgorithmPolicy\Enabled` 1 → **0**, `CrashOnAuditFail` 2 → **0** (явно, щоб виправити
+  машини, на яких стара версія вже відпрацювала)
+- `SOFTWARE\Microsoft\Biometrics\Enabled=0` → **DELETE** (Windows Hello лишається)
+
+### Added
+- `Apply-GPO.ps1 -Action Backup|Restore`; Apply автоматично бекапить локальну GPO (`LGPO /b`)
+  у `backups\<дата>`; `-SkipBackup`, `-Force` (машина в домені), `-Detailed` для Check
+- `tests/Policies.Format.Tests.ps1` — статичні тести формату LGPO-файлів, revert-покриття й
+  захист від повернення ризикових значень у `GptTmpl.inf` (без прав адміністратора)
+- CI: PSScriptAnalyzer для `Apply-GPO.ps1` і `tools/`, перевірка розбору всіх скриптів у PowerShell 5.1
+- `.gitignore` (`backups/`, результати тестів)
+
+### Docs
+- README переписано під фактичну структуру (обидві редакції, без `v3-gpo/`), `RUN.txt` без чужого шляху
+
 ## [3.2.0] - 2026-03-13
 
 ### Security Audit — 23 виправлення

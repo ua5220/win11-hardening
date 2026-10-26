@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WinForms UI factory and row rendering for Windows 11 Hardening Suite
 .NOTES

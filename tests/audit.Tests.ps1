@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для audit.ps1 — PowerShell, аудит, scheduled tasks
 .NOTES

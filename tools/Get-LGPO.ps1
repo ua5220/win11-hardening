@@ -1,17 +1,18 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Downloads LGPO.exe from Microsoft Security Compliance Toolkit.
 .DESCRIPTION
     Автоматично завантажує Microsoft LGPO.exe з офіційного Security Compliance Toolkit
-    та розміщує його в кореневій папці v3-gpo/.
+    та розміщує його в папці tools/ (там його шукає Apply-GPO.ps1).
+    Завантажений файл приймається лише з дійсним Authenticode-підписом Microsoft.
 .NOTES
     GPO Edition 3.0 — win11-hardening
 #>
 
 [CmdletBinding()]
 param(
-    [string]$DestinationPath = (Split-Path -Parent $PSScriptRoot)
+    [string]$DestinationPath = $PSScriptRoot
 )
 
 Set-StrictMode -Version Latest
@@ -42,6 +43,11 @@ try {
     $found = Get-ChildItem -Path $tempExtract -Filter 'LGPO.exe' -Recurse | Select-Object -First 1
     if (-not $found) {
         throw 'LGPO.exe not found inside the downloaded archive.'
+    }
+
+    $sig = Get-AuthenticodeSignature -FilePath $found.FullName
+    if ($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
+        throw "LGPO.exe має недійсний підпис ($($sig.Status), $($sig.SignerCertificate.Subject)) — файл відкинуто."
     }
 
     Write-Host '[3/3] Copying LGPO.exe...' -ForegroundColor Cyan

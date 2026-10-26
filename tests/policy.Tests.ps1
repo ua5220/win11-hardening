@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для policy.ps1 — MSS Legacy, принтери, RPC, Group Policy
 .NOTES

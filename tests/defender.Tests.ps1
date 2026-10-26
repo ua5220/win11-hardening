@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для defender.ps1 — Defender, SmartScreen, ASR, DMA, VBS
 .NOTES

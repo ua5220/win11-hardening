@@ -3,9 +3,9 @@ Unicode=yes
 [System Access]
 MinimumPasswordAge = 0
 MaximumPasswordAge = 42
-MinimumPasswordLength = 0
-PasswordComplexity = 0
-PasswordHistorySize = 0
+MinimumPasswordLength = 14
+PasswordComplexity = 1
+PasswordHistorySize = 24
 ; --- Блокування облікового запису ---
 LockoutBadCount = 5
 ResetLockoutCount = 15
@@ -56,7 +56,7 @@ MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\MaxDevicePassw
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\PromptOnSecureDesktop=4,1
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ScForceOption=4,0
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ShutdownWithoutLogon=4,0
-MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\TypeOfAdminApprovalMode=4,1
+MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\TypeOfAdminApprovalMode=4,2
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\UndockWithoutLogon=4,0
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ValidateAdminCodeSignatures=4,1
 ; --- Криптографія ---
@@ -64,10 +64,10 @@ MACHINE\Software\Policies\Microsoft\Cryptography\ForceKeyProtection=4,2
 MACHINE\Software\Policies\Microsoft\Windows\Safer\CodeIdentifiers\AuthenticodeEnabled=4,1
 ; --- LSA та аутентифікація ---
 MACHINE\System\CurrentControlSet\Control\Lsa\AuditBaseObjects=4,1
-MACHINE\System\CurrentControlSet\Control\Lsa\CrashOnAuditFail=4,2
+MACHINE\System\CurrentControlSet\Control\Lsa\CrashOnAuditFail=4,0
 MACHINE\System\CurrentControlSet\Control\Lsa\DisableDomainCreds=4,1
 MACHINE\System\CurrentControlSet\Control\Lsa\EveryoneIncludesAnonymous=4,0
-MACHINE\System\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy\Enabled=4,1
+MACHINE\System\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy\Enabled=4,0
 MACHINE\System\CurrentControlSet\Control\Lsa\ForceGuest=4,0
 MACHINE\System\CurrentControlSet\Control\Lsa\FullPrivilegeAuditing=3,1
 MACHINE\System\CurrentControlSet\Control\Lsa\LimitBlankPasswordUse=4,1
