@@ -489,7 +489,13 @@ GPO: Computer Configuration > Administrative Templates > Network > DNS Client
         Remove-RegValue $tcp "TcpMaxHalfOpenRetried"
         Remove-RegValue $tcp "TcpMaxSynRetransmissions"
     }
-    Check = { (Get-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "SynAttackProtect" 0) -eq 2 }
+    Check = {
+        $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+        (Get-Reg $tcp "SynAttackProtect" 0) -eq 1 -and
+        (Get-Reg $tcp "TcpMaxHalfOpen" 0) -eq 25 -and
+        (Get-Reg $tcp "TcpMaxHalfOpenRetried" 0) -eq 20 -and
+        (Get-Reg $tcp "TcpMaxSynRetransmissions" 0) -eq 1
+    }
 },
 
 [PSCustomObject]@{

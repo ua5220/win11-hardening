@@ -708,7 +708,7 @@ Wifi Pineapple — пристрій для атак MitM через Wi-Fi (уп�
         }
         # TCP/IP захист від SYN Flood (HPING3)
         $tcp = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
-        Set-Reg $tcp "SynAttackProtect"         2
+        Set-Reg $tcp "SynAttackProtect"         1
         Set-Reg $tcp "TcpMaxHalfOpen"           25
         Set-Reg $tcp "TcpMaxHalfOpenRetried"    20
         Set-Reg $tcp "TcpMaxSynRetransmissions" 1
