@@ -82,7 +82,7 @@
     Check = {
         $hp = "$env:SystemRoot\System32\drivers\etc\hosts"
         $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths"
-        (Test-Path $rp) -and ((Get-ItemProperty -Path $rp -ErrorAction SilentlyContinue).$hp -eq 0)
+        (Get-Reg $rp $hp $null) -eq 0
     }
 },
 

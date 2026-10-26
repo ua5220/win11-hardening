@@ -1,5 +1,31 @@
 # Changelog
 
+## [3.5.0] - 2026-10-26
+
+### Added
+- GUI: кнопка «⚠ Звіт помилок» (`Export-ErrorReport`) — Markdown-звіт помилок сесії, пунктів «Apply OK,
+  але Check = False» і пунктів з винятком у Check, з кодом Apply/Check, стеком, середовищем і хвостом логу;
+  копіюється в буфер обміну, ім'я користувача/комп'ютера масковано
+- Кожен пункт отримує `Module` (файл у `settings/`); `tests/ErrorReport.Tests.ps1`
+
+### Fixed
+- Панель кнопок на два ряди — 7 кнопок по 155 px не вміщались у вікно 900 px
+- Check «Hosts-файл — виключити зі сканування» падав під StrictMode, доки пункт не застосовано
+- Check «Password History» падав, якщо в експорті secedit кілька збігів
+
+## [3.4.1] - 2026-10-26
+
+### Fixed
+- GUI приховував збої: обробники кнопок (GetNewClosure) не бачили `ErrorActionPreference=Stop` —
+  нефатальні помилки логувались як «Apply OK»
+- `Write-AppLog` приймає конвеєр — `... | Out-String | Write-AppLog` змушував PowerShell чекати
+  введення в консолі (GUI «зависав» на пунктах моніторингу, напр. Event ID 4703)
+- SYN Flood: Check чекав `SynAttackProtect=2`, Apply пише 1; HPING3 переписував на 2
+- RTP/RTSP/Remote Assistance: порти масивом (рядок з комою був невалідним); Remote Assistance — блок за `msra.exe`
+- Delivery Optimization: лише політика `DODownloadMode=0`, без вимкнення DoSvc
+- Defender Advanced: явна помилка, якщо `DisableRestorePoint` задано політикою; `defender.txt` 1 → 0
+- `Get-WmiObject` → `Get-CimInstance` (немає в PowerShell 7)
+
 ## [3.4.0] - 2026-10-26
 
 ### Fixed

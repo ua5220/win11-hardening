@@ -143,6 +143,23 @@ function Write-AppError {
     } else { '' }
     $details = if ($location) { "$Context :: $message [$location]" } else { "$Context :: $message" }
     Write-AppLog -Level 'ERROR' -Message $details
+
+    # Для «Звіту помилок» (Export-ErrorReport) — повні деталі, яких немає в лозі
+    $Global:HardeningSession.Errors.Add([pscustomobject]@{
+        Time     = Get-Date
+        Context  = $Context
+        Message  = $message
+        Location = $location
+        ErrorId  = if ($ErrorRecord.PSObject.Properties['FullyQualifiedErrorId']) { $ErrorRecord.FullyQualifiedErrorId } else { '' }
+        Stack    = if ($ErrorRecord.PSObject.Properties['ScriptStackTrace']) { $ErrorRecord.ScriptStackTrace } else { '' }
+    })
+}
+
+# Стан поточної сесії GUI: помилки Apply/Revert і пункти, застосовані без помилки
+$Global:HardeningSession = [pscustomobject]@{
+    Start   = Get-Date
+    Errors  = [System.Collections.Generic.List[object]]::new()
+    Applied = [System.Collections.Generic.HashSet[string]]::new()
 }
 
 # ── Startup self-check ────────────────────────────────────────────────────

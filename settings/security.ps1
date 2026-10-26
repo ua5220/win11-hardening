@@ -616,7 +616,7 @@ Revision=1
     Check = {
         $tmp = "$env:TEMP\secpol_check.inf"
         secedit /export /cfg $tmp /areas SECURITYPOLICY /quiet 2>$null
-        $val = (Get-Content $tmp -ErrorAction SilentlyContinue | Where-Object { $_ -match 'PasswordHistorySize' }) -replace '.*=\s*', ''
+        $val = (Get-Content $tmp -ErrorAction SilentlyContinue | Where-Object { $_ -match '^\s*PasswordHistorySize\s*=' } | Select-Object -First 1) -replace '.*=\s*', ''
         Remove-Item $tmp -Force -ErrorAction SilentlyContinue
         [int]$val -ge 24
     }

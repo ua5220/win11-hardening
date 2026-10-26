@@ -69,6 +69,8 @@ function Invoke-BulkAction {
         $setting = if ($item.PSObject.Properties['Setting']) { $item.Setting } else { $item }
         try {
             & $setting.$ActionKey
+            if ($ActionKey -eq 'Apply') { [void]$Global:HardeningSession.Applied.Add($setting.Name) }
+            else { [void]$Global:HardeningSession.Applied.Remove($setting.Name) }
             $ok++
             Write-AppLog -Level 'INFO' -Message "$Label OK :: $($setting.Name)"
         } catch {
@@ -200,6 +202,7 @@ function Connect-RowActions {
             $ErrorActionPreference = 'Stop'
             try {
                 & $capturedRec.Setting.Apply
+                [void]$Global:HardeningSession.Applied.Add($capturedRec.Setting.Name)
                 $capturedCtx.StatusBar.Text = "  [OK] Застосовано: $($capturedRec.Setting.Name)"
                 & $fnWriteAppLog -Level 'INFO' -Message "Apply OK :: $($capturedRec.Setting.Name)"
             } catch {
@@ -213,6 +216,7 @@ function Connect-RowActions {
             $ErrorActionPreference = 'Stop'
             try {
                 & $capturedRec.Setting.Revert
+                [void]$Global:HardeningSession.Applied.Remove($capturedRec.Setting.Name)
                 $capturedCtx.StatusBar.Text = "  [OK] Скасовано: $($capturedRec.Setting.Name)"
                 & $fnWriteAppLog -Level 'INFO' -Message "Revert OK :: $($capturedRec.Setting.Name)"
             } catch {
@@ -460,6 +464,162 @@ function Import-HardeningConfig {
 
 # ── Master wiring ─────────────────────────────────────────────────────────
 
+# ── Error report (для передачі на виправлення) ───────────────────────────
+#
+# Збирає в Markdown: середовище, помилки Apply/Revert цієї сесії (зі стеком), пункти
+# «застосовано без помилки, але Check = False», пункти, де падає сам Check, і хвіст логу.
+# Ім'я користувача й комп'ютера маскуються. Текст копіюється в буфер обміну.
+
+function Export-ErrorReport {
+    param([Parameter(Mandatory)]$Settings)
+
+    $rootDir = Split-Path $PSScriptRoot -Parent
+    $session = $Global:HardeningSession
+    $fence   = '```'
+
+    $mask = {
+        param([string]$Text)
+        if (-not $Text) { return $Text }
+        foreach ($pair in @(@($env:USERNAME, '<user>'), @($env:COMPUTERNAME, '<host>'))) {
+            if ($pair[0]) { $Text = [regex]::Replace($Text, [regex]::Escape($pair[0]), $pair[1], 'IgnoreCase') }
+        }
+        return $Text
+    }
+
+    $codeBlock = {
+        param($Setting)
+        $out = @()
+        foreach ($key in 'Apply', 'Check') {
+            $prop = $Setting.PSObject.Properties[$key]
+            if ($prop -and $prop.Value) {
+                $out += "**$key**"
+                $out += ''
+                $out += "${fence}powershell"
+                $out += $prop.Value.ToString().Trim()
+                $out += $fence
+                $out += ''
+            }
+        }
+        return $out
+    }
+
+    # ── Середовище ──
+    $os = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction SilentlyContinue
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
+    $toaam   = Get-Reg 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' 'TypeOfAdminApprovalMode' '(не задано)'
+    $domain  = try { (Get-CimInstance Win32_ComputerSystem -ErrorAction Stop).PartOfDomain } catch { '?' }
+    $tamper  = try { (Get-MpComputerStatus -ErrorAction Stop).IsTamperProtected } catch { '?' }
+    $gitRev  = try {
+        $branch = & git -C $rootDir rev-parse --abbrev-ref HEAD 2>$null
+        $hash   = & git -C $rootDir rev-parse --short HEAD 2>$null
+        if ($hash) { "$branch @ $hash" } else { '(не git-репо)' }
+    } catch { '(git недоступний)' }
+
+    # ── Аналіз пунктів ──
+    $byName = @{}
+    foreach ($s in $Settings) { $byName[$s.Name] = $s }
+
+    $appliedButOff = @()
+    $checkErrors   = @()
+    foreach ($s in $Settings) {
+        $result = $null; $err = $null
+        try { $result = [bool](& $s.Check) } catch { $err = $_ }
+        if ($err) {
+            $checkErrors += [pscustomobject]@{ Setting = $s; Error = $err }
+        } elseif ($session.Applied.Contains($s.Name) -and -not $result) {
+            $appliedButOff += $s
+        }
+    }
+
+    $lines = @()
+    $lines += '# Звіт помилок win11-hardening'
+    $lines += ''
+    $lines += "Створено: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), сесія GUI з $($session.Start.ToString('HH:mm:ss'))"
+    $lines += ''
+    $lines += '## Середовище'
+    $lines += ''
+    # ProductName у реєстрі Windows 11 досі «Windows 10 …»
+    $product = if ([int]$os.CurrentBuild -ge 22000) { $os.ProductName -replace 'Windows 10', 'Windows 11' } else { $os.ProductName }
+    $lines += "- Windows: $product $($os.DisplayVersion), build $($os.CurrentBuild).$($os.UBR), $($os.EditionID)"
+    $lines += "- PowerShell: $($PSVersionTable.PSVersion) ($($PSVersionTable.PSEdition))"
+    $lines += "- Адміністратор: $isAdmin; TypeOfAdminApprovalMode: $toaam; домен: $domain; Tamper Protection: $tamper"
+    $lines += "- Код: $gitRev"
+    $lines += "- Пунктів: $($Settings.Count); застосовано в сесії: $($session.Applied.Count)"
+    $lines += ''
+
+    $lines += "## 1. Помилки Apply / Revert ($($session.Errors.Count))"
+    $lines += ''
+    if ($session.Errors.Count -eq 0) { $lines += '_Немає._'; $lines += '' }
+    foreach ($e in $session.Errors) {
+        $lines += "### $($e.Context)"
+        $lines += ''
+        $lines += "- Час: $($e.Time.ToString('HH:mm:ss'))"
+        $lines += "- Помилка: $($e.Message)"
+        if ($e.Location) { $lines += "- Місце: ``$($e.Location)``" }
+        if ($e.ErrorId)  { $lines += "- ErrorId: ``$($e.ErrorId)``" }
+        if ($e.Stack) {
+            $lines += ''
+            $lines += $fence
+            $lines += $e.Stack
+            $lines += $fence
+        }
+        $lines += ''
+        $name = ($e.Context -split ' :: ', 2)[-1]
+        if ($byName.ContainsKey($name)) {
+            $s = $byName[$name]
+            if ($s.PSObject.Properties['Module']) { $lines += "Модуль: ``$($s.Module)``"; $lines += '' }
+            $lines += & $codeBlock $s
+        }
+    }
+
+    $lines += "## 2. Застосовано без помилки, але Check = False ($($appliedButOff.Count))"
+    $lines += ''
+    if ($appliedButOff.Count -eq 0) { $lines += '_Немає._'; $lines += '' }
+    foreach ($s in $appliedButOff) {
+        $lines += "### $($s.Name)"
+        $lines += ''
+        if ($s.PSObject.Properties['Module']) { $lines += "Модуль: ``$($s.Module)``, група: $($s.Group)"; $lines += '' }
+        $lines += & $codeBlock $s
+    }
+
+    $lines += "## 3. Check падає з винятком ($($checkErrors.Count))"
+    $lines += ''
+    if ($checkErrors.Count -eq 0) { $lines += '_Немає._'; $lines += '' }
+    foreach ($c in $checkErrors) {
+        $lines += "### $($c.Setting.Name)"
+        $lines += ''
+        $lines += "- Помилка: $($c.Error.Exception.Message)"
+        if ($c.Setting.PSObject.Properties['Module']) { $lines += "- Модуль: ``$($c.Setting.Module)``" }
+        $lines += ''
+        $lines += & $codeBlock $c.Setting
+    }
+
+    $lines += '## 4. Лог сесії (останні 80 рядків)'
+    $lines += ''
+    $lines += $fence
+    $logPath = Get-AppLogPath
+    if (Test-Path $logPath) {
+        $since = $session.Start.ToString('yyyy-MM-dd HH:mm:ss')
+        $lines += @(Get-Content $logPath -Encoding UTF8 | Where-Object {
+            $_ -notmatch '^\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\]' -or $Matches[1] -ge $since
+        } | Select-Object -Last 80)
+    }
+    $lines += $fence
+
+    $text = & $mask (($lines -join "`r`n") + "`r`n")
+    $file = Join-Path (Split-Path $logPath -Parent) ("error-report-{0}.md" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+    [System.IO.File]::WriteAllText($file, $text, [System.Text.UTF8Encoding]::new($true))
+    try { Set-Clipboard -Value $text } catch { Write-AppLog -Level 'WARN' -Message "Буфер обміну недоступний: $_" }
+
+    return [pscustomobject]@{
+        Path          = $file
+        Errors        = $session.Errors.Count
+        AppliedButOff = $appliedButOff.Count
+        CheckErrors   = $checkErrors.Count
+    }
+}
+
 function Connect-HardeningActions {
     param([Parameter(Mandatory)]$Context)
 
@@ -503,6 +663,28 @@ function Connect-HardeningActions {
             [System.Diagnostics.Process]::Start($file) | Out-Null
         } catch {
             $Context.StatusBar.Text = "  [ПОМИЛКА] Звіт: $($_.Exception.Message)"
+        }
+    }.GetNewClosure())
+
+    # Error report
+    $fnErrorReport = ${function:Export-ErrorReport}
+    $Context.Buttons.ErrorReport.Add_Click({
+        $Context.StatusBar.Text = '  Збір звіту помилок (перевіряю всі пункти)...'
+        $Context.Form.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+        try {
+            $r = & $fnErrorReport -Settings $Context.AllSettings
+            $Context.StatusBar.Text = "  Звіт помилок: $($r.Path) (скопійовано в буфер)"
+            [void][System.Windows.Forms.MessageBox]::Show(
+                "Помилки Apply/Revert: $($r.Errors)`nЗастосовано, але Check = False: $($r.AppliedButOff)`nCheck падає: $($r.CheckErrors)`n`nЗвіт скопійовано в буфер обміну — вставте його в чат для виправлення.`n`nФайл: $($r.Path)",
+                'Звіт помилок',
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Information
+            )
+            Start-Process notepad.exe -ArgumentList "`"$($r.Path)`""
+        } catch {
+            $Context.StatusBar.Text = "  [ПОМИЛКА] Звіт помилок: $($_.Exception.Message)"
+        } finally {
+            $Context.Form.Cursor = [System.Windows.Forms.Cursors]::Default
         }
     }.GetNewClosure())
 

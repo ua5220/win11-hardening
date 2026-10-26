@@ -50,6 +50,8 @@ function Get-HardeningSettings {
         }
         try {
             $categorySettings = @(. $fullPath)
+            # Звідки пункт — для «Звіту помилок»
+            foreach ($s in $categorySettings) { $s | Add-Member -NotePropertyName Module -NotePropertyValue $mod.File -Force }
             $Settings += $categorySettings
         } catch {
             Write-AppLog -Level 'ERROR' -Message "Помилка завантаження модуля '$($mod.Name)': $_"

@@ -50,7 +50,7 @@ function New-AppButton {
     $b.Text      = $Text
     $b.Height    = 30
     $b.Width     = 155
-    $b.Margin    = [System.Windows.Forms.Padding]::new(0, 0, 8, 0)
+    $b.Margin    = [System.Windows.Forms.Padding]::new(0, 0, 8, 6)
     $b.FlatStyle = 'Flat'
     $b.FlatAppearance.BorderSize = 1
     $b.BackColor = $BackColor
@@ -107,7 +107,8 @@ function New-HardeningUi {
     # ── Bottom button panel ──────────────────────────────────────────────
     $btnPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
     $btnPanel.Dock          = 'Bottom'
-    $btnPanel.Height        = 48
+    # Два ряди: 8 кнопок по 163 px не вміщаються в 900 px (раніше частина кнопок обрізалась)
+    $btnPanel.Height        = 84
     $btnPanel.BackColor     = $theme.BottomPanelBackground
     $btnPanel.FlowDirection = 'LeftToRight'
     $btnPanel.Padding       = [System.Windows.Forms.Padding]::new(10, 8, 0, 0)
@@ -119,8 +120,9 @@ function New-HardeningUi {
     $btnExport        = New-AppButton 'HTML Звіт'           $C::FromArgb(80,  50, 120) 'Експорт HTML-звіту зі статусами'
     $btnExportConfig  = New-AppButton '↑ Експорт конфігу'  $C::FromArgb(20,  95, 105) 'Зберегти поточні стани налаштувань у JSON-файл'
     $btnImportConfig  = New-AppButton '↓ Імпорт конфігу'   $C::FromArgb(120, 75,  20) 'Завантажити JSON-конфігурацію та застосувати зміни'
+    $btnErrorReport   = New-AppButton '⚠ Звіт помилок'      $C::FromArgb(150, 40,  60) 'Зібрати помилки сесії в Markdown і скопіювати в буфер — для виправлення'
 
-    $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh, $btnExport, $btnExportConfig, $btnImportConfig))
+    $btnPanel.Controls.AddRange([System.Windows.Forms.Control[]]@($btnApplyAll, $btnApplySelected, $btnRevertAll, $btnRefresh, $btnExport, $btnExportConfig, $btnImportConfig, $btnErrorReport))
     $form.Controls.Add($btnPanel)
 
     # ── Filter toolbar ──────────────────────────────────────────────────────
@@ -208,6 +210,7 @@ function New-HardeningUi {
             Export        = $btnExport
             ExportConfig  = $btnExportConfig
             ImportConfig  = $btnImportConfig
+            ErrorReport   = $btnErrorReport
         }
     }
 }
