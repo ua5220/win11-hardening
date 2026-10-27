@@ -495,7 +495,7 @@ DWORD:1
 Computer
 SOFTWARE\Policies\Microsoft\WindowsStore
 RemoveWindowsStore
-DWORD:1
+DELETE
 
 ; ══ Windows Media Foundation — вимкнути Frame Server ═════════════════════
 

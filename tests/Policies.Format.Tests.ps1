@@ -76,6 +76,30 @@ Describe 'Шляхи політик читаються Windows' {
     }
 }
 
+Describe 'Microsoft Store завжди доступний' {
+    BeforeAll {
+        $script:RootDir = Split-Path $PSScriptRoot -Parent
+    }
+
+    It '<Name> не блокує Store (RemoveWindowsStore / DisablePushToInstall лише DELETE)' -ForEach $script:PolicyFiles {
+        $lines = Get-RecordLines -Path $Path
+        for ($i = 0; $i -lt $lines.Count; $i += 4) {
+            if ($lines[$i + 2].Trim() -in 'RemoveWindowsStore', 'DisablePushToInstall') {
+                $lines[$i + 3].Trim() | Should -Be 'DELETE' -Because "$($lines[$i + 1].Trim())\$($lines[$i + 2].Trim())"
+            }
+        }
+    }
+
+    It 'GUI-пункти не ставлять RemoveWindowsStore=1 і не вимикають wlidsvc' {
+        $files = Get-ChildItem (Join-Path $script:RootDir 'settings') -Filter *.ps1
+        foreach ($f in $files) {
+            $text = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8
+            $text | Should -Not -Match '"RemoveWindowsStore"\s+1' -Because $f.Name
+            $text | Should -Not -Match '(?m)^\s*"wlidsvc"\s*(#.*)?$' -Because "$($f.Name): wlidsvc у списку на вимкнення"
+        }
+    }
+}
+
 Describe 'GptTmpl.inf — значення Microsoft Security Baseline' {
     BeforeAll {
         $script:Inf = Get-Content -LiteralPath (Join-Path $script:PoliciesDir 'GptTmpl.inf') -Encoding UTF8

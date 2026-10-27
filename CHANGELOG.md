@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.5.1] - 2026-10-28
+
+### Fixed — Microsoft Store завжди доступний
+- «Скасувати все» блокувало Store: Revert пункту «Windows Store — відновити доступ» ставив
+  `RemoveWindowsStore=1`. Пункт перейменовано на «Microsoft Store — гарантувати доступ»: Apply прибирає
+  `RemoveWindowsStore` / `DisablePushToInstall` і повертає запуск `wlidsvc`, `ClipSVC`, `InstallService`,
+  `PushToInstall`; Revert Store не блокує
+- «Вимкнути Game DVR, Widgets, Store, Sound Recorder (ACSC 32)» більше не ставить `RemoveWindowsStore=1` —
+  прибирає його
+- «Додаткові сервіси телеметрії» не вимикає `wlidsvc` — без нього Store не входить в обліковий запис
+- GPO Edition: `privacy.txt` `RemoveWindowsStore` і `update.txt` `DisablePushToInstall` → **DELETE**
+- Тест «Microsoft Store завжди доступний» (`Policies.Format.Tests.ps1`)
+
 ## [3.5.0] - 2026-10-26
 
 ### Added

@@ -381,12 +381,13 @@ SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\PresentationSettings
 NoPresentationSettings
 DWORD:1
 
-; ══ Push To Install — вимкнути ═══════════════════════════════════════════════
+; ══ Push To Install — НЕ вимикаємо: Microsoft Store має бути завжди доступний ══
+; DELETE прибирає DisablePushToInstall=1 попередніх версій
 
 Computer
 SOFTWARE\Policies\Microsoft\PushToInstall
 DisablePushToInstall
-DWORD:1
+DELETE
 
 ; ══ NetMeeting — вимкнути Remote Desktop Sharing ═════════════════════════════
 

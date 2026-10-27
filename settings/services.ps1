@@ -156,7 +156,7 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 [PSCustomObject]@{
     Group = "Сервіси: History / Logs / Footprint"
     Name  = "Додаткові сервіси телеметрії — вимкнути"
-    Desc  = "diagnosticshub.standardcollector.service, DcpSvc, NcbService, PcaSvc, WalletService, wcncsvc, SensrSvc, SensorService, SensorDataService, wlidsvc → Вимкнено"
+    Desc  = "diagnosticshub.standardcollector.service, DcpSvc, NcbService, PcaSvc, WalletService, wcncsvc, SensrSvc, SensorService, SensorDataService → Вимкнено. wlidsvc не чіпаємо — без нього Microsoft Store не входить в обліковий запис"
     Apply = {
         $svcs = @(
             "diagnosticshub.standardcollector.service",  # Diagnostics Hub
@@ -165,8 +165,7 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
             "PcaSvc",                                    # Program Compatibility Assistant
             "WalletService",
             "wcncsvc",                                   # Windows Connect Now / WiFi
-            "SensrSvc", "SensorService", "SensorDataService",
-            "wlidsvc"                                    # Microsoft Account Sign-in Assistant
+            "SensrSvc", "SensorService", "SensorDataService"
         )
         foreach ($svc in $svcs) { Set-ServiceDisabled $svc }
     }
@@ -402,21 +401,21 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 [PSCustomObject]@{
     Group = "Misc / Low Priority"
     Name  = "Вимкнути Game DVR, Widgets, Store, Sound Recorder (ACSC 32)"
-    Desc  = "AllowGameDVR=0, DisableWidgets=1, RemoveWindowsStore=1, Soundrec=0"
+    Desc  = "AllowGameDVR=0, DisableWidgets=1, Soundrec=0. Microsoft Store не блокується — пункт прибирає RemoveWindowsStore"
     Apply = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"    "AllowGameDVR"             0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Widgets"    "DisableWidgetsOnLockScreen" 1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Widgets"    "DisableWidgetsBoard"       1
         # Disable News and Interests feed (private-secure-windows)
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"               "AllowNewsAndInterests"     0
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore"       "RemoveWindowsStore"        1
+        # Microsoft Store має бути завжди доступний — прибираємо блокування попередніх версій
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore"
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\SoundRecorder"      "Soundrec"                  0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System"     "DisableHTTPPrinting"       1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" "RestrictDriverInstallationToAdministrators" 1
     }
     Revert = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" "AllowGameDVR"      1
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore"    "RemoveWindowsStore" 0
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" "AllowGameDVR" 1) -eq 0 }
 },
@@ -587,15 +586,21 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 
 [PSCustomObject]@{
     Group = "Відновлення / Зручність"
-    Name  = "Windows Store — відновити доступ"
-    Desc  = "RemoveWindowsStore=0; знімає GPO-блокування Microsoft Store і modern-застосунків (Notepad, SnippingTool тощо)"
+    Name  = "Microsoft Store — гарантувати доступ"
+    Desc  = "Прибирає RemoveWindowsStore / DisablePushToInstall і повертає запуск служб Store (wlidsvc, ClipSVC, InstallService, PushToInstall). Revert Store не блокує — він має бути завжди доступний"
     Apply = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 0
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore"
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\PushToInstall" "DisablePushToInstall"
+        foreach ($svc in 'wlidsvc', 'ClipSVC', 'InstallService', 'PushToInstall') { Set-ServiceManual $svc }
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 1
+        Write-AppLog -Level 'INFO' -Message "Microsoft Store лишається доступним — відкат не блокує його."
     }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 1) -eq 0 }
+    Check = {
+        $blocked = (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "RemoveWindowsStore" 0) -eq 1
+        $wlid = Get-Service wlidsvc -ErrorAction SilentlyContinue
+        -not $blocked -and -not ($wlid -and $wlid.StartType -eq 'Disabled')
+    }
 },
 
 [PSCustomObject]@{
