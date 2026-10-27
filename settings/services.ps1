@@ -307,20 +307,32 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
 [PSCustomObject]@{
     Group = "Живлення / Патчі / Автозапуск"
     Name  = "Автоматичні оновлення Windows (ACSC 10)"
-    Desc  = "NoAutoUpdate=0, AUOptions=4 (автозавантаження і встановлення), AllowMUUpdateService=1"
+    Desc  = "Автооновлення без політик «Configure Automatic Updates» (вони блокують налаштування Windows Update, зокрема «Receive updates for other Microsoft products»); Microsoft Update для інших продуктів увімкнено"
     Apply = {
+        # Будь-яке значення «Configure Automatic Updates» блокує сторінку Windows Update в Параметрах.
+        # Без них Windows і так встановлює оновлення автоматично.
         $wu = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
-        Set-Reg $wu "NoAutoUpdate"           0
-        Set-Reg $wu "AUOptions"              4
-        Set-Reg $wu "ScheduledInstallDay"    0
-        Set-Reg $wu "AllowMUUpdateService"   1
+        foreach ($n in 'NoAutoUpdate', 'AUOptions', 'ScheduledInstallDay', 'ScheduledInstallTime', 'AllowMUUpdateService') {
+            Remove-RegValue $wu $n
+        }
+        # «Receive updates for other Microsoft products» — той самий виклик, що й перемикач у Параметрах
+        $sm = New-Object -ComObject Microsoft.Update.ServiceManager
+        $sm.ClientApplicationID = 'win11-hardening'
+        [void]$sm.AddService2('7971f918-a847-4430-9279-4a52d1efe18d', 7, '')
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "SetDisablePauseUXAccess" 1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OOBE" "AllowUpdatesInOOBE" 1
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" "NoAutoUpdate" 1
+        # Відкат повертає стандарт Windows і ніколи не вимикає оновлення
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "SetDisablePauseUXAccess"
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OOBE" "AllowUpdatesInOOBE"
     }
-    Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" "NoAutoUpdate" -1) -eq 0 }
+    Check = {
+        $off = (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" "NoAutoUpdate" 0) -eq 1
+        $mu = (New-Object -ComObject Microsoft.Update.ServiceManager).Services |
+            Where-Object { $_.ServiceID -eq '7971f918-a847-4430-9279-4a52d1efe18d' -and $_.IsRegisteredWithAU }
+        -not $off -and [bool]$mu
+    }
 },
 
 [PSCustomObject]@{
@@ -613,8 +625,9 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
         Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "DisabledHotkeys" "" "String"
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SnippingTool" "DisableSnippingTool" 1
-        Set-Reg "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer"      "DisableSnippingTool" 1
+        # Відкат «відновлення» повертає стандарт Windows, а не блокує Snipping Tool
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SnippingTool" "DisableSnippingTool"
+        Remove-RegValue "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer"      "DisableSnippingTool"
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SnippingTool" "DisableSnippingTool" 1) -eq 0 }
 },
@@ -629,7 +642,10 @@ GPO: Computer Configuration > Administrative Templates > System > Local Security
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableProgramCompat"  0
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableUAT" 1
+        # Відкат «відновлення» повертає стандарт Windows, а не вмикає блок
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableUAT"
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "AITEnable"
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableProgramCompat"
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableUAT" 1) -eq 0 }
 },

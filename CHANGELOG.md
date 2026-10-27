@@ -23,6 +23,17 @@
 - GPO Edition: `privacy.txt` `RemoveWindowsStore` і `update.txt` `DisablePushToInstall` → **DELETE**
 - Тест «Microsoft Store завжди доступний» (`Policies.Format.Tests.ps1`)
 
+### Fixed — Windows Update не блокується
+- «Скасувати все» вимикало автооновлення: Revert «Автоматичні оновлення Windows (ACSC 10)» ставив
+  `NoAutoUpdate=1`. Тепер пункт не пише політик «Configure Automatic Updates» (`NoAutoUpdate`, `AUOptions`,
+  `ScheduledInstall*`, `AllowMUUpdateService`) — вони блокували сторінку Windows Update, зокрема
+  «Receive updates for other Microsoft products». Microsoft Update вмикається через
+  `Microsoft.Update.ServiceManager.AddService2` (як перемикач у Параметрах); Revert нічого не вимикає
+- GPO Edition: ті самі значення в `update.txt` → **DELETE**
+- Revert «Snipping Tool — відновити» і «Notepad — відновити» більше не блокують Snipping Tool / не ставлять
+  `DisableUAT=1` — прибирають значення
+- Тест «Revert не вимикає функції Windows»
+
 ## [3.5.0] - 2026-10-26
 
 ### Added

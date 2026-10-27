@@ -112,6 +112,34 @@ Describe 'Платформа сповіщень завжди доступна' {
     }
 }
 
+Describe 'Revert не вимикає функції Windows' {
+    # «Скасувати все» відкочує всі пункти — відкат «увімкнути/відновити» не має нічого блокувати
+    # (2026-10-26: Revert вимкнув автооновлення NoAutoUpdate=1 і Store RemoveWindowsStore=1)
+    BeforeAll {
+        $script:Blocking = 'NoAutoUpdate|RemoveWindowsStore|DisableSnippingTool|DisableUAT|DisablePushToInstall'
+        $script:Reverts = foreach ($f in Get-ChildItem (Join-Path (Split-Path $PSScriptRoot -Parent) 'settings') -Filter *.ps1) {
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$null)
+            foreach ($h in $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.HashtableAst] }, $true)) {
+                $rev = $h.KeyValuePairs | Where-Object { $_.Item1.Extent.Text -eq 'Revert' } | Select-Object -First 1
+                if ($rev) { [pscustomobject]@{ File = $f.Name; Line = $h.Extent.StartLineNumber; Text = $rev.Item2.Extent.Text } }
+            }
+        }
+    }
+
+    It 'жоден Revert не ставить блокуючих значень' {
+        $bad = @($script:Reverts | Where-Object { $_.Text -match "Set-Reg\s+\S+\s+`"($script:Blocking)`"\s+1\b" } |
+            ForEach-Object { "$($_.File):$($_.Line)" })
+        $bad | Should -BeNullOrEmpty
+    }
+
+    It 'GPO Edition не вимикає автооновлення' {
+        $lines = Get-RecordLines -Path (Join-Path $script:PoliciesDir 'update.txt')
+        for ($i = 0; $i -lt $lines.Count; $i += 4) {
+            if ($lines[$i + 2].Trim() -eq 'NoAutoUpdate') { $lines[$i + 3].Trim() | Should -Not -Be 'DWORD:1' }
+        }
+    }
+}
+
 Describe 'GptTmpl.inf — значення Microsoft Security Baseline' {
     BeforeAll {
         $script:Inf = Get-Content -LiteralPath (Join-Path $script:PoliciesDir 'GptTmpl.inf') -Encoding UTF8

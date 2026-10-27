@@ -3,31 +3,34 @@
 ; Джерела: ACSC, CIS Benchmark
 
 ; ══ Windows Update — автоматичні оновлення (ACSC 10) ═══════════════════════
+; «Configure Automatic Updates» НЕ задаємо: будь-яке значення блокує сторінку Windows Update в Параметрах
+; (зокрема «Receive updates for other Microsoft products»), а без політики Windows і так оновлюється сама.
+; DELETE прибирає значення попередніх версій.
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoUpdate
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AUOptions
-DWORD:4
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 ScheduledInstallDay
-DWORD:0
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 ScheduledInstallTime
-DWORD:3
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
 AllowMUUpdateService
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
