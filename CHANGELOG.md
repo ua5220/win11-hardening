@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.5.2] - 2026-10-28
+
+### Fixed — застосунки зі сповіщеннями не запускались
+- «CDP Per-user Services — вимкнути» ставив `WpnUserService` `Start=4`: WhatsApp (Store) падав на старті з
+  `0x803E0105` «The notification platform is unavailable» без вікна й без повідомлення. `WpnUserService`
+  прибрано зі списку, Apply повертає йому `Start=2` (лікує машини після попередніх версій)
+- Revert того ж пункту повертав лише `LetAppsSyncWithDevices` — тепер відновлює стандартний `Start` усіх
+  його служб (CDPUserSvc/OneSyncSvc/WpnUserService = 2, решта = 3)
+- Тест «Платформа сповіщень завжди доступна» (`Policies.Format.Tests.ps1`)
+
 ## [3.5.1] - 2026-10-28
 
 ### Fixed — Microsoft Store завжди доступний

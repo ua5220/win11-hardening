@@ -491,18 +491,30 @@
 [PSCustomObject]@{
     Group = "Приватність — розширена (HKLM)"
     Name  = "CDP Per-user Services — вимкнути (CDPUserSvc, OneSyncSvc, PimIndex, UserDataSvc та ін.)"
-    Desc  = "CDPUserSvc, OneSyncSvc, PimIndexMaintenanceSvc, UnistoreSvc, UserDataSvc, MessagingService, WpnUserService → Start=4"
+    Desc  = "CDPUserSvc, OneSyncSvc, PimIndexMaintenanceSvc, UnistoreSvc, UserDataSvc, MessagingService → Start=4. WpnUserService не чіпає (без нього не стартують WhatsApp, Teams та інші застосунки зі сповіщеннями) і повертає йому автозапуск"
     Apply = {
         $svcs = @("CDPUserSvc","OneSyncSvc","PimIndexMaintenanceSvc","UnistoreSvc",
-                  "UserDataSvc","MessagingService","WpnUserService")
+                  "UserDataSvc","MessagingService")
         foreach ($svcName in $svcs) {
             Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services" |
                 Where-Object { $_.PSChildName -like "$svcName*" } |
                 ForEach-Object { Set-Reg $_.PSPath "Start" 4 }
         }
+        # Попередні версії вимикали WpnUserService — WhatsApp падав з 0x803E0105 без вікна
+        Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services" |
+            Where-Object { $_.PSChildName -like "WpnUserService*" } |
+            ForEach-Object { Set-Reg $_.PSPath "Start" 2 }
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "LetAppsSyncWithDevices" 2
     }
     Revert = {
+        # Стандартний тип запуску Windows 11: 2 = Automatic, 3 = Manual
+        $defaults = @{ CDPUserSvc = 2; OneSyncSvc = 2; PimIndexMaintenanceSvc = 3; UnistoreSvc = 3
+                       UserDataSvc = 3; MessagingService = 3; WpnUserService = 2 }
+        foreach ($svcName in $defaults.Keys) {
+            Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services" |
+                Where-Object { $_.PSChildName -like "$svcName*" } |
+                ForEach-Object { Set-Reg $_.PSPath "Start" $defaults[$svcName] }
+        }
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "LetAppsSyncWithDevices" 0
     }
     Check = { (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "LetAppsSyncWithDevices" 0) -eq 2 }

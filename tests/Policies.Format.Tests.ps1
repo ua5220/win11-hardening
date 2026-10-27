@@ -100,6 +100,18 @@ Describe 'Microsoft Store завжди доступний' {
     }
 }
 
+Describe 'Платформа сповіщень завжди доступна' {
+    # Вимкнений WpnUserService — WhatsApp та інші застосунки падають на старті з 0x803E0105 (3.5.2)
+    It 'GUI-пункти не вимикають WpnUserService' {
+        $files = Get-ChildItem (Join-Path (Split-Path $PSScriptRoot -Parent) 'settings') -Filter *.ps1
+        foreach ($f in $files) {
+            $text = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8
+            $text | Should -Not -Match '\$svcs\s*=\s*@\([^)]*"WpnUserService"' -Because "$($f.Name): WpnUserService у списку на вимкнення"
+            $text | Should -Not -Match '"WpnUserService"[^\r\n]*"Start"\s+4' -Because $f.Name
+        }
+    }
+}
+
 Describe 'GptTmpl.inf — значення Microsoft Security Baseline' {
     BeforeAll {
         $script:Inf = Get-Content -LiteralPath (Join-Path $script:PoliciesDir 'GptTmpl.inf') -Encoding UTF8
