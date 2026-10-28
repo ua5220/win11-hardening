@@ -132,6 +132,22 @@ Describe 'Revert не вимикає функції Windows' {
         $bad | Should -BeNullOrEmpty
     }
 
+    It 'дозволені програми CFA не блокуються (DisableLocalAdminMerge / HideExclusionsFromLocalAdmins ≠ 1)' {
+        $settingsDir = Join-Path (Split-Path $PSScriptRoot -Parent) 'settings'
+        foreach ($f in Get-ChildItem $settingsDir -Filter *.ps1) {
+            Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8 |
+                Should -Not -Match '"(DisableLocalAdminMerge|HideExclusionsFromLocalAdmins)"\s+1\b' -Because $f.Name
+        }
+        foreach ($p in Get-ChildItem $script:PoliciesDir -Filter *.txt) {
+            $lines = Get-RecordLines -Path $p.FullName
+            for ($i = 0; $i -lt $lines.Count; $i += 4) {
+                if ($lines[$i + 2].Trim() -in 'DisableLocalAdminMerge', 'HideExclusionsFromLocalAdmins') {
+                    $lines[$i + 3].Trim() | Should -Be 'DELETE' -Because "$($p.Name): $($lines[$i + 2].Trim())"
+                }
+            }
+        }
+    }
+
     It 'GPO Edition не вимикає автооновлення' {
         $lines = Get-RecordLines -Path (Join-Path $script:PoliciesDir 'update.txt')
         for ($i = 0; $i -lt $lines.Count; $i += 4) {

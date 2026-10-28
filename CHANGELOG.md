@@ -34,6 +34,14 @@
   `DisableUAT=1` — прибирають значення
 - Тест «Revert не вимикає функції Windows»
 
+### Fixed — дозволені програми для захищених папок (CFA)
+- «Defender ACSC» ставив `DisableLocalAdminMerge=1` (локальні дозволені програми CFA ігнорувались) і
+  `HideExclusionsFromLocalAdmins=1` («Allow an app» у Захиснику — «Your administrator has blocked this action»).
+  Тепер пункт прибирає обидва (Microsoft Baseline: `DisableLocalAdminMerge=0`); GPO Edition — **DELETE**
+- Пункт CFA прибирає ці значення й дозволяє, крім PowerShell, усі знайдені `git.exe`: Git for Windows і git
+  GitHub Desktop у профілях усіх користувачів (з Administrator protection `$env:LOCALAPPDATA` — профіль адміна)
+- Тест: жоден пункт і жодна політика не ставлять ці значення в 1
+
 ## [3.5.0] - 2026-10-26
 
 ### Added

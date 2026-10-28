@@ -20,15 +20,18 @@ SOFTWARE\Policies\Microsoft\Windows Defender
 PUAProtection
 DWORD:1
 
+; DisableLocalAdminMerge / HideExclusionsFromLocalAdmins НЕ задаємо: вони ігнорують і ховають локальні
+; дозволені програми CFA — «Allow an app» блокується («Your administrator has blocked this action»).
+; Microsoft Baseline: DisableLocalAdminMerge=0. DELETE прибирає значення попередніх версій.
 Computer
 SOFTWARE\Policies\Microsoft\Windows Defender
 DisableLocalAdminMerge
-DWORD:1
+DELETE
 
 Computer
 SOFTWARE\Policies\Microsoft\Windows Defender
 HideExclusionsFromLocalAdmins
-DWORD:1
+DELETE
 
 ; ── Real-Time Protection ───────────────────────────────────────────────────
 

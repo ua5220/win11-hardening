@@ -27,8 +27,11 @@
     Apply = {
         $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
         Set-Reg $d "PUAProtection"              1
-        Set-Reg $d "DisableLocalAdminMerge"     1
-        Set-Reg $d "HideExclusionsFromLocalAdmins" 1
+        # DisableLocalAdminMerge=1 ігнорує локальні дозволені програми CFA і винятки, а
+        # HideExclusionsFromLocalAdmins=1 блокує «Allow an app» у Захиснику («Your administrator has
+        # blocked this action»). Microsoft Baseline: DisableLocalAdminMerge=0 — прибираємо обидва.
+        Remove-RegValue $d "DisableLocalAdminMerge"
+        Remove-RegValue $d "HideExclusionsFromLocalAdmins"
         Set-Reg $d "DisableAntiSpyware"         0
         Set-Reg $d "DisableRoutinelyTakingAction" 0
         Set-Reg "$d\Spynet" "LocalSettingOverrideSpynetReporting" 0
@@ -65,7 +68,7 @@
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Hosts-файл — виключити зі сканування Defender"
-    Desc  = "Додає hosts до Exclusions\Paths на policy-рівні (обходить DisableLocalAdminMerge=1 з ACSC-блоку)"
+    Desc  = "Додає hosts до Exclusions\Paths на policy-рівні (діє і тоді, коли DisableLocalAdminMerge=1 задано іншою політикою)"
     Apply = {
         $hp = "$env:SystemRoot\System32\drivers\etc\hosts"
         $rp = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths"
@@ -137,10 +140,14 @@ GPO: Computer Configuration > Administrative Templates > Windows Components >
 Вмикає CFA виключно через Set-MpPreference — без запису в HKLM:\SOFTWARE\Policies\.
 Це критично: GPO-ключ у \Policies\ блокує UI "Allow an app through Controlled folder access"
 та показує "Your administrator has blocked this action" навіть на дозволених програмах.
-Додає до whitelist: powershell.exe та pwsh.exe (PowerShell 7, якщо встановлено).
+Прибирає DisableLocalAdminMerge / HideExclusionsFromLocalAdmins — інакше «Allow an app» заблоковано.
+Додає до whitelist: powershell.exe, pwsh.exe і всі знайдені git.exe (Git for Windows, GitHub Desktop).
 Revert: видаляє GPO-ключ (якщо лишився з попередніх запусків) та вимикає CFA.
 "@
     Apply = {
+        $d = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"
+        Remove-RegValue $d "DisableLocalAdminMerge"
+        Remove-RegValue $d "HideExclusionsFromLocalAdmins"
         $gpoPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access"
         # Видалити GPO-ключ якщо лишився з попередніх запусків — він блокує UI контроль
         if (Test-Path $gpoPath) {
@@ -158,7 +165,12 @@ Revert: видаляє GPO-ключ (якщо лишився з попередн
         $ps1 = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
         $ps2 = "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
         $ps7 = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-        foreach ($exe in @($ps1, $ps2, $ps7)) {
+        # git пише в .git у Documents; GitHub Desktop має власний git у профілі кожного користувача
+        # (з Administrator protection $env:LOCALAPPDATA — профіль адміністратора, тож шукаємо в усіх)
+        $git = @('cmd', 'bin', 'mingw64\bin', 'ucrt64\bin' | ForEach-Object { "$env:ProgramFiles\Git\$_\git.exe" }) +
+            @(Get-ChildItem "$env:SystemDrive\Users\*\AppData\Local\GitHubDesktop\app-*\resources\app\git\*\bin\git.exe" -ErrorAction SilentlyContinue |
+                ForEach-Object { $_.FullName })
+        foreach ($exe in @($ps1, $ps2, $ps7) + $git) {
             if (Test-Path $exe) {
                 try {
                     Add-MpPreference -ControlledFolderAccessAllowedApplications $exe -ErrorAction Stop
