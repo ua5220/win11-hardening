@@ -116,7 +116,7 @@ Describe 'Revert не вимикає функції Windows' {
     # «Скасувати все» відкочує всі пункти — відкат «увімкнути/відновити» не має нічого блокувати
     # (2026-10-26: Revert вимкнув автооновлення NoAutoUpdate=1 і Store RemoveWindowsStore=1)
     BeforeAll {
-        $script:Blocking = 'NoAutoUpdate|RemoveWindowsStore|DisableSnippingTool|DisableUAT|DisablePushToInstall'
+        $script:Blocking = 'NoAutoUpdate|RemoveWindowsStore|DisableSnippingTool|DisableUAT|DisablePushToInstall|HideSystray|HideSCAHealth'
         $script:Reverts = foreach ($f in Get-ChildItem (Join-Path (Split-Path $PSScriptRoot -Parent) 'settings') -Filter *.ps1) {
             $ast = [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$null)
             foreach ($h in $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.HashtableAst] }, $true)) {
@@ -127,8 +127,17 @@ Describe 'Revert не вимикає функції Windows' {
     }
 
     It 'жоден Revert не ставить блокуючих значень' {
-        $bad = @($script:Reverts | Where-Object { $_.Text -match "Set-Reg\s+\S+\s+`"($script:Blocking)`"\s+1\b" } |
+        # Шлях може бути в лапках з пробілами ("...Windows Defender Security Center...")
+        $bad = @($script:Reverts | Where-Object { $_.Text -match "Set-Reg\s+(?:`"[^`"]*`"|\S+)\s+`"($script:Blocking)`"\s+1\b" } |
             ForEach-Object { "$($_.File):$($_.Line)" })
+        $bad | Should -BeNullOrEmpty
+    }
+
+    It 'жоден Revert не вимикає служби безпеки й оновлень' {
+        $bad = @($script:Reverts | Where-Object {
+                $_.Text -match '(SecurityHealthService|WinDefend|wscsvc|wuauserv|UsoSvc)"?\s+-StartupType\s+Disabled' -or
+                $_.Text -match 'Set-ServiceDisabled\s+"?(SecurityHealthService|WinDefend|wscsvc|wuauserv|UsoSvc)\b'
+            } | ForEach-Object { "$($_.File):$($_.Line)" })
         $bad | Should -BeNullOrEmpty
     }
 

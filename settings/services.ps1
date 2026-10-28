@@ -689,8 +689,10 @@ AuthenticodeEnabled=0 в Apply та Revert — SRP Authenticode НЕ вмика�
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth" 0
     }
     Revert = {
-        Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" "HideSystray"  1
-        Set-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth" 1
+        # Відкат «відновлення» повертає стандарт Windows, а не ховає значок Безпеки Windows
+        Remove-RegValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" "HideSystray"
+        Remove-RegValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth"
+        Remove-RegValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"           "HideSCAHealth"
     }
     Check = {
         (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" "HideSystray" 1) -eq 0
@@ -708,10 +710,13 @@ AuthenticodeEnabled=0 в Apply та Revert — SRP Authenticode НЕ вмика�
         Start-Service -Name "wscsvc"                                      -ErrorAction SilentlyContinue
         Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" `
             "SecurityHealth" "%windir%\system32\SecurityHealthSystray.exe" "ExpandString"
+        # Увімкнути в «Диспетчер завдань → Автозавантаження» (02 00… = увімкнено)
+        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" `
+            -Name "SecurityHealth" -Value ([byte[]](2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) -Type Binary -Force
     }
     Revert = {
-        Stop-Service -Name "SecurityHealthService" -Force     -ErrorAction SilentlyContinue
-        Set-Service  -Name "SecurityHealthService" -StartupType Disabled -ErrorAction SilentlyContinue
+        # Відкат повертає стандартний режим Windows (Manual) і ніколи не вимикає Центр безпеки
+        Set-Service -Name "SecurityHealthService" -StartupType Manual -ErrorAction SilentlyContinue
     }
     Check = {
         $s = Get-Service -Name "SecurityHealthService" -ErrorAction SilentlyContinue

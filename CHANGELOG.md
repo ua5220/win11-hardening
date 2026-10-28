@@ -42,6 +42,14 @@
   GitHub Desktop у профілях усіх користувачів (з Administrator protection `$env:LOCALAPPDATA` — профіль адміна)
 - Тест: жоден пункт і жодна політика не ставлять ці значення в 1
 
+### Fixed — значок «Безпека Windows»
+- Revert «Windows Security — відновити іконку у systray» ставив `HideSystray=1` / `HideSCAHealth=1` («Скасувати
+  все» ховало значок) — тепер прибирає значення
+- Revert «Windows Security Center — відновити сервіс і застосунок» **вимикав `SecurityHealthService`** — тепер
+  повертає стандартний Manual; Apply вмикає `SecurityHealth` в автозавантаженні Диспетчера завдань
+- Тест «Revert не вимикає функції Windows»: шлях у лапках з пробілами, `HideSystray` / `HideSCAHealth`,
+  заборона вимикати служби безпеки й оновлень (`SecurityHealthService`, `WinDefend`, `wscsvc`, `wuauserv`, `UsoSvc`)
+
 ## [3.5.0] - 2026-10-26
 
 ### Added
