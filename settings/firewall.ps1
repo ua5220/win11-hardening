@@ -591,7 +591,7 @@
 Відповідає: Hardening AI ChatGPT.ps1 (PSHardening) 🟡 Бажано
 Блокує доступ до OpenAI, ChatGPT та суміжних AI-сервісів:
 • Через hosts файл: chat.openai.com, api.openai.com, openai.com, oaiusercontent.com
-• Через брандмауер: відомі AS блоки OpenAI
+• IP-правила брандмауера немає навмисно: адреси OpenAI лежать у спільних діапазонах Cloudflare
 Корисно для корпоративних середовищ де заборонено використання AI-сервісів.
 "@
     Apply = {
@@ -615,11 +615,10 @@
         if ($newEntries.Count -gt 0) {
             Add-Content -Path $hostsPath -Value ($aiDomains -join "`n") -Encoding UTF8
         }
-        # Брандмауер: відомі IP-блоки OpenAI
-        $openAiIPs = @('104.18.0.0/16','172.64.0.0/13','104.21.0.0/16')
+        # IP-правило брандмауера НЕ створюємо: 104.18/16, 172.64/13, 104.21/16 — спільні
+        # діапазони Cloudflare, правило блокувало сторонні сайти (iherb тощо).
+        # Прибираємо його, якщо лишилось від попередніх запусків.
         Remove-NetFirewallRule -DisplayName 'Block AI OpenAI Outbound' -ErrorAction SilentlyContinue
-        New-NetFirewallRule -DisplayName 'Block AI OpenAI Outbound' -Direction Outbound `
-            -RemoteAddress $openAiIPs -Action Block -Profile Any -Enabled True | Out-Null
         Clear-DnsClientCache -ErrorAction SilentlyContinue
     }
     Revert = {
