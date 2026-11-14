@@ -27,19 +27,6 @@ Describe "services.ps1 — Шифрування / BitLocker" {
         AfterAll { $item.Revert.Invoke() }
     }
 
-    Context "Знімні носії — заборонити доступ (ACSC 28)" {
-        BeforeAll {
-            $item = $settings | Where-Object { $_.Name -match "Знімні носії" }
-            $item.Apply.Invoke()
-        }
-        It "Deny_All дорівнює 1" {
-            Get-ItemPropertyValue `
-                "HKLM:\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices" `
-                "Deny_All" | Should -Be 1
-        }
-        AfterAll { $item.Revert.Invoke() }
-    }
-
     Context "Credential Guard — VBS + LSASS (ACSC 01)" {
         BeforeAll {
             $item = $settings | Where-Object { $_.Name -match "Credential Guard" }
@@ -129,16 +116,19 @@ Describe "services.ps1 — Misc / Low Priority" {
 
 Describe "services.ps1 — Відновлення / Зручність" {
 
-    Context "Windows Store — відновити доступ" {
+    Context "Microsoft Store — гарантувати доступ" {
         BeforeAll {
-            $item = $settings | Where-Object { $_.Name -match "Store.*відновити" }
+            $item = $settings | Where-Object { $_.Name -match "Microsoft Store — гарантувати доступ" }
             $item.Apply.Invoke()
         }
-        It "RemoveWindowsStore дорівнює 0" {
-            Get-ItemPropertyValue `
-                "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" `
-                "RemoveWindowsStore" | Should -Be 0
+        It "Apply прибирає RemoveWindowsStore" {
+            (Get-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" -ErrorAction SilentlyContinue).RemoveWindowsStore |
+                Should -BeNullOrEmpty
         }
-        AfterAll { $item.Revert.Invoke() }
+        It "Revert не блокує Store" {
+            $item.Revert.Invoke()
+            (Get-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" -ErrorAction SilentlyContinue).RemoveWindowsStore |
+                Should -Not -Be 1
+        }
     }
 }

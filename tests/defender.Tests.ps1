@@ -48,10 +48,18 @@ Describe "defender.ps1 — Defender / Antivirus" {
             $item = $settings | Where-Object { $_.Name -match "Controlled Folder Access" }
             $item.Apply.Invoke()
         }
-        It "EnableControlledFolderAccess дорівнює 1" {
-            Get-ItemPropertyValue `
-                "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access" `
-                "EnableControlledFolderAccess" | Should -Be 1
+        # CFA вмикається лише через Set-MpPreference: GPO-ключ блокує «Allow an app»
+        It "Apply не залишає GPO-ключ CFA у SOFTWARE\Policies" {
+            Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access" |
+                Should -BeFalse
+        }
+        It "Apply прибирає DisableLocalAdminMerge і HideExclusionsFromLocalAdmins" {
+            $d = Get-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -ErrorAction SilentlyContinue
+            $d.DisableLocalAdminMerge        | Should -BeNullOrEmpty
+            $d.HideExclusionsFromLocalAdmins | Should -BeNullOrEmpty
+        }
+        It "EnableControlledFolderAccess = Enabled (Get-MpPreference)" -Skip:(-not (Get-Command Get-MpPreference -ErrorAction SilentlyContinue)) {
+            (Get-MpPreference).EnableControlledFolderAccess | Should -Be 1
         }
         It "Revert видаляє GPO-вузол (не залишає =0)" {
             $item.Revert.Invoke()
@@ -108,15 +116,15 @@ Describe "defender.ps1 — SmartScreen / Recall / Телеметрія" {
         AfterAll { $item.Revert.Invoke() }
     }
 
-    Context "Вимкнути телеметрію (DiagTrack + AllowTelemetry=0)" {
+    Context "Діагностичні дані — дозволити додаткові (AllowTelemetry=3)" {
         BeforeAll {
-            $item = $settings | Where-Object { $_.Name -match "DiagTrack.*AllowTelemetry" }
+            $item = $settings | Where-Object { $_.Name -match "Діагностичні дані.*AllowTelemetry=3" }
             $item.Apply.Invoke()
         }
-        It "AllowTelemetry дорівнює 0" {
+        It "AllowTelemetry дорівнює 3 (toggle у Settings не заблоковано)" {
             Get-ItemPropertyValue `
                 "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" `
-                "AllowTelemetry" | Should -Be 0
+                "AllowTelemetry" | Should -Be 3
         }
         AfterAll { $item.Revert.Invoke() }
     }

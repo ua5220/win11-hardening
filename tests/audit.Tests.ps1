@@ -14,9 +14,9 @@ BeforeAll {
 
 Describe "audit.ps1 — PowerShell / Audit" {
 
-    Context "PowerShell — AllSigned + Module/Script logging (ACSC 31)" {
+    Context "PowerShell — RemoteSigned + Module/Script logging + Transcription (ACSC 31)" {
         BeforeAll {
-            $item = $settings | Where-Object { $_.Name -match "AllSigned.*logging" }
+            $item = $settings | Where-Object { $_.Name -match "RemoteSigned.*logging" }
             $item.Apply.Invoke()
         }
         It "EnableScriptBlockLogging дорівнює 1" {
@@ -28,6 +28,11 @@ Describe "audit.ps1 — PowerShell / Audit" {
             Get-ItemPropertyValue `
                 "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" `
                 "EnableModuleLogging" | Should -Be 1
+        }
+        It "ExecutionPolicy дорівнює RemoteSigned" {
+            Get-ItemPropertyValue `
+                "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" `
+                "ExecutionPolicy" | Should -Be "RemoteSigned"
         }
         AfterAll { $item.Revert.Invoke() }
     }
