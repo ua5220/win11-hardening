@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для monitoring.ps1 — моніторинг безпеки, Token Impersonation, SAM
 .NOTES
@@ -88,9 +88,9 @@ Describe "monitoring.ps1 — Дамп кешів / Forensic" {
 
 Describe "monitoring.ps1 — OPSEC / Маскування" {
 
-    Context "Timezone Spoofer — підміна часового поясу" {
+    Context "Зміна часового поясу — збереження та відновлення" {
         BeforeAll {
-            $item = $settings | Where-Object { $_.Name -match "Timezone Spoofer" }
+            $item = $settings | Where-Object { $_.Name -match "Зміна часового поясу" }
         }
         It "Apply є ScriptBlock" {
             $item.Apply | Should -BeOfType [scriptblock]

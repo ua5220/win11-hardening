@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для security.ps1 — UAC, паролі, облікові записи, криптографія
 .NOTES

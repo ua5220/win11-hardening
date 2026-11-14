@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Infrastructure helpers for Windows 11 Hardening Suite
 .NOTES
@@ -114,17 +114,21 @@ function Get-AppLogPath {
 }
 
 function Write-AppLog {
+    # ValueFromPipeline: модулі пишуть `... | Out-String | Write-AppLog -Level X`. Без нього
+    # обов'язковий -Message лишався порожнім і PowerShell чекав введення в консолі — GUI «зависав».
     param(
         [Parameter(Mandatory)][string]$Level,
-        [Parameter(Mandatory)][string]$Message
+        [Parameter(Mandatory, ValueFromPipeline)][AllowEmptyString()][string]$Message
     )
 
-    $line = '[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message
-    try {
-        $writer = [System.IO.StreamWriter]::new((Get-AppLogPath), $true, [System.Text.Encoding]::UTF8)
-        try   { $writer.WriteLine($line) }
-        finally { $writer.Dispose() }
-    } catch {}
+    process {
+        $line = '[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level.ToUpperInvariant(), $Message.TrimEnd()
+        try {
+            $writer = [System.IO.StreamWriter]::new((Get-AppLogPath), $true, [System.Text.Encoding]::UTF8)
+            try   { $writer.WriteLine($line) }
+            finally { $writer.Dispose() }
+        } catch {}
+    }
 }
 
 function Write-AppError {
@@ -139,6 +143,23 @@ function Write-AppError {
     } else { '' }
     $details = if ($location) { "$Context :: $message [$location]" } else { "$Context :: $message" }
     Write-AppLog -Level 'ERROR' -Message $details
+
+    # Для «Звіту помилок» (Export-ErrorReport) — повні деталі, яких немає в лозі
+    $Global:HardeningSession.Errors.Add([pscustomobject]@{
+        Time     = Get-Date
+        Context  = $Context
+        Message  = $message
+        Location = $location
+        ErrorId  = if ($ErrorRecord.PSObject.Properties['FullyQualifiedErrorId']) { $ErrorRecord.FullyQualifiedErrorId } else { '' }
+        Stack    = if ($ErrorRecord.PSObject.Properties['ScriptStackTrace']) { $ErrorRecord.ScriptStackTrace } else { '' }
+    })
+}
+
+# Стан поточної сесії GUI: помилки Apply/Revert і пункти, застосовані без помилки
+$Global:HardeningSession = [pscustomobject]@{
+    Start   = Get-Date
+    Errors  = [System.Collections.Generic.List[object]]::new()
+    Applied = [System.Collections.Generic.HashSet[string]]::new()
 }
 
 # ── Startup self-check ────────────────────────────────────────────────────

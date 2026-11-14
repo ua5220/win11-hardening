@@ -1,0 +1,102 @@
+{
+	"env": {
+		"MEMPALACE_WING": "win11_hardening",
+		"PYTHONUTF8": "1"
+	},
+	"hooks": {
+		"UserPromptSubmit": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-reminder.py\"",
+						"shell": "powershell",
+						"timeout": 20,
+						"statusMessage": "mempalace reminder"
+					}
+				]
+			}
+		],
+		"SessionStart": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-session-start.py\"",
+						"shell": "powershell",
+						"timeout": 60
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-stop.py\"",
+						"shell": "powershell"
+					}
+				]
+			}
+		],
+		"PreCompact": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-precompact.py\"",
+						"shell": "powershell"
+					}
+				]
+			}
+		],
+		"SessionEnd": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-session-end.py\"",
+						"shell": "powershell"
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "mcp__mempalace__mempalace_search",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-echo-guard.py\"",
+						"shell": "powershell",
+						"timeout": 10
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "mcp__mempalace__mempalace_search",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-search-router.py\"",
+						"shell": "powershell",
+						"timeout": 10
+					}
+				]
+			}
+		]
+	},
+	"permissions": {
+		"allow": [
+			"mcp__mempalace__mempalace_search"
+		]
+	}
+}

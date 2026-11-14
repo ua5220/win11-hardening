@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для network.ps1 — NTLM, SMB, TCP/IP, брандмауер, мережева ізоляція
 .NOTES

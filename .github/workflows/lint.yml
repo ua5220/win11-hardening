@@ -41,15 +41,27 @@ jobs:
             exit 1
           }
 
-      - name: Run PSScriptAnalyzer on Run-Hardening.ps1
+      - name: Run PSScriptAnalyzer on entry scripts and tools/
         shell: pwsh
         run: |
-          $results = Invoke-ScriptAnalyzer -Path ./Run-Hardening.ps1 -Severity Warning,Error
+          $results = @('./Run-Hardening.ps1', './Apply-GPO.ps1', './tools/Get-LGPO.ps1') |
+            ForEach-Object { Invoke-ScriptAnalyzer -Path $_ -Severity Warning,Error -ExcludeRule PSAvoidUsingWriteHost }
           $results | Format-Table -AutoSize
           if ($results | Where-Object Severity -eq 'Error') {
-            Write-Error "PSScriptAnalyzer знайшов помилки в Run-Hardening.ps1"
+            Write-Error "PSScriptAnalyzer знайшов помилки в точках входу"
             exit 1
           }
+
+      - name: Parse all scripts with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $failed = 0
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors)
+            if ($errors) { Write-Host "$($_.FullName): $($errors[0].Message)"; $failed++ }
+          }
+          if ($failed) { Write-Error "$failed file(s) fail to parse in PowerShell 5.1 (UTF-8 without BOM?)"; exit 1 }
 
   pester:
     name: Pester Tests (structure)
@@ -63,11 +75,17 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module Pester -Force -Scope CurrentUser -MinimumVersion 5.0
 
+      # Лише статичні тести: вони не змінюють систему. Функціональні Apply/Revert — pester.yml вручну.
       - name: Run Pester Tests
         shell: pwsh
         run: |
           $cfg = New-PesterConfiguration
-          $cfg.Run.Path = './tests/'
+          $cfg.Run.Path = @(
+            './tests/Policies.Format.Tests.ps1',
+            './tests/ApplyAll.Tests.ps1',
+            './tests/Settings.Check.Tests.ps1',
+            './tests/ErrorReport.Tests.ps1'
+          )
           $cfg.Run.Exit = $true
           $cfg.Output.Verbosity = 'Detailed'
           $cfg.TestResult.Enabled = $true

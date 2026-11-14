@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для doh.ps1 — DNS-over-HTTPS та ARP Spoofing Mitigation
 .NOTES

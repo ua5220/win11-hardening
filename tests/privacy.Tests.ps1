@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для privacy.ps1 — Copilot, AI, Widgets, OneDrive, приватність
 .NOTES
@@ -140,9 +140,9 @@ Describe "privacy.ps1 — Приватність — розширена (HKLM)" 
 
 Describe "privacy.ps1 — Приватність — розширена (HKCU)" {
 
-    Context "Хмарна синхронізація / буфер обміну — вимкнути" {
+    Context "Хмарна синхронізація / журнал буфера обміну — вимкнути" {
         BeforeAll {
-            $item = $settings | Where-Object { $_.Name -match "буфер обміну" }
+            $item = $settings | Where-Object { $_.Name -match "буфера обміну" }
             $item.Apply.Invoke()
         }
         It "AllowCrossDeviceClipboard дорівнює 0" {

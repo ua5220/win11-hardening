@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester-тести для firewall.ps1 — брандмауер, блокування протоколів, TOR, Lateral Movement
 .NOTES
