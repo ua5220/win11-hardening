@@ -1,0 +1,16 @@
+{
+	"mcpServers": {
+		"mempalace": {
+			"type": "stdio",
+			"command": "C:\\Python314\\python.exe",
+			"args": [
+				"-m",
+				"mempalace.mcp_server"
+			],
+			"env": {
+				"MEMPALACE_WING": "win11_hardening",
+				"PYTHONUTF8": "1"
+			}
+		}
+	}
+}

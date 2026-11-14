@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Added — пам'ять mempalace для Claude Code
+- `.mcp.json` (сервер mempalace, wing `win11_hardening`) і хуки `.claude/hooks/mempal-*.py`: SessionStart лише з
+  identity, Stop, PreCompact, SessionEnd, нагадування, детектор відлуння після пошуку
+- `scripts/mempalace-canon.py` дзеркалить README, CHANGELOG, `policies/*.txt|*.inf` і `settings/*.ps1` у кімнати
+  `general`/`policies`/`settings` (23 файли → 827 шухляд); застарілі травневі копії файлів (405 шухляд) прибрано з палацу
+
 ## [3.5.2] - 2026-10-28
 
 ### Fixed — застосунки зі сповіщеннями не запускались
