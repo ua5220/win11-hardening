@@ -50,7 +50,7 @@ def split_sections(src: Path, room: str) -> dict[Path, bytes]:
     out: dict[Path, bytes] = {}
     head = parts[0].strip()
     if head:
-        out[Path(room) / src.stem / "_intro.md"] = (head + "\n").encode("utf-8")
+        out[Path(room) / src.stem / "_intro.md"] = (head + "\n").encode()
     seen: dict[str, int] = {}
     for part in parts[1:]:
         title = part.splitlines()[0][3:].strip()
@@ -59,7 +59,7 @@ def split_sections(src: Path, room: str) -> dict[Path, bytes]:
         slug = f"{date.group(0)}-{slug}" if date and not slug.startswith(date.group(0)) else slug
         seen[slug] = seen.get(slug, 0) + 1
         name = slug if seen[slug] == 1 else f"{slug}-{seen[slug]}"
-        out[Path(room) / src.stem / f"{name}.md"] = f"# {src.stem} — {title}\n\n{part.strip()}\n".encode("utf-8")
+        out[Path(room) / src.stem / f"{name}.md"] = f"# {src.stem} — {title}\n\n{part.strip()}\n".encode()
     return out
 
 

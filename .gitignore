@@ -3,3 +3,5 @@ backups/
 # Результати тестів
 test-results.xml
 tests/TestResults.xml
+
+__pycache__/
