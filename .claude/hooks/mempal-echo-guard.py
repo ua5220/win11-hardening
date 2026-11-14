@@ -103,7 +103,14 @@ def flags(text: str, phones: set[str], emails: set[str]) -> list[str]:
 def main() -> None:
     payload = json.loads(sys.stdin.buffer.read().decode("utf-8"))
     results = find_results(payload.get("tool_response"))
+    if results is None:
+        return
     if not results:
+        room = str((payload.get("tool_input") or {}).get("room", "")).strip()
+        if room:
+            ctx = f'Детектор відлуння: з room="{room}" нічого не знайдено — повтори з room "*" (без фільтра).'
+            out = {"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": ctx}}
+            sys.stdout.buffer.write(json.dumps(out, ensure_ascii=False).encode("utf-8"))
         return
     phones, emails = canon()
     lines, echoes, scraps, wings = [], 0, 0, set()
@@ -122,7 +129,15 @@ def main() -> None:
     head = f"Детектор відлуння: {echoes}/{len(results)} результатів — уривки транскриптів (копії стану на дату сесії)."
     tail = "Факт із пам'яті ≠ поточний стан: перед дією звір із репо або живим станом; розбіжність — вір живому."
     hint = []
-    if echoes * 2 >= len(results) or scraps:
+    tool_input = payload.get("tool_input") or {}
+    asked_room = str(tool_input.get("room", "")).strip()
+    try:
+        wanted = int(tool_input.get("limit") or 5)
+    except (TypeError, ValueError):
+        wanted = 5
+    if asked_room and len(results) < min(3, wanted):  # слабка = менше, ніж просили (до 3)
+        hint.append(f'Видача з room="{asked_room}" слабка — другий крок: той самий запит з room "*" (без фільтра, з історією).')
+    elif echoes * 2 >= len(results) or scraps:
         rooms = canon_rooms(wings)
         if rooms:
             hint.append("Видачу забили транскрипти — повтори з room одного з канонічних: " + rooms + ".")

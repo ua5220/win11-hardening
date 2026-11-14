@@ -79,6 +79,19 @@
 					}
 				]
 			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "mcp__mempalace__mempalace_search",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "& \"C:\\Python314\\python.exe\" \"$env:CLAUDE_PROJECT_DIR/.claude/hooks/mempal-search-router.py\"",
+						"shell": "powershell",
+						"timeout": 10
+					}
+				]
+			}
 		]
 	},
 	"permissions": {

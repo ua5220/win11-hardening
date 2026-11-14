@@ -119,6 +119,22 @@ def sync_mirror(target: dict[Path, bytes]) -> int:
     return changed
 
 
+def build_room_index(target: dict[Path, bytes]) -> None:
+    """TF-IDF-словники кімнат для маршрутизатора пошуку (`.claude/hooks/mempal_rooms.py`)."""
+    try:
+        sys.dont_write_bytecode = True  # без __pycache__ у репо
+        sys.path.insert(0, str(REPO / ".claude" / "hooks"))
+        import mempal_rooms
+
+        docs: dict[str, list[str]] = {}
+        for rel, data in target.items():
+            docs.setdefault(rel.parts[0], []).append(data.decode("utf-8", "ignore"))
+        index = mempal_rooms.build_index(WING, docs)
+        print(f"mempalace-canon[{WING}]: індекс кімнат — {len(index)} кімнат")
+    except Exception as exc:  # індекс — не критичний: без нього маршрутизатор просто не ставить room
+        print(f"mempalace-canon[{WING}]: індекс кімнат не збудовано: {exc}")
+
+
 def running() -> bool:
     try:
         pid = int(PID_FILE.read_text(encoding="utf-8").strip())
@@ -173,6 +189,7 @@ def main() -> int:
         target = plan()
         changed = sync_mirror(target)
         print(f"mempalace-canon[{WING}]: {len(target)} файлів у дзеркалі, змінено {changed}")
+        build_room_index(target)
     mine(mode)  # завжди: незмінні файли mine пропускає, пропущений раніше прохід наздоганяється
     return 0
 
