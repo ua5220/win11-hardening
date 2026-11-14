@@ -16,6 +16,19 @@ from pathlib import Path
 
 PHONE_RE = re.compile(r"(?<!\d)(?:\+?38[\s\-()]*)?0[\s\-()]*\d{2}[\s\-()]*\d{3}[\s\-()]*\d{2}[\s\-()]*\d{2}(?!\d)")
 STALE_DAYS = 14
+SCRAP_CHARS = 80
+SOURCES = Path.home() / ".mempalace" / "sources"
+
+
+def canon_rooms(wings: set[str]) -> str:
+    """Кімнати канону = теки першого рівня дзеркала `~/.mempalace/sources/<wing>` (scripts/mempalace-canon.py)."""
+    found = []
+    for wing in sorted(w for w in wings if w):
+        base = SOURCES / wing
+        if base.is_dir():
+            rooms = sorted(p.name for p in base.iterdir() if p.is_dir())
+            found.append(f"{wing}: {', '.join(rooms)}")
+    return "; ".join(found)
 
 
 def canon() -> tuple[set[str], set[str]]:
@@ -93,18 +106,27 @@ def main() -> None:
     if not results:
         return
     phones, emails = canon()
-    lines, echoes = [], 0
+    lines, echoes, scraps, wings = [], 0, 0, set()
     for i, hit in enumerate(results, 1):
         k = kind(hit)
         echoes += k == "транскрипт"
+        wings.add(str(hit.get("wing", "")))
         age = age_days(str(hit.get("filed_at") or hit.get("created_at") or ""))
         age_s = f"{age} дн." if age is not None else "вік ?"
         mark = " ⚠ старе" if age is not None and age > STALE_DAYS and k != "канон репо" else ""
+        if k == "транскрипт" and len(str(hit.get("text", "")).strip()) < SCRAP_CHARS:
+            mark += " ⚠ обрізок (MiniLM завищує схожість коротких шматків)"
+            scraps += 1
         bad = flags(str(hit.get("text", "")), phones, emails)
         lines.append(f"#{i} {k}, {age_s}{mark}" + ((" ⚠ " + "; ".join(bad)) if bad else ""))
     head = f"Детектор відлуння: {echoes}/{len(results)} результатів — уривки транскриптів (копії стану на дату сесії)."
     tail = "Факт із пам'яті ≠ поточний стан: перед дією звір із репо або живим станом; розбіжність — вір живому."
-    out = {"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": "\n".join([head, *lines, tail])}}
+    hint = []
+    if echoes * 2 >= len(results) or scraps:
+        rooms = canon_rooms(wings)
+        if rooms:
+            hint.append("Видачу забили транскрипти — повтори з room одного з канонічних: " + rooms + ".")
+    out = {"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": "\n".join([head, *lines, *hint, tail])}}
     sys.stdout.buffer.write(json.dumps(out, ensure_ascii=False).encode("utf-8"))
 
 
