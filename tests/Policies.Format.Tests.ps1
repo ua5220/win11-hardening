@@ -127,7 +127,7 @@ Describe 'Git Bash / MSYS / Cygwin працюють при системному 
         "$($script:ExploitItem.Revert)" | Should -Not -Match 'Enable\s+\S*BottomUp'
     }
 
-    It 'Get-PosixRuntimeExecutables бере exe лише з тек із msys-2.0.dll або cygwin1.dll' {
+    It 'Get-PosixRuntimeExecutable бере exe лише з тек із msys-2.0.dll або cygwin1.dll' {
         $git = Join-Path $TestDrive 'Git'
         $cyg = Join-Path $TestDrive 'cygwin64'
         $plain = Join-Path $TestDrive 'Other'
@@ -137,7 +137,7 @@ Describe 'Git Bash / MSYS / Cygwin працюють при системному 
         New-Item -ItemType File -Path "$cyg\bin\cygwin1.dll", "$cyg\bin\bash.exe", "$cyg\bin\make.exe" | Out-Null
         New-Item -ItemType File -Path "$plain\bin\tool.exe" | Out-Null
 
-        $names = Get-PosixRuntimeExecutables -Root $git, $cyg, $plain, (Join-Path $TestDrive 'missing')
+        $names = Get-PosixRuntimeExecutable -Root $git, $cyg, $plain, (Join-Path $TestDrive 'missing')
         $names | Should -Be @('bash.exe', 'make.exe', 'ssh.exe')
     }
 }

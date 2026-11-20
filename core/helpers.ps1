@@ -232,7 +232,7 @@ function Set-FirewallRule {
 # Перевірено 2026-11-20 (Win11 26300, Git 2.56.0): вирішальні BottomUp + HighEntropy; лише
 # ForceRelocateImages не допомагає. Винятки Windows прив'язує до ІМЕНІ exe, не до шляху.
 
-function Get-PosixRuntimeExecutables {
+function Get-PosixRuntimeExecutable {
     param([string[]]$Root)
 
     if (-not $Root) {
@@ -259,7 +259,7 @@ function Get-PosixRuntimeExecutables {
 }
 
 function Set-PosixRuntimeAslrExclusion {
-    param([string[]]$Name = (Get-PosixRuntimeExecutables))
+    param([string[]]$Name = (Get-PosixRuntimeExecutable))
 
     $failed = 0
     foreach ($n in $Name) {
@@ -274,7 +274,7 @@ function Set-PosixRuntimeAslrExclusion {
 }
 
 function Test-PosixRuntimeAslrExclusion {
-    param([string[]]$Name = (Get-PosixRuntimeExecutables))
+    param([string[]]$Name = (Get-PosixRuntimeExecutable))
 
     foreach ($n in $Name) {
         $aslr = (Get-ProcessMitigation -Name $n -ErrorAction SilentlyContinue).ASLR

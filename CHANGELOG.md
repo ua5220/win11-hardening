@@ -12,7 +12,7 @@
   `ForceRelocateImages`/`BottomUp`/`HighEntropy` = OFF для exe з тек, де лежить `msys-2.0.dll` або `cygwin1.dll`
   (Git for Windows, MSYS2, Cygwin, Rtools); Check червоний, поки є exe без винятку (нові exe після оновлення Git).
   Revert винятки не прибирає — системний ASLR він теж не скидає
-- `core/helpers.ps1`: `Get-PosixRuntimeExecutables`, `Set-PosixRuntimeAslrExclusion`, `Test-PosixRuntimeAslrExclusion`;
+- `core/helpers.ps1`: `Get-PosixRuntimeExecutable`, `Set-PosixRuntimeAslrExclusion`, `Test-PosixRuntimeAslrExclusion`;
   попередження в `gpo/ExploitProtection.xml`; статичні й функціональні тести
 
 ### Added — пам'ять mempalace для Claude Code
