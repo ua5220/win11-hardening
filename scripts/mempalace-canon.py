@@ -163,7 +163,7 @@ def mine(mode: str) -> None:
         print("mempalace-canon: попередній прохід ще працює — наступний запуск наздожене")
         return
     if mode == "detach":  # post-commit: той самий скрипт з --wait, відокремлено — коміт не чекає
-        flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+        flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         proc = subprocess.Popen(
             [sys.executable, __file__, "--wait"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, env=ENV, cwd=str(HOME), creationflags=flags, close_fds=True,

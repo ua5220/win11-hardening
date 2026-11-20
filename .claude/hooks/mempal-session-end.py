@@ -27,7 +27,7 @@ if "--child" in sys.argv:
         subprocess.run([sys.executable, str(canon), "--wait"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env, check=False)
     sys.exit(0)
 
-base = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+base = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
 for flags in (base | subprocess.CREATE_BREAKAWAY_FROM_JOB, base):
     try:
         proc = subprocess.Popen(
