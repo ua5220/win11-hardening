@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Security — захист CI
+- GitHub Actions закріплено на SHA, `persist-credentials: false` у checkout, `permissions: contents: read` у `lint.yml` і `pester.yml`
+- `.github/workflows/lint-ci.yml` + `scripts/lint-ci.sh`: actionlint, zizmor, shellcheck, gitleaks (уся історія — 0 знахідок)
+- `.github/dependabot.yml` (github-actions, щотижня, cooldown 7 днів); `.gitattributes`: `*.sh` з LF
+
 ### Fixed — Git Bash / MSYS2 / Cygwin падали на fork після Exploit Protection (ACSC 03)
 - Системні ASLR (Mandatory, Bottom-up, High-entropy) ламали fork у програмах на `msys-2.0.dll` / `cygwin1.dll`:
   `child_copy: cygheap read copy failed, Win32 error 299`, `exit code 0xC0000142`,

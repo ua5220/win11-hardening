@@ -1,0 +1,2 @@
+# bash-скрипти завжди з LF (core.autocrlf=true зламало б bash на CRLF)
+*.sh text eol=lf
