@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Fixed — Git Bash / MSYS2 / Cygwin падали на fork після Exploit Protection (ACSC 03)
+- Системні ASLR (Mandatory, Bottom-up, High-entropy) ламали fork у програмах на `msys-2.0.dll` / `cygwin1.dll`:
+  `child_copy: cygheap read copy failed, Win32 error 299`, `exit code 0xC0000142`,
+  `fork: Resource temporarily unavailable` — близько 1 % запусків процесів (git-хуки, скрипти деплою). Вирішальні
+  Bottom-up + High-entropy: лише виняток ForceRelocateImages не допомагав; з усіма трьома — 0 збоїв на 3600 fork
+  (Windows 11 26300, Git 2.56.0)
+- Пункт «Exploit Protection — DEP, SEHOP, ASLR (ACSC 03)» після системних налаштувань ставить винятки
+  `ForceRelocateImages`/`BottomUp`/`HighEntropy` = OFF для exe з тек, де лежить `msys-2.0.dll` або `cygwin1.dll`
+  (Git for Windows, MSYS2, Cygwin, Rtools); Check червоний, поки є exe без винятку (нові exe після оновлення Git).
+  Revert винятки не прибирає — системний ASLR він теж не скидає
+- `core/helpers.ps1`: `Get-PosixRuntimeExecutables`, `Set-PosixRuntimeAslrExclusion`, `Test-PosixRuntimeAslrExclusion`;
+  попередження в `gpo/ExploitProtection.xml`; статичні й функціональні тести
+
 ### Added — пам'ять mempalace для Claude Code
 - `.mcp.json` (сервер mempalace, wing `win11_hardening`) і хуки `.claude/hooks/mempal-*.py`: SessionStart лише з
   identity, Stop, PreCompact, SessionEnd, нагадування, детектор відлуння після пошуку

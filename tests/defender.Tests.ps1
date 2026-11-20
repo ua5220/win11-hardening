@@ -30,6 +30,20 @@ Describe "defender.ps1 — Defender / Antivirus" {
         AfterAll { $item.Revert.Invoke() }
     }
 
+    Context "Exploit Protection — DEP, SEHOP, ASLR (ACSC 03)" {
+        BeforeAll {
+            $item = $settings | Where-Object { $_.Name -match "Exploit Protection — DEP, SEHOP, ASLR" }
+            $item.Apply.Invoke()
+        }
+        It "exe MSYS/Cygwin мають BottomUp/HighEntropy/ForceRelocateImages = OFF" {
+            Test-PosixRuntimeAslrExclusion | Should -BeTrue
+        }
+        It "Check повертає true після Apply" {
+            $item.Check.Invoke() | Should -BeTrue
+        }
+        AfterAll { $item.Revert.Invoke() }
+    }
+
     Context "ASR Rules — 16 правил (ACSC 02)" {
         BeforeAll {
             $item = $settings | Where-Object { $_.Name -match "ASR Rules" }

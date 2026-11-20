@@ -205,19 +205,29 @@ Revert: видаляє GPO-ключ (якщо лишився з попередн
 [PSCustomObject]@{
     Group = "Defender / Antivirus"
     Name  = "Exploit Protection — DEP, SEHOP, ASLR (ACSC 03)"
-    Desc  = "DisallowExploitProtectionOverride=1, SEHOP увімкнено, DEP для Провідника Windows"
+    Desc  = @"
+DisallowExploitProtectionOverride=1, SEHOP увімкнено, DEP для Провідника Windows; системні DEP, CFG, ASLR
+(Mandatory, Bottom-up, High-entropy).
+Винятки ASLR для програм MSYS/Cygwin (Git Bash, MSYS2, Cygwin, Rtools — теки з msys-2.0.dll / cygwin1.dll):
+системний ASLR ламає в них fork («cygheap read copy failed», 0xC0000142). Винятки прив'язані до імені exe —
+після оновлення Git/MSYS2 Check стане червоним, застосуйте пункт ще раз. Per-user Git інших облікових
+записів (%LOCALAPPDATA%\Programs\Git) не виявляється.
+"@
     Apply = {
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection" "DisallowExploitProtectionOverride" 1
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoDataExecutionPrevention" 0
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" "NoTurnOffSPIAndSAI"       1
         Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "DisableExceptionChainValidation" 0
         try { Set-ProcessMitigation -System -Enable DEP,EmulateAtlThunks,SEHOP,ForceRelocateImages,BottomUp,HighEntropy,CFG -ErrorAction SilentlyContinue } catch { Write-AppLog -Level 'WARN' -Message "ExploitProtection :: $($_.Exception.Message)" }
+        Set-PosixRuntimeAslrExclusion
     }
     Revert = {
+        # Системний ASLR Revert не скидає — тож винятки MSYS/Cygwin лишаються, інакше Git Bash знову падає на fork.
         Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection" "DisallowExploitProtectionOverride" 0
     }
     Check = {
-        (Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection" "DisallowExploitProtectionOverride" 0) -eq 1
+        ((Get-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\App and Browser protection" "DisallowExploitProtectionOverride" 0) -eq 1) -and
+            (Test-PosixRuntimeAslrExclusion)
     }
 },
 

@@ -112,6 +112,36 @@ Describe 'Платформа сповіщень завжди доступна' {
     }
 }
 
+Describe 'Git Bash / MSYS / Cygwin працюють при системному ASLR' {
+    # Системні Bottom-up/High-entropy ASLR ламають fork у msys-2.0.dll/cygwin1.dll (0xC0000142, 2026-11-20)
+    BeforeAll {
+        . (Join-Path (Split-Path $PSScriptRoot -Parent) 'core\helpers.ps1')
+        $script:ExploitItem = @(& (Join-Path (Split-Path $PSScriptRoot -Parent) 'settings\defender.ps1')) |
+            Where-Object { $_.Name -match 'Exploit Protection — DEP, SEHOP, ASLR' }
+    }
+
+    It 'пункт ACSC 03 ставить винятки ASLR для MSYS/Cygwin і перевіряє їх у Check' {
+        $script:ExploitItem | Should -HaveCount 1
+        "$($script:ExploitItem.Apply)" | Should -Match 'Set-PosixRuntimeAslrExclusion'
+        "$($script:ExploitItem.Check)" | Should -Match 'Test-PosixRuntimeAslrExclusion'
+        "$($script:ExploitItem.Revert)" | Should -Not -Match 'Enable\s+\S*BottomUp'
+    }
+
+    It 'Get-PosixRuntimeExecutables бере exe лише з тек із msys-2.0.dll або cygwin1.dll' {
+        $git = Join-Path $TestDrive 'Git'
+        $cyg = Join-Path $TestDrive 'cygwin64'
+        $plain = Join-Path $TestDrive 'Other'
+        foreach ($d in "$git\usr\bin", "$git\bin", "$cyg\bin", "$plain\bin") { New-Item -ItemType Directory -Path $d -Force | Out-Null }
+        New-Item -ItemType File -Path "$git\usr\bin\msys-2.0.dll", "$git\usr\bin\bash.exe", "$git\usr\bin\ssh.exe" | Out-Null
+        New-Item -ItemType File -Path "$git\bin\git.exe" | Out-Null
+        New-Item -ItemType File -Path "$cyg\bin\cygwin1.dll", "$cyg\bin\bash.exe", "$cyg\bin\make.exe" | Out-Null
+        New-Item -ItemType File -Path "$plain\bin\tool.exe" | Out-Null
+
+        $names = Get-PosixRuntimeExecutables -Root $git, $cyg, $plain, (Join-Path $TestDrive 'missing')
+        $names | Should -Be @('bash.exe', 'make.exe', 'ssh.exe')
+    }
+}
+
 Describe 'Revert не вимикає функції Windows' {
     # «Скасувати все» відкочує всі пункти — відкат «увімкнути/відновити» не має нічого блокувати
     # (2026-10-26: Revert вимкнув автооновлення NoAutoUpdate=1 і Store RemoveWindowsStore=1)

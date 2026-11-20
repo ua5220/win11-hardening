@@ -225,6 +225,67 @@ function Set-FirewallRule {
     New-NetFirewallRule @params | Out-Null
 }
 
+# ── Exploit Protection: винятки ASLR для MSYS/Cygwin ─────────────────────
+# Системні Mandatory / Bottom-up / High-entropy ASLR ламають fork у програмах на msys-2.0.dll і
+# cygwin1.dll (Git Bash, MSYS2, Cygwin, Rtools): «child_copy: cygheap read copy failed, Win32 error 299»,
+# «exit code 0xC0000142», «fork: Resource temporarily unavailable» (~1 % запусків процесів).
+# Перевірено 2026-11-20 (Win11 26300, Git 2.56.0): вирішальні BottomUp + HighEntropy; лише
+# ForceRelocateImages не допомагає. Винятки Windows прив'язує до ІМЕНІ exe, не до шляху.
+
+function Get-PosixRuntimeExecutables {
+    param([string[]]$Root)
+
+    if (-not $Root) {
+        $Root = @('C:\msys64', 'C:\msys32', 'C:\cygwin64', 'C:\cygwin')
+        foreach ($base in @($env:ProgramFiles, ${env:ProgramFiles(x86)}, $env:ProgramW6432)) {
+            if ($base) { $Root += Join-Path $base 'Git' }
+        }
+        if ($env:LOCALAPPDATA) { $Root += Join-Path $env:LOCALAPPDATA 'Programs\Git' }
+        $Root += @(Get-ChildItem 'C:\' -Directory -Filter 'rtools*' -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName)
+    }
+
+    $names = foreach ($r in ($Root | Select-Object -Unique)) {
+        foreach ($sub in 'usr\bin', 'bin') {
+            $dir = Join-Path $r $sub
+            if ((Test-Path -LiteralPath (Join-Path $dir 'msys-2.0.dll')) -or
+                (Test-Path -LiteralPath (Join-Path $dir 'cygwin1.dll'))) {
+                Get-ChildItem -LiteralPath $dir -Filter '*.exe' -File -ErrorAction SilentlyContinue |
+                    Select-Object -ExpandProperty Name
+            }
+        }
+    }
+    return @($names | Sort-Object -Unique)
+}
+
+function Set-PosixRuntimeAslrExclusion {
+    param([string[]]$Name = (Get-PosixRuntimeExecutables))
+
+    $failed = 0
+    foreach ($n in $Name) {
+        try {
+            Set-ProcessMitigation -Name $n -Disable ForceRelocateImages, BottomUp, HighEntropy -ErrorAction Stop
+        } catch {
+            $failed++
+            Write-AppLog -Level 'WARN' -Message "ASLR-виняток $n :: $($_.Exception.Message)"
+        }
+    }
+    Write-AppLog -Level 'INFO' -Message ("ASLR: винятки для {0} exe MSYS/Cygwin, помилок {1}" -f @($Name).Count, $failed)
+}
+
+function Test-PosixRuntimeAslrExclusion {
+    param([string[]]$Name = (Get-PosixRuntimeExecutables))
+
+    foreach ($n in $Name) {
+        $aslr = (Get-ProcessMitigation -Name $n -ErrorAction SilentlyContinue).ASLR
+        if (-not $aslr) { return $false }
+        foreach ($p in 'ForceRelocateImages', 'BottomUp', 'HighEntropy') {
+            if ("$($aslr.$p)" -ne 'OFF') { return $false }
+        }
+    }
+    return $true
+}
+
 # ── Admin check ──────────────────────────────────────────────────────────
 
 function Test-AdminRequired {
