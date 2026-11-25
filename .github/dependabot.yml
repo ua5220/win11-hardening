@@ -1,0 +1,15 @@
+# Dependabot: оновлення з затримкою 7 днів (cooldown; security-оновлення без затримки),
+# minor/patch — одним PR. Actions закріплено на SHA — Dependabot оновлює SHA разом із коментарем версії.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        update-types: [minor, patch]
